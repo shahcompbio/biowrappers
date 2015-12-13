@@ -1,7 +1,7 @@
 pypeliner:
   nativespec : '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
     
-  nocleanup : True
+  nocleanup : False
 
   maxjobs : 100
   

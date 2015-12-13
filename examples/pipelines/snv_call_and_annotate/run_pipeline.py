@@ -1,9 +1,9 @@
 import pypeliner
 import yaml
 
-from biowrappers.utils import make_directory
-from biowrappers.variant_calling.call_and_annotate import call_and_annotate_pipeline 
-from biowrappers.variant_calling.utils import default_chromosomes
+from biowrappers.components.utils import make_directory
+from biowrappers.components.variant_calling.utils import default_chromosomes
+from biowrappers.pipelines.snv_call_and_annotate import call_and_annotate_pipeline 
 
 def main(args):
     make_directory(args.out_dir)
@@ -58,4 +58,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args)
-    
