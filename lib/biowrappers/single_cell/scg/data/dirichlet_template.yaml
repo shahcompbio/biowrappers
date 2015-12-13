@@ -1,0 +1,12 @@
+data:
+  breakpoint:
+    gamma_prior: [1, 1]
+
+  snv:
+    gamma_prior: [1, 1, 1]
+  
+  binary_snv:
+    gamma_prior: [1, 1]
+    
+  loh:
+    gamma_prior: [1, 1]

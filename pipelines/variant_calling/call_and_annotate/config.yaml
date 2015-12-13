@@ -1,0 +1,90 @@
+pypeliner:
+  nativespec : '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
+    
+  nocleanup : True
+
+  maxjobs : 100
+  
+  pretend : False
+  
+  submit : asyncqsub
+
+  tmpdir : log
+  
+  #loglevel: DEBUG
+
+annotate_cosmic_status:
+  db_name: cosmic_v68
+  
+  db_vcf_file: /home/andrew/Desktop/museq_test/input/cosmic_v68.vcf.gz
+  
+  kwargs:
+    split_size: 10000
+  
+    table_name: /snv/db_status/cosmic 
+    
+annotate_dbsnp_status:
+  db_name: dbsnp
+  
+  db_vcf_file: /home/andrew/Desktop/museq_test/input/common_all_20150605.vcf.gz
+  
+  kwargs:
+    split_size: 10000
+  
+    table_name: /snv/db_status/dbsnp
+        
+mappability:
+  mappability_file: /home/andrew/Desktop/museq_test/input/wgEncodeCrgMapabilityAlign50mer.bigWig
+  
+  kwargs:
+    split_size: 10000
+  
+    table_name: /snv/mappability
+
+museq:
+  model_file: /home/andrew/install/envs/ith/share/museq-0.1.0-0/normal_tumour_model.pickle
+
+  kwargs:
+    indel_threshold: 0.05
+    min_normal_depth: 1
+    min_tumour_depth: 1
+    min_somatic_probability: 0.5
+
+mutect:
+  kwargs:
+    split_size: 1000000 
+
+snpeff:
+  kwargs:
+    data_base: GRCh37.75
+    
+    split_size: 1000
+
+snv_counts:
+  kwargs:
+    count_duplicates: False
+    
+    min_bqual: 30
+    
+    min_mqual: 30
+    
+    split_size: 10000
+
+strelka:
+  kwargs:
+    split_size: 1000000
+    
+    use_depth_thresholds: True
+
+tri_nucleotide_context:
+  kwargs:
+    split_size: 10000
+    
+    table_name: /snv/tri_nucleotide_context
+
+vardict:
+  kwargs:
+    split_size: 1000000
+    
+    min_allele_frequency: 0.01
+  

@@ -1,0 +1,27 @@
+alpha_prior: [99, 1]
+
+data:
+  breakpoint:
+    gamma_prior: [[9, 1],
+                  [1, 9]]
+                  
+    state_prior: [1, 1]
+
+  snv:
+    gamma_prior: [[9, 0.5, 0.5],
+                  [1, 1, 1],
+                  [0.5, 0.5, 9]]
+   
+    state_prior: [1, 1, 1]
+  
+  binary_snv:
+    gamma_prior: [[9, 1],
+                  [1, 9]]
+    
+    state_prior: [1, 1]
+  
+  loh:
+    gamma_prior: [[9, 1],
+                  [1, 9]]
+
+    state_prior: [1, 1]
