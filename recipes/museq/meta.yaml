@@ -1,0 +1,38 @@
+package:
+  name: museq
+  version: "0.1.0"
+  
+source:
+  hg_url: ssh://hg@bitbucket.org/aroth85/museq
+  hg_tag: 0.1.0
+  
+requirements:
+  build:
+    - cython
+    - python
+
+    - numpy
+    - pandas
+    - pysam >=0.8.4
+    - pyvcf
+    - scipy
+    - scikit-learn ==0.17
+    - pytables
+    - pyyaml
+    
+  run:
+    - python
+    
+    - numpy
+    - pandas
+    - pysam >=0.8.4
+    - pyvcf ==0.6.7
+    - scipy
+    - scikit-learn ==0.17
+    - pytables
+    - pyyaml
+    
+about:
+  home: https://bitbucket.org/aroth85/museq
+  license:  GPLv3
+  license_file: LICENSE.txt

@@ -1,0 +1,12 @@
+package:
+  name: strelka
+  version: "1.0.14"
+  
+source:
+  url: https://sites.google.com/site/strelkasomaticvariantcaller/home/download/strelka_workflow-1.0.14.tar.gz
+  fn: strelka_workflow-1.0.14.tar.gz
+
+about:
+  home: https://sites.google.com/site/strelkasomaticvariantcaller
+  license:  Illumina Open Source Software License 1
+  license_file: Illumina_Open_Source_License_1.pdf

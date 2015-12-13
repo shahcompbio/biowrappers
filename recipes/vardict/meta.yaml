@@ -1,0 +1,26 @@
+package:
+  name: vardict
+  version: "1.4.3"
+  
+source:
+  git_url: https://github.com/AstraZeneca-NGS/VarDictJava.git
+  git_tag: v1.4.3
+  
+requirements:
+  build:
+    - java-jdk
+    - openssl
+    
+  run:
+    - java-jdk
+    - perl
+    - pypeliner
+    - python
+    - r
+
+build:
+  number: 2
+
+about:
+  home: https://github.com/AstraZeneca-NGS/VarDictJava
+  license:  MIT
