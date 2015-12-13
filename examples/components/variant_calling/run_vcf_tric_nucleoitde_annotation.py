@@ -1,6 +1,6 @@
 import pypeliner
 
-import biowrappers.variant_calling.tri_nucleotide_context as tc
+import biowrappers.components.variant_calling.tri_nucleotide_context as tc
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'

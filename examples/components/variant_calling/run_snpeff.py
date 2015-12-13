@@ -1,7 +1,6 @@
-import os
 import pypeliner
 
-import biowrappers.variant_calling.snpeff as snpeff
+import biowrappers.components.variant_calling.snpeff as snpeff
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -15,7 +14,7 @@ def main(args):
         'nocleanup' : False
     }
     
-    pyp = pypeliner.app.Pypeline([snpeff.tasks], config)
+    pyp = pypeliner.app.Pypeline([], config)
     
     scheduler = pyp.sch
     

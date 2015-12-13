@@ -1,6 +1,6 @@
 import pypeliner
 
-import biowrappers.variant_calling.snv_allele_counts as snv_allele_counts
+import biowrappers.components.variant_calling.snv_allele_counts as snv_allele_counts
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -11,7 +11,7 @@ def main(args):
         'submit' : 'asyncqsub',
         'nativespec' : native_spec,
         'maxjobs' : 100,
-        'nocleanup' : True
+        'nocleanup' : False
     }
     
     pyp = pypeliner.app.Pypeline([snv_allele_counts.tasks, snv_allele_counts.vcf_tasks], config)

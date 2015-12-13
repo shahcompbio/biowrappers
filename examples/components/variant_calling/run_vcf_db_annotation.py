@@ -1,7 +1,7 @@
 import os
 import pypeliner
 
-import biowrappers.variant_calling.annotated_db_status as annotated_db_status
+import biowrappers.components.variant_calling.annotated_db_status as annotated_db_status
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'

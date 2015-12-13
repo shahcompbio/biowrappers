@@ -1,9 +1,8 @@
-from pypeliner.workflow import Workflow
-
-import os
 import pypeliner
 
-import biowrappers.variant_calling.strelka as strelka
+from biowrappers.components.variant_calling.utils import default_chromosomes
+
+import biowrappers.components.variant_calling.strelka as strelka
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -14,7 +13,7 @@ def main(args):
         'submit' : 'asyncqsub',
         'nativespec' : native_spec,
         'maxjobs' : 100,
-        'nocleanup' : True
+        'nocleanup' : False
     }
     
     pyp = pypeliner.app.Pypeline([strelka.tasks], config)
@@ -52,7 +51,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--out_prefix', required=True)
     
-    parser.add_argument('--chromosomes', nargs='+', default=strelka.default_chromosomes)
+    parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
     
     parser.add_argument('--log_dir', default='./')
 

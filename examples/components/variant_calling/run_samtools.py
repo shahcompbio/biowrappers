@@ -1,9 +1,8 @@
-import os
 import pypeliner
 
-from biowrappers.variant_calling.utils import default_chromosomes
+from biowrappers.components.variant_calling.utils import default_chromosomes
 
-import biowrappers.variant_calling.samtools as samtools
+import biowrappers.components.variant_calling.samtools as samtools
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -17,7 +16,7 @@ def main(args):
         'nocleanup' : False
     }
     
-    pyp = pypeliner.app.Pypeline([samtools.tasks], config)
+    pyp = pypeliner.app.Pypeline([], config)
     
     scheduler = pyp.sch
     

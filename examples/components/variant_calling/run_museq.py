@@ -1,6 +1,8 @@
 import pypeliner
 
-import biowrappers.variant_calling.museq as museq
+from biowrappers.components.variant_calling.utils import default_chromosomes
+
+import biowrappers.components.variant_calling.museq as museq
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -14,18 +16,18 @@ def main(args):
         'nocleanup' : False
     }
     
-    pyp = pypeliner.app.Pypeline([museq.tasks], config)
+    pyp = pypeliner.app.Pypeline([], config)
     
     scheduler = pyp.sch
     
     museq.museq_pipeline(
-        scheduler, 
-        args.normal_bam_file, 
-        args.tumour_bam_file, 
-        args.ref_genome_fasta_file, 
-        args.out_file, 
+        scheduler,
+        args.normal_bam_file,
+        args.tumour_bam_file,
+        args.ref_genome_fasta_file,
+        args.out_file,
         args.install_dir,
-        chromosomes=['21',],
+        chromosomes=args.chromosomes,
         split_size=args.split_size
     )
     
@@ -46,6 +48,8 @@ if __name__ == '__main__':
     
     parser.add_argument('--install_dir', required=True)
     
+    parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
+    
     parser.add_argument('--split_size', default=int(1e6), type=int)
     
     parser.add_argument('--log_dir', default='./')
@@ -53,4 +57,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args)
-    

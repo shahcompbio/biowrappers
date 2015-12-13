@@ -1,7 +1,8 @@
-import os
 import pypeliner
 
-import biowrappers.variant_calling.vardict as vardict
+from biowrappers.components.variant_calling.utils import default_chromosomes
+
+import biowrappers.components.variant_calling.vardict as vardict
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--out_prefix', required=True)
     
-    parser.add_argument('--chromosomes', nargs='+', default=vardict.default_chromosomes)
+    parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
     
     parser.add_argument('--log_dir', default='./')
     

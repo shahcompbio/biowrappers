@@ -1,8 +1,8 @@
 import pypeliner
 
-from biowrappers.variant_calling.utils import default_chromosomes
+from biowrappers.components.variant_calling.utils import default_chromosomes
 
-import biowrappers.variant_calling.snv_allele_counts as snv_allele_counts
+import biowrappers.components.variant_calling.snv_allele_counts as snv_allele_counts
 
 def main(args):
     native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
@@ -60,4 +60,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args)
-    
