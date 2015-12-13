@@ -2,8 +2,8 @@ from pypeliner.workflow import Workflow
 
 import pypeliner
 
-import biowrappers.io.hdf5.tasks as hdf5_tasks
-import biowrappers.io.vcf.tasks as vcf_tasks
+import biowrappers.components.io.hdf5.tasks as hdf5_tasks
+import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
 def snpeff_pipeline(

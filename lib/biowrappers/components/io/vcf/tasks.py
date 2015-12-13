@@ -11,9 +11,9 @@ import shutil
 import time
 import vcf
 
-from biowrappers.utils import flatten_input
+from biowrappers.components.utils import flatten_input
 
-from ._merge import merge_vcfs
+from biowrappers.components.io import merge_vcfs
             
 def compress_vcf(in_file, out_file):
     """ Compress a VCF file using bgzip.

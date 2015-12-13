@@ -2,9 +2,9 @@ from pypeliner.workflow import Workflow
 
 import pypeliner
 
-import biowrappers.io.hdf5.tasks as hdf5_tasks
-import biowrappers.variant_calling.utils as utils
-import biowrappers.io.vcf.tasks as vcf_tasks
+import biowrappers.components.io.hdf5.tasks as hdf5_tasks
+import biowrappers.components.variant_calling.utils as utils
+import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
 def snv_allele_counts_for_vcf_targets_pipeline(

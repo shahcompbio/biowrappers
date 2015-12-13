@@ -8,7 +8,7 @@ from collections import namedtuple
 import csv
 import pysam
 
-from biowrappers.utils import flatten_input
+from biowrappers.components.utils import flatten_input
 
 chrom_map = {'X' : 23, 'Y' : 24, 'M' : 25, 'MT' : 25}
 

@@ -5,7 +5,7 @@ Created on Nov 4, 2015
 '''
 import pandas as pd
 
-from biowrappers.utils import flatten_input
+from biowrappers.components.utils import flatten_input
 
 def concatenate_tables(in_files, out_file):
     in_files = flatten_input(in_files)

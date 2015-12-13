@@ -4,10 +4,10 @@ import csv
 import pypeliner
 import pysam
 
-from biowrappers.variant_calling.utils import default_chromosomes
+from biowrappers.components.variant_calling.utils import default_chromosomes
 
-import biowrappers.variant_calling.utils as utils
-import biowrappers.io.vcf.tasks as vcf_tasks
+import biowrappers.components.variant_calling.utils as utils
+import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
 def strelka_pipeline(

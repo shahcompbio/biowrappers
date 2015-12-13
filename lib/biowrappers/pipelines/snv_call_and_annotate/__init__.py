@@ -3,20 +3,20 @@ from pypeliner.workflow import Workflow
 import os
 import pypeliner  
 
-from biowrappers.utils import make_parent_directory
-from biowrappers.variant_calling.utils import default_chromosomes  
+from biowrappers.components.utils import make_parent_directory
+from biowrappers.components.variant_calling.utils import default_chromosomes  
 
-import biowrappers.io.hdf5.tasks as hdf5_tasks
-import biowrappers.io.vcf.tasks as vcf_tasks
-import biowrappers.variant_calling.annotated_db_status as annotated_db_status
-import biowrappers.variant_calling.mappability as mappability
-import biowrappers.variant_calling.museq as museq
-import biowrappers.variant_calling.mutect as mutect
-import biowrappers.variant_calling.snpeff as snpeff
-import biowrappers.variant_calling.snv_allele_counts as snv_allele_counts
-import biowrappers.variant_calling.strelka as strelka
-import biowrappers.variant_calling.tri_nucleotide_context as tri_nucleotide_context
-import biowrappers.variant_calling.vardict as vardict
+import biowrappers.components.io.hdf5.tasks as hdf5_tasks
+import biowrappers.components.io.vcf.tasks as vcf_tasks
+import biowrappers.components.variant_calling.annotated_db_status as annotated_db_status
+import biowrappers.components.variant_calling.mappability as mappability
+import biowrappers.components.variant_calling.museq as museq
+import biowrappers.components.variant_calling.mutect as mutect
+import biowrappers.components.variant_calling.snpeff as snpeff
+import biowrappers.components.variant_calling.snv_allele_counts as snv_allele_counts
+import biowrappers.components.variant_calling.strelka as strelka
+import biowrappers.components.variant_calling.tri_nucleotide_context as tri_nucleotide_context
+import biowrappers.components.variant_calling.vardict as vardict
 
 def call_and_annotate_pipeline(
         config,
