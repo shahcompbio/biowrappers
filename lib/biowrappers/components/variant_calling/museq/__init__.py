@@ -3,7 +3,7 @@ from pypeliner.workflow import Workflow
 import pypeliner
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
-import biowrappers.variant_calling.utils as utils
+import biowrappers.components.variant_calling.utils as utils
 
 import tasks
 
