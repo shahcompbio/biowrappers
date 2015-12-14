@@ -1,40 +1,47 @@
+from pypeliner.workflow import Workflow
+
 import pypeliner
 
+from biowrappers.components.io.hdf5.tasks import convert_hdf5_to_tsv
+
+import biowrappers.cli as cli
 import biowrappers.components.variant_calling.snpeff as snpeff
 
 def main(args):
-    native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
-    
-    config = {
-        'tmpdir' : args.log_dir,
-        'pretend' : False,
-        'submit' : 'asyncqsub',
-        'nativespec' : native_spec,
-        'maxjobs' : 100,
-        'nocleanup' : False
-    }
+    config = cli.load_pypeliner_config(args)
     
     pyp = pypeliner.app.Pypeline([], config)
     
-    scheduler = pyp.sch
-    
-    snpeff.snpeff_pipeline(
-        scheduler,
-        args.install_dir,
-        args.target_vcf_file,   
-        args.out_file,
+    workflow = snpeff.snpeff_pipeline(
+        args.target_vcf_file,
+        pypeliner.managed.TempOutputFile('snpeff.h5'),
         data_base=args.data_base,
-        split_size=args.split_size
+        memory=args.memory,
+        split_size=args.split_size,
+        table_name='snpeff'
     )
     
-    pyp.run()
+    convert_workflow = Workflow()
+    
+    convert_workflow.transform(
+        name='convert_to_tsv', 
+        func=convert_hdf5_to_tsv,
+        args=(
+            pypeliner.managed.TempInputFile('snpeff.h5'),
+            'snpeff',
+            pypeliner.managed.OutputFile(args.out_file)
+        ),
+        kwargs={
+            'compress' : True
+        }                               
+    )
+    
+    pyp.run(workflow)
 
 if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument('--install_dir', required=True)
     
     parser.add_argument('--target_vcf_file', required=True)
     
@@ -42,9 +49,11 @@ if __name__ == '__main__':
     
     parser.add_argument('--data_base', default='GRCh37.75')
     
-    parser.add_argument('--log_dir', default='./')
+    parser.add_argument('--memory', default=4, type=int)
     
     parser.add_argument('--split_size', default=int(1e3), type=int)
+    
+    cli.add_pypeliner_args(parser)
     
     args = parser.parse_args()
     
