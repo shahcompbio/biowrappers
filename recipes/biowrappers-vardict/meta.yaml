@@ -1,5 +1,5 @@
 package:
-  name: vardict
+  name: biowrappers-vardict
   version: "1.4.3"
   
 source:

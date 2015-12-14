@@ -1,5 +1,5 @@
 package:
-  name: strelka
+  name: biowrappers-strelka
   version: "1.0.14"
   
 source:

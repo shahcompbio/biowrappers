@@ -1,0 +1,10 @@
+package:
+  name: biowrappers-stack
+  version: "0.1.0"
+
+requirements:
+  run:
+    - biowrappers-museq ==0.1.0
+    - biowrappers-mutect ==1.1.7
+    - biowrappers-strelka ==1.0.14
+    - biowrappers-vardict ==1.4.3
