@@ -14,12 +14,11 @@ requirements:
   run:
     - java-jdk
     - perl
-    - pypeliner
     - python
     - r
 
 build:
-  number: 2
+  number: 0
 
 about:
   home: https://github.com/AstraZeneca-NGS/VarDictJava

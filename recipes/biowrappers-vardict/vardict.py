@@ -126,13 +126,13 @@ def run_cmd(cmd, out_file, in_file=None):
     with open(out_file, 'w') as out_fh:
         if in_file is not None:
             with open(in_file, 'r') as in_fh:
-                process = subprocess.Popen(cmd, stdin=in_fh, stdout=out_fh, stderr=subprocess.PIPE, shell=False)
+                process = subprocess.Popen(cmd, stdin=in_fh, stdout=out_fh, shell=False)
            
             
         else:           
-            process = subprocess.Popen(cmd, stdout=out_fh, stderr=subprocess.PIPE, shell=False)
+            process = subprocess.Popen(cmd, stdout=out_fh, shell=False)
         
-        stdout, stderr = process.communicate()
+        process.communicate()
   
     sys.exit(process.returncode)
   
