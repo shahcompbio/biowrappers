@@ -13,7 +13,7 @@ def main(args):
     snv_vcf_file = args.out_prefix + '.snv.vcf.gz'
  
     workflow = strelka.strelka_pipeline(
-        args.normal_bam_file, args.install_dir,
+        args.normal_bam_file,
         args.tumour_bam_file, 
         args.ref_genome_fasta_file, 
         indel_vcf_file,
