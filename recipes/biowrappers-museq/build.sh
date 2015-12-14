@@ -10,6 +10,8 @@ museq train_model --in_file ${feature_file} --out_file ${out_dir}/normal_tumour_
 
 cp $RECIPE_DIR/museq.py $out_dir/museq.py
 
+chmod +x $out_dir/museq.py
+
 mkdir -p $PREFIX/bin
 
 ln -s $out_dir/museq.py $PREFIX/bin/bw-museq
