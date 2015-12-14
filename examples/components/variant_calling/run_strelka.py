@@ -1,30 +1,19 @@
 import pypeliner
 
-from biowrappers.components.variant_calling.utils import default_chromosomes
-
+import biowrappers.cli as cli
 import biowrappers.components.variant_calling.strelka as strelka
 
 def main(args):
-    native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
-    
-    config = {
-        'tmpdir' : args.log_dir,
-        'pretend' : False,
-        'submit' : 'asyncqsub',
-        'nativespec' : native_spec,
-        'maxjobs' : 100,
-        'nocleanup' : False
-    }
-    
-    pyp = pypeliner.app.Pypeline([strelka.tasks], config)
+    config = cli.load_pypeliner_config(args)
+
+    pyp = pypeliner.app.Pypeline([], config)
 
     indel_vcf_file = args.out_prefix + '.indel.vcf.gz'
     
     snv_vcf_file = args.out_prefix + '.snv.vcf.gz'
  
     workflow = strelka.strelka_pipeline(
-        args.install_dir,
-        args.normal_bam_file, 
+        args.normal_bam_file, args.install_dir,
         args.tumour_bam_file, 
         args.ref_genome_fasta_file, 
         indel_vcf_file,
@@ -41,23 +30,15 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--install_dir', required=True)
-    
-    parser.add_argument('--normal_bam_file', required=True)
-    
-    parser.add_argument('--tumour_bam_file', required=True)
-    
-    parser.add_argument('--ref_genome_fasta_file', required=True)
+    cli.add_normal_tumour_bam_variant_calling_args(parser)
     
     parser.add_argument('--out_prefix', required=True)
     
-    parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
-    
-    parser.add_argument('--log_dir', default='./')
+    cli.add_variant_calling_region_args(parser)
 
     parser.add_argument('--no_depth_thresholds', action='store_true', default=False)
     
-    parser.add_argument('--split_size', default=int(1e6), type=int)
+    cli.add_pypeliner_args(parser)
         
     args = parser.parse_args()
     
