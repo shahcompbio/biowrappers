@@ -14,27 +14,27 @@ TODO: Find a way to upload conda packages somewhere accessible.
 
 2. Install `conda-build`
 
-```
-conda install conda-build
-```
+	```
+	conda install conda-build
+	```
 
 3. Build `conda` packages
 
-```
-git clone git@bitbucket.org:aroth85/biowrappers.git biowrappers
-
-cd biowrappers/recipes
-
-conda build biowrappers-stack
-```
+	```
+	git clone git@bitbucket.org:aroth85/biowrappers.git biowrappers
+	
+	cd biowrappers/recipes
+	
+	conda build biowrappers-stack
+	```
 
 Built packages will be in `CONDA_INSTALL_DIR/conda-bld/PLATFORM`. 
 Where CONDA_INSTALL_DIR is the path to PREFIX you used when installing `conda` and PLATFORM is you platform.
 
 4. Install packages
 
-```
-conda install biowrappers-stack -c file://my/conda/path/conda-bld
-```
+	```
+	conda install biowrappers-stack -c file://my/conda/path/conda-bld
+	```
 
 Replace /my/conda/path with the absolute path of CONDA_INSTALL_DIR.
