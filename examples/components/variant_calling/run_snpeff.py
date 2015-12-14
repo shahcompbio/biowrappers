@@ -15,8 +15,8 @@ def main(args):
     workflow = Workflow()
     
     workflow.subworkflow(
-        'snpeff',
-        snpeff.snpeff_pipeline, 
+        name='snpeff',
+        func=snpeff.snpeff_pipeline, 
         args=(
               pypeliner.managed.InputFile(args.target_vcf_file),
               pypeliner.managed.TempOutputFile('snpeff.h5')
