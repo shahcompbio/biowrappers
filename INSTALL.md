@@ -1,3 +1,5 @@
+[toc]
+
 # Overview
 
 The `biowrappers` package is a pure Python package, so it can be installed easily.
