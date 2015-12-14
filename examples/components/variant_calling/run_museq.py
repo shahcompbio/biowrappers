@@ -14,7 +14,6 @@ def main(args):
         args.tumour_bam_file,
         args.ref_genome_fasta_file,
         args.out_file,
-        args.install_dir,
         chromosomes=args.chromosomes,
         split_size=args.split_size
     )
