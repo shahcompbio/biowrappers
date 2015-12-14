@@ -31,7 +31,7 @@ def museq_pipeline(
     workflow.transform(
         name='run_classify',
         axes=('regions',),
-        ctx={'mem' : 4},
+        ctx={'mem' : 8},
         func=tasks.run_classify,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
