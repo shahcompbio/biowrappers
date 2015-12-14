@@ -18,7 +18,7 @@ def run_vardict(
     tumour_sample_name=None):
     
     cmd = [
-        'vardict',
+        'bw-vardict',
         'run_vardict',
         '--normal_bam_file', normal_bam_file,
         '--tumour_bam_file', tumour_bam_file,
@@ -39,7 +39,7 @@ def run_vardict(
 def run_vardict_test_somatic(in_file, out_file):
 
     cmd = [
-        'vardict',
+        'bw-vardict',
         'test_somatic',
         '--in_file', in_file,
         '--out_file', out_file,
@@ -53,7 +53,7 @@ def run_vardict_var_to_vcf(
     min_allele_frequency=0.01):
     
     cmd = [
-        'vardict',
+        'bw-vardict',
         'convert_to_vcf',
         '--in_file', in_file,
         '--out_file', out_file,

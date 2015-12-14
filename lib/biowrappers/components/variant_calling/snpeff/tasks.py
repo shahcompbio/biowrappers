@@ -11,7 +11,7 @@ import vcf
 def run_snpeff(vcf_file, out_file, data_base='GRCh37.75', memory=4):
     
     cmd = [
-        'snpeff',
+        'bw-snpeff',
         '--memory', memory,
         '-noStats',
         '-noLog',
