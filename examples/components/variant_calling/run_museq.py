@@ -15,6 +15,8 @@ def main(args):
         args.out_file,
         chromosomes=args.chromosomes,
         indel_threshold=args.indel_threshold,
+        min_normal_depth=args.min_normal_depth,
+        min_tumour_depth=args.min_tumour_depth,
         min_somatic_probability=args.min_somatic_probability,
         split_size=args.split_size
     )
@@ -35,6 +37,10 @@ if __name__ == '__main__':
     cli.add_pypeliner_args(parser)
     
     parser.add_argument('--indel_threshold', default=0.05, type=float)
+    
+    parser.add_argument('--min_normal_depth', default=1, type=int)
+    
+    parser.add_argument('--min_tumour_depth', default=1, type=int)
     
     parser.add_argument('--min_somatic_probability', default=0.5, type=float)
     
