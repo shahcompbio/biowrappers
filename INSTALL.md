@@ -10,31 +10,34 @@ TODO: Find a way to upload conda packages somewhere accessible.
 
 # Build conda binaries
 
-1. Install [`conda`](http://conda.pydata.org/miniconda.html).
+## Install conda
 
-2. Install `conda-build`
+Download [`conda`](http://conda.pydata.org/miniconda.html) and follow install directions.
+Note the prefix where you install for later.
 
-	```
-	conda install conda-build
-	```
+## Install `conda-build`
 
-3. Build `conda` packages
+```
+conda install conda-build
+```
 
-	```
-	git clone git@bitbucket.org:aroth85/biowrappers.git biowrappers
-	
-	cd biowrappers/recipes
-	
-	conda build biowrappers-stack
-	```
+## Build `conda` packages
+
+```
+git clone git@bitbucket.org:aroth85/biowrappers.git biowrappers
+
+cd biowrappers/recipes
+
+conda build biowrappers-stack
+```
 
 Built packages will be in `CONDA_INSTALL_DIR/conda-bld/PLATFORM`. 
 Where CONDA_INSTALL_DIR is the path to PREFIX you used when installing `conda` and PLATFORM is you platform.
 
-4. Install packages
+## Install packages
 
-	```
-	conda install biowrappers-stack -c file://my/conda/path/conda-bld
-	```
+```
+conda install biowrappers-stack -c file://my/conda/path/conda-bld
+```
 
 Replace /my/conda/path with the absolute path of CONDA_INSTALL_DIR.
