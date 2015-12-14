@@ -1,10 +1,10 @@
 package:
   name: biowrappers-museq
-  version: "0.1.1"
+  version: "0.1.2"
   
 source:
   hg_url: ssh://hg@bitbucket.org/aroth85/museq
-  hg_tag: 0.1.1
+  hg_tag: 0.1.2
   
 requirements:
   build:
