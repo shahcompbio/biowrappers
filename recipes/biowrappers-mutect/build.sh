@@ -13,4 +13,4 @@ chmod +x $outdir/mutect.py
 
 mkdir -p $PREFIX/bin
 
-ln -s $outdir/mutect.py $PREFIX/bin/mutect
+ln -s $outdir/mutect.py $PREFIX/bin/bw-mutect

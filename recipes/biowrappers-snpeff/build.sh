@@ -12,8 +12,8 @@ cp $RECIPE_DIR/snpeff.py $outdir/snpeff.py
 
 chmod +x $outdir/snpeff.py
 
-ln -s $outdir/snpeff.py $PREFIX/bin/snpeff
+ln -s $outdir/snpeff.py $PREFIX/bin/bw-snpeff
 
 cd $outdir
 
-snpeff download GRCh37.75
+bw-snpeff download GRCh37.75

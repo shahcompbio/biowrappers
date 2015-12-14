@@ -16,4 +16,4 @@ chmod +x ${outdir}/vardict.py
 
 mkdir -p $PREFIX/bin
 
-ln -s ${outdir}/vardict.py $PREFIX/bin/vardict
+ln -s ${outdir}/vardict.py $PREFIX/bin/bw-vardict
