@@ -4,7 +4,7 @@ about:
   summary: 'Genetic variant annotation and effect prediction toolbox'
 
 package:
-  name: snpeff
+  name: biowrappers-snpeff
   version: '4.1l_GRCh37.75'
 
 build:
