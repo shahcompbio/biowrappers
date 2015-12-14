@@ -15,6 +15,7 @@ def main(args):
         args.out_file,
         chromosomes=args.chromosomes,
         indel_threshold=args.indel_threshold,
+        chunk_size=args.chunk_size,
         min_normal_depth=args.min_normal_depth,
         min_tumour_depth=args.min_tumour_depth,
         min_somatic_probability=args.min_somatic_probability,
@@ -35,6 +36,8 @@ if __name__ == '__main__':
     cli.add_variant_calling_region_args(parser)
     
     cli.add_pypeliner_args(parser)
+    
+    parser.add_argument('--chunk_size', default=int(1e5), type=int)
     
     parser.add_argument('--indel_threshold', default=0.05, type=float)
     

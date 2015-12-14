@@ -11,6 +11,7 @@ def run_classify(
     ref_genome_fasta_file,
     region,
     out_file,
+    chunk_size=int(1e5),
     min_normal_depth=1,
     min_tumour_depth=1,
     min_somatic_probability=0):
@@ -22,6 +23,7 @@ def run_classify(
         '--tumour_bam_file', tumour_bam_file,
         '--ref_genome_fasta_file', ref_genome_fasta_file,
         '--out_file', out_file,
+        '--chunk_size', chunk_size,
         '--min_normal_depth', min_normal_depth,
         '--min_tumour_depth', min_tumour_depth,
         '--min_somatic_probability', min_somatic_probability,

@@ -15,6 +15,7 @@ def museq_pipeline(
     ref_genome_fasta_file,
     out_file,
     chromosomes=default_chromosomes,
+    chunk_size=int(1e5),
     indel_threshold=0.05,
     min_normal_depth=1,
     min_tumour_depth=1,
@@ -41,6 +42,7 @@ def museq_pipeline(
             pypeliner.managed.TempOutputFile('classified.h5', 'regions')
         ),
         kwargs={
+            'chunk_size' : chunk_size,
             'min_normal_depth' : min_normal_depth, 
             'min_tumour_depth' : min_tumour_depth,
             'min_somatic_probability' : min_somatic_probability
