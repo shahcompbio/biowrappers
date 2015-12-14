@@ -38,7 +38,8 @@ def main(args):
             pypeliner.managed.OutputFile(args.out_file)
         ),
         kwargs={
-            'compress' : True
+            'compress' : True,
+            'index' : False
         }                               
     )
     

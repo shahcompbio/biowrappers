@@ -55,7 +55,7 @@ def _get_min_itemsize(file_list):
         
     return min_sizes
 
-def convert_hdf5_to_tsv(in_file, key, out_file, compress=False):
+def convert_hdf5_to_tsv(in_file, key, out_file, compress=False, index=False):
     df = pd.read_hdf(in_file, key)
     
     if compress:
@@ -65,4 +65,4 @@ def convert_hdf5_to_tsv(in_file, key, out_file, compress=False):
         f_open = open
     
     with f_open(out_file, 'w') as fh:
-        df.to_csv(fh, sep='\t')
+        df.to_csv(fh, index=index, sep='\t')
