@@ -1,20 +1,10 @@
 import pypeliner
 
-from biowrappers.components.variant_calling.utils import default_chromosomes
-
+import biowrappers.cli as cli
 import biowrappers.components.variant_calling.mutect as mutect
 
 def main(args):
-    native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
-    
-    config = {
-        'tmpdir' : args.log_dir,
-        'pretend' : False,
-        'submit' : 'asyncqsub',
-        'nativespec' : native_spec,
-        'maxjobs' : 100,
-        'nocleanup' : False
-    }
+    config = cli.load_pypeliner_config(args)
     
     pyp = pypeliner.app.Pypeline([], config)
     
@@ -37,11 +27,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--normal_bam_file', required=True)
-    
-    parser.add_argument('--tumour_bam_file', required=True)
-    
-    parser.add_argument('--ref_genome_fasta_file', required=True)
+    cli.add_normal_tumour_bam_variant_calling_args(parser)
     
     parser.add_argument('--cosmic_file', required=True)
     
@@ -49,13 +35,11 @@ if __name__ == '__main__':
     
     parser.add_argument('--out_file', required=True)
     
-    parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
-    
-    parser.add_argument('--log_dir', default='./')
+    cli.add_variant_calling_region_args(parser)(parser)
     
     parser.add_argument('--memory', default=4, type=int)
     
-    parser.add_argument('--split_size', default=int(1e6), type=int)
+    cli.add_pypeliner_args(parser)
         
     args = parser.parse_args()
     
