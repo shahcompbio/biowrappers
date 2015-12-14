@@ -1,22 +1,12 @@
 import pypeliner
 
-from biowrappers.components.variant_calling.utils import default_chromosomes
-
+import biowrappers.cli as cli
 import biowrappers.components.variant_calling.vardict as vardict
 
 def main(args):
-    native_spec = '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
+    config = cli.load_pypeliner_config(args)
     
-    config = {
-        'tmpdir' : args.log_dir,
-        'pretend' : False,
-        'submit' : 'asyncqsub',
-        'nativespec' : native_spec,
-        'maxjobs' : 100,
-        'nocleanup' : False
-    }
-    
-    pyp = pypeliner.app.Pypeline([vardict.tasks], config)
+    pyp = pypeliner.app.Pypeline([], config)
     
     indel_vcf_file = args.out_prefix + '.indel.vcf.gz'
     
@@ -41,25 +31,18 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--normal_bam_file', required=True)
-    
-    parser.add_argument('--tumour_bam_file', required=True)
-    
-    parser.add_argument('--ref_genome_fasta_file', required=True)
+    cli.add_normal_tumour_bam_variant_calling_args(parser)
     
     parser.add_argument('--out_prefix', required=True)
     
-    parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
+    cli.add_variant_calling_region_args(parser)
     
-    parser.add_argument('--log_dir', default='./')
-    
-    parser.add_argument('--memory', default=8, type=int)
+    parser.add_argument('--memory', default=4, type=int)
     
     parser.add_argument('--min_allele_frequency', default=0.01, type=float)
     
-    parser.add_argument('--split_size', default=int(1e6), type=int)
+    cli.add_pypeliner_args(parser)
         
     args = parser.parse_args()
     
     main(args)
-    
