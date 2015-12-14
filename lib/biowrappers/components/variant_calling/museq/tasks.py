@@ -9,7 +9,6 @@ def run_classify(
     normal_bam_file,
     tumour_bam_file,
     ref_genome_fasta_file,
-    model_file,
     region,
     out_file,
     min_normal_depth=1,
@@ -17,12 +16,11 @@ def run_classify(
     min_somatic_probability=0):
     
     cmd = [
-        'museq',
+        'bw-museq',
         'classify',
         '--normal_bam_file', normal_bam_file,
         '--tumour_bam_file', tumour_bam_file,
         '--ref_genome_fasta_file', ref_genome_fasta_file,
-        '--model_file', model_file,
         '--out_file', out_file,
         '--min_normal_depth', min_normal_depth,
         '--min_tumour_depth', min_tumour_depth,
@@ -35,7 +33,7 @@ def run_classify(
 def write_vcf(in_file, out_file, indel_threshold=0.05):
     
     cmd = [
-        'museq',
+        'bw-museq',
         'write_vcf',
         '--in_file', in_file,
         '--out_file', out_file,

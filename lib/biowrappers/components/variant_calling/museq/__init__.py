@@ -10,7 +10,6 @@ import tasks
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 def museq_pipeline(
-    model_file,
     normal_bam_file,
     tumour_bam_file,
     ref_genome_fasta_file,
@@ -38,7 +37,6 @@ def museq_pipeline(
             pypeliner.managed.InputFile(normal_bam_file),
             pypeliner.managed.InputFile(tumour_bam_file),
             pypeliner.managed.InputFile(ref_genome_fasta_file),
-            pypeliner.managed.InputFile(model_file),
             pypeliner.managed.TempInputObj('regions', 'regions'),
             pypeliner.managed.TempOutputFile('classified.h5', 'regions')
         ),

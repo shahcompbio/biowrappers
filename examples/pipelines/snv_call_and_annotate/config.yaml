@@ -42,8 +42,6 @@ mappability:
     table_name: /snv/mappability
 
 museq:
-  model_file: /home/andrew/install/envs/ith/share/museq-0.1.0-0/normal_tumour_model.pickle
-
   kwargs:
     indel_threshold: 0.05
     min_normal_depth: 1

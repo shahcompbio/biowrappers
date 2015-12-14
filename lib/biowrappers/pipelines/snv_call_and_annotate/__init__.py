@@ -56,7 +56,6 @@ def call_and_annotate_pipeline(
         axes=('tumour_sample_id',),
         func=museq.museq_pipeline,
         args=(
-            pypeliner.managed.InputFile(config['museq']['model_file']),
             normal_bam_file.as_input(),
             tumour_bam_files.as_input(),
             ref_genome_fasta_file.as_input(),

@@ -9,7 +9,6 @@ def main(args):
     pyp = pypeliner.app.Pypeline([], config)
     
     workflow = museq.museq_pipeline(
-        args.model_file,
         args.normal_bam_file,
         args.tumour_bam_file,
         args.ref_genome_fasta_file,
@@ -26,9 +25,7 @@ if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument('--model_file', required=True)
-    
+
     cli.add_normal_tumour_bam_variant_calling_args(parser)
     
     parser.add_argument('--out_file', required=True)
