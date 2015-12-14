@@ -35,7 +35,7 @@ requirements:
     
 
 build:
-  number: 0
+  number: 1
     
 about:
   home: https://bitbucket.org/aroth85/museq

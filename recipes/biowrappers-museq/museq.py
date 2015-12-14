@@ -9,6 +9,8 @@ install_dir = os.path.dirname(os.path.realpath(__file__))
 model_file = os.path.join(install_dir, 'normal_tumour_model.pickle')
 
 def main(args):
+    os.environ['MALLOC_ARENA_MAX'] = '4'  
+    
     if (len(args) > 0)  and args[0] == 'classify':
         args.extend(['--model_file', model_file])
 
