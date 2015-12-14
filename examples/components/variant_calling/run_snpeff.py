@@ -12,18 +12,24 @@ def main(args):
     
     pyp = pypeliner.app.Pypeline([], config)
     
-    workflow = snpeff.snpeff_pipeline(
-        args.target_vcf_file,
-        pypeliner.managed.TempOutputFile('snpeff.h5'),
-        data_base=args.data_base,
-        memory=args.memory,
-        split_size=args.split_size,
-        table_name='snpeff'
+    workflow = Workflow()
+    
+    workflow.subworkflow(
+        'snpeff',
+        snpeff.snpeff_pipeline, 
+        args=(
+              pypeliner.managed.InputFile(args.target_vcf_file),
+              pypeliner.managed.TempOutputFile('snpeff.h5')
+        ), 
+        kwargs={
+            'data_base' : args.data_base,
+            'memory' : args.memory,
+            'split_size' : args.split_size,
+            'table_name' : 'snpeff'
+        }
     )
-    
-    convert_workflow = Workflow()
-    
-    convert_workflow.transform(
+
+    workflow.transform(
         name='convert_to_tsv', 
         func=convert_hdf5_to_tsv,
         args=(
