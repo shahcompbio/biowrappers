@@ -15,6 +15,8 @@ def main(args):
         args.ref_genome_fasta_file,
         args.out_file,
         chromosomes=args.chromosomes,
+        indel_threshold=args.indel_threshold,
+        min_somatic_probability=args.min_somatic_probability,
         split_size=args.split_size
     )
     
@@ -34,6 +36,10 @@ if __name__ == '__main__':
     cli.add_variant_calling_region_args(parser)
     
     cli.add_pypeliner_args(parser)
+    
+    parser.add_argument('--indel_threshold', default=0.05, type=float)
+    
+    parser.add_argument('--min_somatic_probability', default=0.5, type=float)
     
     args = parser.parse_args()
     
