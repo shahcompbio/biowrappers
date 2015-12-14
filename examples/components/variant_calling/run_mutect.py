@@ -35,7 +35,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--out_file', required=True)
     
-    cli.add_variant_calling_region_args(parser)(parser)
+    cli.add_variant_calling_region_args(parser)
     
     parser.add_argument('--memory', default=4, type=int)
     
