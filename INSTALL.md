@@ -28,7 +28,7 @@ git clone git@bitbucket.org:aroth85/biowrappers.git biowrappers
 
 cd biowrappers/recipes
 
-conda build biowrappers-stack
+conda build biowrappers-stack -c bioconda -c r --skip-existing
 ```
 
 Built packages will be in `CONDA_INSTALL_DIR/conda-bld/PLATFORM`. 
@@ -37,7 +37,7 @@ Where CONDA_INSTALL_DIR is the path to PREFIX you used when installing `conda` a
 ## Install packages
 
 ```
-conda install biowrappers-stack -c file://my/conda/path/conda-bld
+conda install biowrappers-stack -c file://my/conda/path/conda-bld -c bioconda -c r
 ```
 
 Replace /my/conda/path with the absolute path of CONDA_INSTALL_DIR.
