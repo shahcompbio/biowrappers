@@ -1,10 +1,8 @@
 out_dir=$PREFIX/share/$PKG_NAME-$PKG_VERSION-$PKG_BUILDNUM
 
-$PYTHON setup.py install
+$PYTHON setup.py install --single-version-externally-managed --record=record.txt
 
-feature_file=normal_tumour_features_$PKG_VERSION.h5
-
-rsync -auv monco:/home/aroth/software/museq/${feature_file} ${feature_file}
+feature_file=$RECIPE_DIR/src/normal_tumour_features.h5
 
 mkdir -p $out_dir
 
