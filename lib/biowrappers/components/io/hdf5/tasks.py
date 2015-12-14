@@ -3,6 +3,7 @@ Created on Nov 4, 2015
 
 @author: Andrew Roth
 '''
+import gzip
 import pandas as pd
 
 from biowrappers.components.utils import flatten_input
@@ -53,4 +54,15 @@ def _get_min_itemsize(file_list):
         hdf_store.close()
         
     return min_sizes
-        
+
+def convert_hdf5_to_tsv(in_file, key, out_file, compress=False):
+    df = pd.read_hdf(in_file, key)
+    
+    if compress:
+        f_open = gzip.open
+    
+    else:
+        f_open = open
+    
+    with f_open(out_file, 'w') as fh:
+        df.to_csv(fh, sep='\t')
