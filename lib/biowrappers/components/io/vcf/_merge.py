@@ -124,7 +124,7 @@ class MultiVcfReader(object):
             try:
                 chrom_iter = reader.fetch(chrom)
 
-            except (KeyError, ValueError) as e:
+            except (KeyError, ValueError):
                 continue
 
             iters.append(BufferedChromIter(chrom_iter))
