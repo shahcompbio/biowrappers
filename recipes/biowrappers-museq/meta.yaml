@@ -14,7 +14,7 @@ requirements:
     - numpy
     - pandas
     - pysam >=0.8.4
-    - pyvcf ==0.6.7
+    - biowrappers-pyvcf
     - pytables
     - pyyaml
     - scikit-learn ==0.17
@@ -27,7 +27,7 @@ requirements:
     - numpy
     - pandas
     - pysam >=0.8.4
-    - pyvcf ==0.6.7
+    - biowrappers-pyvcf
     - pytables
     - pyyaml    
     - scikit-learn ==0.17
