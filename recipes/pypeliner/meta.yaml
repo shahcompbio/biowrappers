@@ -1,0 +1,15 @@
+package:
+  name: pypeliner
+  version: '0.4.0'
+  
+source:
+  git_url: git@bitbucket.org:aroth85/pypeliner.git
+  git_rev: 74f5ec7
+
+requirements:
+  run:
+    - networkx
+    
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
