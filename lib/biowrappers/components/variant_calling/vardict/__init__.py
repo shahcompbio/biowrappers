@@ -49,7 +49,7 @@ def vardict_pipeline(
     workflow.transform(
         name='run_vardict_test_somatic',
         axes=('regions',),
-        ctx={'mem' : 2},
+        ctx={'mem' : 4},
         func=tasks.run_vardict_test_somatic,
         args=(
             pypeliner.managed.TempInputFile('raw.tsv', 'regions'),
