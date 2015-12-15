@@ -32,6 +32,7 @@ def main(args):
     workflow.transform(
         name='convert_to_tsv', 
         func=convert_hdf5_to_tsv,
+        ctx={'mem' : 2},
         args=(
             pypeliner.managed.TempInputFile('snpeff.h5'),
             'snpeff',
