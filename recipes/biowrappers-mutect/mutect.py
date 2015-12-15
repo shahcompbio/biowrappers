@@ -9,7 +9,7 @@ def main(args, extra_args):
     java_dir = os.path.join(install_dir, 'java')
     
     if 'LD_LIBRARY_PATH' in os.environ:
-        old_ld_path = os['LD_LIBRARY_PATH']
+        old_ld_path = os.environ['LD_LIBRARY_PATH']
     
     else:
         old_ld_path = ''
