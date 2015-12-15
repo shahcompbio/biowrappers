@@ -24,4 +24,4 @@ requirements:
 
 test:
   commands:
-    - snpEff -version
+    - bw-snpeff -version
