@@ -1,1 +1,0 @@
-To install this package you will need to download the features file appropriate for the version museq and place it in src/ folder under the directory of the museq recipe. If you are in the BCCRC this file can be found on monco.bccrc.ca at /home/aroth/software/museq/<VERSION>/normal_tumour_features.h5. Where <VERSION> is the version of museq.
