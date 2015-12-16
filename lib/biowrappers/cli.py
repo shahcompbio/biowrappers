@@ -14,7 +14,7 @@ def add_pypeliner_args(parser):
     
     parser.add_argument('-n', '--native_spec', default='-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G')
     
-    parser.add_argument('-s', '--submit_method', choices=['asyncqsub', 'local'], default='local')
+    parser.add_argument('-s', '--submit_method', choices=['asyncqsub', 'drmaa', 'local'], default='local')
 
 def add_variant_calling_region_args(parser):
     parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
