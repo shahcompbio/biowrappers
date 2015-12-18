@@ -15,8 +15,7 @@ def run_mutect(
     dbsnp_vcf_file,
     region,
     out_file,
-    index_file,
-    memory=2):
+    index_file):
     
     cmd = [
         'bw-mutect',
@@ -27,7 +26,6 @@ def run_mutect(
         '--dbsnp_vcf_file', dbsnp_vcf_file,
         '--out_file', out_file,
         '--region', region,
-        '--memory', int(memory),
         '>', '/dev/null' # Avoid dumping mutect tsv file to stdout
     ]
 

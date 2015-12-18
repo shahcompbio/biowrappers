@@ -16,10 +16,7 @@ def vardict_pipeline(
     snv_vcf_file,
     chromosomes=default_chromosomes,
     min_allele_frequency=0.01,
-    split_size=int(1e6),
-    memory=8):
-    
-    memory = int(memory)
+    split_size=int(1e6)):
     
     workflow = Workflow()
     
@@ -40,7 +37,6 @@ def vardict_pipeline(
             pypeliner.managed.TempOutputFile('raw.tsv', 'regions')
         ),
         kwargs={
-            'memory' : memory,
             'min_allele_frequency'  : min_allele_frequency,
             'region' : pypeliner.managed.TempInputObj('config', 'regions')
         }  

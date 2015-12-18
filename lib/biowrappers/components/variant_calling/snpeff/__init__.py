@@ -10,7 +10,6 @@ def snpeff_pipeline(
     target_vcf_file,
     out_file,
     data_base='GRCh37.75',
-    memory=4,
     split_size=int(1e3),
     table_name='snpeff'):
     
@@ -36,7 +35,7 @@ def snpeff_pipeline(
             pypeliner.managed.TempInputFile('split.vcf', 'split'),
             pypeliner.managed.TempOutputFile('snpeff.vcf', 'split')
         ),
-        kwargs={'data_base' : data_base, 'memory' : memory}
+        kwargs={'data_base' : data_base}
     )
     
     workflow.transform(

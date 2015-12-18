@@ -12,7 +12,6 @@ def run_vardict(
     tumour_bam_file,
     ref_genome_fasta_file,
     out_file,
-    memory=8,
     min_allele_frequency=0.01,
     region=None,
     tumour_sample_name=None):
@@ -24,7 +23,6 @@ def run_vardict(
         '--tumour_bam_file', tumour_bam_file,
         '--ref_genome_fasta_file', ref_genome_fasta_file,
         '--out_file', out_file,
-        '--memory', int(memory),
         '--min_allele_frequency', min_allele_frequency
     ]
 

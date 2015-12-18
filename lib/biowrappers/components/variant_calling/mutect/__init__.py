@@ -17,10 +17,7 @@ def mutect_pipeline(
     dbsnp_vcf_file,
     out_file,
     chromosomes=default_chromosomes,
-    memory=4,
     split_size=int(1e6)):
-    
-    memory = int(memory)
     
     workflow = Workflow()
     
@@ -44,9 +41,6 @@ def mutect_pipeline(
             pypeliner.managed.TempOutputFile('classified.vcf', 'regions'),
             pypeliner.managed.TempOutputFile('classified.vcf.idx', 'regions'),
         ),
-        kwargs={
-            'memory' : memory
-        }
     )
 
     workflow.transform(

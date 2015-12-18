@@ -8,11 +8,10 @@ import pandas as pd
 import pypeliner
 import vcf
 
-def run_snpeff(vcf_file, out_file, data_base='GRCh37.75', memory=4):
+def run_snpeff(vcf_file, out_file, data_base='GRCh37.75'):
     
     cmd = [
         'bw-snpeff',
-        '--memory', memory,
         '-noStats',
         '-noLog',
         '-classic',
