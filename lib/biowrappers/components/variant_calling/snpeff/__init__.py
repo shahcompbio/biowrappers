@@ -30,7 +30,7 @@ def snpeff_pipeline(
     workflow.transform(
         name='run_snpeff',
         axes=('split',),
-        ctx={'mem' : memory + 2},
+        ctx={'mem' : 5, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_snpeff,
         args=(
             pypeliner.managed.TempInputFile('split.vcf', 'split'),

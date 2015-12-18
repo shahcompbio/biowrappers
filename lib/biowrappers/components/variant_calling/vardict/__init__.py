@@ -31,7 +31,7 @@ def vardict_pipeline(
     workflow.transform(
         name='run_vardict',
         axes=('regions',),
-        ctx={'mem' : memory + 2},
+        ctx={'mem' : 4, 'num_retry' : 4, 'mem_retry_increment' : 2},
         func=tasks.run_vardict,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
@@ -49,7 +49,7 @@ def vardict_pipeline(
     workflow.transform(
         name='run_vardict_test_somatic',
         axes=('regions',),
-        ctx={'mem' : 4},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_vardict_test_somatic,
         args=(
             pypeliner.managed.TempInputFile('raw.tsv', 'regions'),
@@ -60,7 +60,7 @@ def vardict_pipeline(
     workflow.transform(
         name='run_vardict_var_to_vcf',
         axes=('regions',),
-        ctx={'mem' : 4},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_vardict_var_to_vcf,
         args=(
             pypeliner.managed.TempInputFile('test_somatic.tsv', 'regions'),
@@ -81,7 +81,7 @@ def vardict_pipeline(
     
     workflow.subworkflow(
         name='finalise_all_variants',
-        func=vcf_tasks.finalise_vcf, 
+        func=vcf_tasks.finalise_vcf,
         args=(
             pypeliner.managed.TempInputFile('result.merged.vcf'),
             pypeliner.managed.TempOutputFile('result.merged.vcf.gz')
@@ -120,8 +120,8 @@ def vardict_pipeline(
     )
     
     workflow.subworkflow(
-        name='finalise_snvs', 
-        func=vcf_tasks.finalise_vcf, 
+        name='finalise_snvs',
+        func=vcf_tasks.finalise_vcf,
         args=(
             pypeliner.managed.TempInputFile('snvs.vcf'),
             pypeliner.managed.OutputFile(snv_vcf_file)

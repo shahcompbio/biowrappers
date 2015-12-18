@@ -12,7 +12,7 @@ default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 def mutect_pipeline(
     normal_bam_file,
     tumour_bam_file,
-    ref_genome_fasta_file,    
+    ref_genome_fasta_file,
     cosmic_vcf_file,
     dbsnp_vcf_file,
     out_file,
@@ -32,7 +32,7 @@ def mutect_pipeline(
     workflow.transform(
         name='run_classify',
         axes=('regions',),
-        ctx={'mem' : memory + 2},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_mutect,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
@@ -51,7 +51,7 @@ def mutect_pipeline(
 
     workflow.transform(
         name='merge_vcf',
-        ctx={'mem' : 8},
+        ctx={'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('classified.vcf', 'regions'),

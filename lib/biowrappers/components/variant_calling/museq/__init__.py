@@ -32,7 +32,7 @@ def museq_pipeline(
     workflow.transform(
         name='run_classify',
         axes=('regions',),
-        ctx={'mem' : 6},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_classify,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
@@ -43,7 +43,7 @@ def museq_pipeline(
         ),
         kwargs={
             'chunk_size' : chunk_size,
-            'min_normal_depth' : min_normal_depth, 
+            'min_normal_depth' : min_normal_depth,
             'min_tumour_depth' : min_tumour_depth,
             'min_somatic_probability' : min_somatic_probability
         }
@@ -52,7 +52,7 @@ def museq_pipeline(
     workflow.transform(
         name='write_vcf',
         axes=('regions',),
-        ctx={'mem' : 8},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.write_vcf,
         args=(
             pypeliner.managed.TempInputFile('classified.h5', 'regions'),
@@ -63,7 +63,7 @@ def museq_pipeline(
     
     workflow.transform(
         name='merge_vcf',
-        ctx={'mem' : 8},
+        ctx={'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('classified.vcf', 'regions'),
