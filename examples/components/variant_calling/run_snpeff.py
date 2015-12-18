@@ -23,7 +23,6 @@ def main(args):
         ), 
         kwargs={
             'data_base' : args.data_base,
-            'memory' : args.memory,
             'split_size' : args.split_size,
             'table_name' : 'snpeff'
         }
@@ -56,8 +55,6 @@ if __name__ == '__main__':
     parser.add_argument('--out_file', required=True)
     
     parser.add_argument('--data_base', default='GRCh37.75')
-    
-    parser.add_argument('--memory', default=4, type=int)
     
     parser.add_argument('--split_size', default=int(1e3), type=int)
     

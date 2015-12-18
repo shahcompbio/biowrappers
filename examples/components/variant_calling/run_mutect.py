@@ -16,7 +16,6 @@ def main(args):
         args.dbsnp_file,
         args.out_file, 
         chromosomes=args.chromosomes,
-        memory=args.memory,
         split_size=args.split_size
     )
     
@@ -36,8 +35,6 @@ if __name__ == '__main__':
     parser.add_argument('--out_file', required=True)
     
     cli.add_variant_calling_region_args(parser)
-    
-    parser.add_argument('--memory', default=4, type=int)
     
     cli.add_pypeliner_args(parser)
         

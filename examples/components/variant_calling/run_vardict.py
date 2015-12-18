@@ -19,7 +19,6 @@ def main(args):
         indel_vcf_file,
         snv_vcf_file, 
         chromosomes=args.chromosomes,
-        memory=args.memory,
         min_allele_frequency=args.min_allele_frequency,
         split_size=args.split_size
     )
@@ -36,8 +35,6 @@ if __name__ == '__main__':
     parser.add_argument('--out_prefix', required=True)
     
     cli.add_variant_calling_region_args(parser)
-    
-    parser.add_argument('--memory', default=4, type=int)
     
     parser.add_argument('--min_allele_frequency', default=0.01, type=float)
     
