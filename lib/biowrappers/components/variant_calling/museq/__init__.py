@@ -11,7 +11,7 @@ default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 def museq_pipeline(
     normal_bam_file,
-    tumour_bam_file,
+    tumour_bam_files,
     ref_genome_fasta_file,
     out_file,
     chromosomes=default_chromosomes,
@@ -26,7 +26,7 @@ def museq_pipeline(
     
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('regions', 'regions'),
-        value=utils.get_regions(tumour_bam_file, split_size, chromosomes=chromosomes)
+        value=utils.get_regions(tumour_bam_files[0], split_size, chromosomes=chromosomes)
     )
     
     workflow.transform(
@@ -36,7 +36,7 @@ def museq_pipeline(
         func=tasks.run_classify,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
-            pypeliner.managed.InputFile(tumour_bam_file),
+            pypeliner.managed.InputFile(tumour_bam_files),
             pypeliner.managed.InputFile(ref_genome_fasta_file),
             pypeliner.managed.TempInputObj('regions', 'regions'),
             pypeliner.managed.TempOutputFile('classified.h5', 'regions')

@@ -7,7 +7,7 @@ import pypeliner
 
 def run_classify(
     normal_bam_file,
-    tumour_bam_file,
+    tumour_bam_files,
     ref_genome_fasta_file,
     region,
     out_file,
@@ -20,15 +20,18 @@ def run_classify(
         'bw-museq',
         'classify',
         '--normal_bam_file', normal_bam_file,
-        '--tumour_bam_file', tumour_bam_file,
         '--ref_genome_fasta_file', ref_genome_fasta_file,
         '--out_file', out_file,
         '--chunk_size', chunk_size,
         '--min_normal_depth', min_normal_depth,
         '--min_tumour_depth', min_tumour_depth,
         '--min_somatic_probability', min_somatic_probability,
+        '--multi_sample', len(tumour_bam_files) > 1,
         '--region', region
     ]
+    
+    cmd.append('--tumour_bam_files')
+    cmd.extend(tumour_bam_files)
     
     pypeliner.commandline.execute(*cmd)
 

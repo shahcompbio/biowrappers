@@ -10,7 +10,7 @@ def main(args):
     
     workflow = museq.museq_pipeline(
         args.normal_bam_file,
-        args.tumour_bam_file,
+        args.tumour_bam_files,
         args.ref_genome_fasta_file,
         args.out_file,
         chromosomes=args.chromosomes,
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
 
-    cli.add_normal_tumour_bam_variant_calling_args(parser)
+    cli.add_normal_multiple_tumour_bam_variant_calling_args(parser)
     
     parser.add_argument('--out_file', required=True)
     

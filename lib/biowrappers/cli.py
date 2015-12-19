@@ -28,6 +28,13 @@ def add_normal_tumour_bam_variant_calling_args(parser):
     
     parser.add_argument('-rg', '--ref_genome_fasta_file', required=True)    
 
+def add_normal_multiple_tumour_bam_variant_calling_args(parser):
+    parser.add_argument('-nb', '--normal_bam_file', required=True)
+    
+    parser.add_argument('-tb', '--tumour_bam_files', nargs='+', required=True)
+    
+    parser.add_argument('-rg', '--ref_genome_fasta_file', required=True)    
+
 def load_pypeliner_config(args):
     config = {
         'tmpdir' : args.log_dir,
