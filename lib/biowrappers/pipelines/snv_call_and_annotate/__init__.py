@@ -58,9 +58,6 @@ def call_and_annotate_pipeline(
     
     ref_genome_fasta_file = pypeliner.managed.File(ref_genome_fasta_file)
     
-    for prog in ('museq', 'mutect', 'strelka', 'vardict'):
-        config[prog]['kwargs']['chromosomes'] = chromosomes
-    
     if 'museq' in config:
         workflow.subworkflow(
             name='museq',
