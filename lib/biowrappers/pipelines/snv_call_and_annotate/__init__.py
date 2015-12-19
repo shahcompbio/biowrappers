@@ -31,18 +31,27 @@ def call_and_annotate_pipeline(
     
     workflow.setobj(pypeliner.managed.OutputChunks('tumour_sample_id', axes_origin=[0, ]), tumour_bam_paths.keys())
     
-    snv_vcf_files = {
-        'museq' : pypeliner.managed.File(get_sample_out_file('museq', 'vcf.gz', raw_data_dir), 'tumour_sample_id'),
-        'mutect' : pypeliner.managed.File(get_sample_out_file('mutect', 'vcf.gz', raw_data_dir), 'tumour_sample_id'),
-        'strelka' : pypeliner.managed.File(get_sample_out_file('strelka', 'vcf.gz', raw_data_dir, sub_output='snv'), 'tumour_sample_id'),
-        'vardict' : pypeliner.managed.File(get_sample_out_file('vardict', 'vcf.gz', raw_data_dir, sub_output='snv'), 'tumour_sample_id')
-    }
+    snv_vcf_files = {}
     
-    indel_vcf_files = {
-        'strelka' : pypeliner.managed.File(get_sample_out_file('strelka', 'vcf.gz', raw_data_dir, sub_output='indel'), 'tumour_sample_id'),
-        'vardict' : pypeliner.managed.File(get_sample_out_file('vardict', 'vcf.gz', raw_data_dir, sub_output='indel'), 'tumour_sample_id')
-    }
+    indel_vcf_files = {}
     
+    for prog in ('museq', 'mutect', 'strelka', 'vardict'):
+        if prog not in config:
+            continue
+        
+        config[prog]['kwargs']['chromosomes'] = chromosomes
+        
+        snv_vcf_files[prog] = pypeliner.managed.File(
+            get_sample_out_file(prog, 'vcf.gz', raw_data_dir), 
+            'tumour_sample_id'
+        )
+        
+        if prog in ('strelka', 'vardict'):
+            indel_vcf_files[prog] = pypeliner.managed.File(
+                get_sample_out_file(prog, 'vcf.gz', raw_data_dir, sub_output='indel'), 
+                'tumour_sample_id'
+            )
+  
     normal_bam_file = pypeliner.managed.File(normal_bam_path)
     
     tumour_bam_files = pypeliner.managed.File('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_paths)
@@ -51,81 +60,86 @@ def call_and_annotate_pipeline(
     
     for prog in ('museq', 'mutect', 'strelka', 'vardict'):
         config[prog]['kwargs']['chromosomes'] = chromosomes
-
-    workflow.subworkflow(
-        name='museq',
-        axes=('tumour_sample_id',),
-        func=museq.museq_pipeline,
-        args=(
-            normal_bam_file.as_input(),
-            tumour_bam_files.as_input(),
-            ref_genome_fasta_file.as_input(),
-            snv_vcf_files['museq'].as_output()
-        ),
-        kwargs=config['museq']['kwargs']
-    )    
-        
-    workflow.subworkflow(
-        name='mutect',
-        axes=('tumour_sample_id',),
-        func=mutect.mutect_pipeline,
-        args=(
-            normal_bam_file.as_input(),
-            tumour_bam_files.as_input(),
-            ref_genome_fasta_file.as_input(),
-            config['annotate_cosmic_status']['db_vcf_file'],
-            config['annotate_dbsnp_status']['db_vcf_file'],
-            snv_vcf_files['mutect'].as_output()
-        ),
-        kwargs=config['mutect']['kwargs']
-    )
-
-    workflow.subworkflow(
-        name='strelka',
-        axes=('tumour_sample_id',),
-        func=strelka.strelka_pipeline,
-        args=(
-            normal_bam_file.as_input(),
-            tumour_bam_files.as_input(),
-            ref_genome_fasta_file.as_input(),
-            indel_vcf_files['strelka'].as_output(),
-            snv_vcf_files['strelka'].as_output()
-        ),
-        kwargs=config['strelka']['kwargs']
-    )
-      
-    workflow.subworkflow(
-        name='vardict',
-        axes=('tumour_sample_id',),
-        func=vardict.vardict_pipeline,
-        args=(
-            normal_bam_file.as_input(),
-            tumour_bam_files.as_input(),
-            ref_genome_fasta_file.as_input(),
-            indel_vcf_files['vardict'].as_output(),
-            snv_vcf_files['vardict'].as_output()
-        ),
-        kwargs=config['vardict']['kwargs']
-    )
-     
-    workflow.transform(
-        name='merge_indels',
-        ctx={'mem' : 8},
-        func=vcf_tasks.merge_vcfs,
-        args=(
-            [x.as_input() for x in indel_vcf_files.values()],
-            pypeliner.managed.TempOutputFile('all.indel.vcf')
+    
+    if 'museq' in config:
+        workflow.subworkflow(
+            name='museq',
+            axes=('tumour_sample_id',),
+            func=museq.museq_pipeline,
+            args=(
+                normal_bam_file.as_input(),
+                tumour_bam_files.as_input(),
+                ref_genome_fasta_file.as_input(),
+                snv_vcf_files['museq'].as_output()
+            ),
+            kwargs=config['museq']['kwargs']
+        )    
+    
+    if 'mutect' in config:
+        workflow.subworkflow(
+            name='mutect',
+            axes=('tumour_sample_id',),
+            func=mutect.mutect_pipeline,
+            args=(
+                normal_bam_file.as_input(),
+                tumour_bam_files.as_input(),
+                ref_genome_fasta_file.as_input(),
+                config['annotate_cosmic_status']['db_vcf_file'],
+                config['annotate_dbsnp_status']['db_vcf_file'],
+                snv_vcf_files['mutect'].as_output()
+            ),
+            kwargs=config['mutect']['kwargs']
         )
-    )
-      
-    workflow.subworkflow(
-        name='finalise_indels',
-        func=vcf_tasks.finalise_vcf,
-        args=(
-            pypeliner.managed.TempInputFile('all.indel.vcf'),
-            pypeliner.managed.TempOutputFile('all.indel.vcf.gz')
+    
+    if 'strelka' in config:
+        workflow.subworkflow(
+            name='strelka',
+            axes=('tumour_sample_id',),
+            func=strelka.strelka_pipeline,
+            args=(
+                normal_bam_file.as_input(),
+                tumour_bam_files.as_input(),
+                ref_genome_fasta_file.as_input(),
+                indel_vcf_files['strelka'].as_output(),
+                snv_vcf_files['strelka'].as_output()
+            ),
+            kwargs=config['strelka']['kwargs']
         )
-    )
+    
+    if 'vardict' in config:
+        workflow.subworkflow(
+            name='vardict',
+            axes=('tumour_sample_id',),
+            func=vardict.vardict_pipeline,
+            args=(
+                normal_bam_file.as_input(),
+                tumour_bam_files.as_input(),
+                ref_genome_fasta_file.as_input(),
+                indel_vcf_files['vardict'].as_output(),
+                snv_vcf_files['vardict'].as_output()
+            ),
+            kwargs=config['vardict']['kwargs']
+        )
+    
+    if len(indel_vcf_files) > 0:
+        workflow.transform(
+            name='merge_indels',
+            ctx={'mem' : 8},
+            func=vcf_tasks.merge_vcfs,
+            args=(
+                [x.as_input() for x in indel_vcf_files.values()],
+                pypeliner.managed.TempOutputFile('all.indel.vcf')
+            )
+        )
+      
+        workflow.subworkflow(
+            name='finalise_indels',
+            func=vcf_tasks.finalise_vcf,
+            args=(
+                pypeliner.managed.TempInputFile('all.indel.vcf'),
+                pypeliner.managed.TempOutputFile('all.indel.vcf.gz')
+            )
+        )
       
     workflow.transform(
         name='merge_snvs',
