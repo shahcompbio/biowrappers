@@ -51,7 +51,12 @@ def call_and_annotate_pipeline(
                 get_sample_out_file(prog, 'vcf.gz', raw_data_dir, sub_output='indel'), 
                 'tumour_sample_id'
             )
-  
+    
+    if 'museq_multi_sample' in config:
+        config['museq_multi_sample']['kwargs']['chromosomes'] = chromosomes
+        
+        snv_vcf_files['museq_multi_sample'] = pypeliner.managed.File(get_sample_out_file('museq_multi_sample', 'vcf.gz', out_dir).format(tumour_sample_id='all'))
+    
     normal_bam_file = pypeliner.managed.File(normal_bam_path)
     
     tumour_bam_files = pypeliner.managed.File('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_paths)
@@ -70,8 +75,22 @@ def call_and_annotate_pipeline(
                 snv_vcf_files['museq'].as_output()
             ),
             kwargs=config['museq']['kwargs']
-        )    
+        )
     
+    if 'museq_multi_sample' in config:
+        workflow.subworkflow(
+            name='museq_multi_sample',
+            axes=(),
+            func=museq.museq_pipeline,
+            args=(
+                normal_bam_file.as_input(),
+                tumour_bam_files.as_input(),
+                ref_genome_fasta_file.as_input(),
+                snv_vcf_files['museq_multi_sample'].as_output()
+            ),
+            kwargs=config['museq_multi_sample']['kwargs']
+        )
+            
     if 'mutect' in config:
         workflow.subworkflow(
             name='mutect',
