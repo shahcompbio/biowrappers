@@ -27,6 +27,10 @@ def call_and_annotate_pipeline(
         results_file,
         chromosomes=default_chromosomes):
     
+    default_ctx = {'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2}
+    
+    big_mem_ctx = {'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2}
+    
     workflow = Workflow()
     
     workflow.setobj(pypeliner.managed.OutputChunks('tumour_sample_id', axes_origin=[0, ]), tumour_bam_paths.keys())
@@ -155,6 +159,7 @@ def call_and_annotate_pipeline(
         workflow.transform(
             name='convert_{0}_vcf_to_hdf5'.format(prog),
             axes=('tumour_sample_id',),
+            ctx=default_ctx,
             func=vcf_tasks.convert_vcf_to_hdf5,
             args=(
                 snv_vcf_files[prog].as_input(),
@@ -169,6 +174,7 @@ def call_and_annotate_pipeline(
     workflow.transform(
         name='convert_museq_multi_sample_vcf_to_hdf5',
         axes=(),
+        ctx=default_ctx,
         func=vcf_tasks.convert_vcf_to_hdf5,
         args=(
             snv_vcf_files['museq_multi_sample'].as_input(),
@@ -183,7 +189,7 @@ def call_and_annotate_pipeline(
     if len(indel_vcf_files) > 0:
         workflow.transform(
             name='merge_indels',
-            ctx={'mem' : 8},
+            ctx=big_mem_ctx,
             func=vcf_tasks.merge_vcfs,
             args=(
                 [x.as_input() for x in indel_vcf_files.values()],
@@ -202,7 +208,7 @@ def call_and_annotate_pipeline(
       
     workflow.transform(
         name='merge_snvs',
-        ctx={'mem' : 8},
+        ctx=big_mem_ctx,
         func=vcf_tasks.merge_vcfs,
         args=(
             [x.as_input() for x in snv_vcf_files.values()],
@@ -319,7 +325,7 @@ def call_and_annotate_pipeline(
     
     workflow.transform(
         name='build_results_file',
-        ctx={'mem' : 2},
+        ctx=default_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
             tables,
