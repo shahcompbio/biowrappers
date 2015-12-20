@@ -6,6 +6,7 @@ Created on Oct 31, 2015
 from pypeliner.workflow import Workflow
 
 import itertools
+import pandas as pd
 import pypeliner
 import shutil
 import time
@@ -164,3 +165,37 @@ def split_vcf(in_file, out_file_callback, lines_per_file):
                 writer.write_record(record)
         
             writer.close()
+
+def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
+     
+    def line_group(line, line_idx=itertools.count()):
+        return int(next(line_idx) / chunk_size)
+    
+    chunk_size = 1000
+    
+    reader = vcf.Reader(filename=in_file)
+    
+    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+
+    for file_idx, records in itertools.groupby(reader, key=line_group):
+        df = []
+        
+        for record in enumerate(records):
+            if score_callback is not None:
+                score = score_callback(record)
+            
+            else:
+                score = record.QUAL
+            
+            row = {'chrom' : record.CHROM, 'coord' : record.POS, 'score' : score}
+            
+            df.append(row)
+        
+        offset = file_idx * chunk_size
+        
+        df = pd.DataFrame(df, index=range(offset, offset + chunk_size))
+        
+        hdf_store.append(table_name, df, min_itemsize={'chrom' : 8})
+    
+    hdf_store.close()
+    
