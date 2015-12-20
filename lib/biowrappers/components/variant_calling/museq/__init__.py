@@ -36,7 +36,7 @@ def museq_pipeline(
         func=tasks.run_classify,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
-            pypeliner.managed.InputFile(tumour_bam_files),
+            [pypeliner.managed.InputFile(x) for x in tumour_bam_files],
             pypeliner.managed.InputFile(ref_genome_fasta_file),
             pypeliner.managed.TempInputObj('regions', 'regions'),
             pypeliner.managed.TempOutputFile('classified.h5', 'regions')
