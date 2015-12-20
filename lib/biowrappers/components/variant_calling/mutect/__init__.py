@@ -38,8 +38,7 @@ def mutect_pipeline(
             pypeliner.managed.InputFile(cosmic_vcf_file),
             pypeliner.managed.InputFile(dbsnp_vcf_file),
             pypeliner.managed.TempInputObj('regions', 'regions'),
-            pypeliner.managed.TempOutputFile('classified.vcf', 'regions'),
-            pypeliner.managed.TempOutputFile('classified.vcf.idx', 'regions'),
+            pypeliner.managed.TempOutputFile('classified.vcf', 'regions')
         ),
     )
 

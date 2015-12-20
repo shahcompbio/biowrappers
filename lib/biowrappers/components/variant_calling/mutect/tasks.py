@@ -14,8 +14,7 @@ def run_mutect(
     cosmic_vcf_file,
     dbsnp_vcf_file,
     region,
-    out_file,
-    index_file):
+    out_file):
     
     cmd = [
         'bw-mutect',
@@ -36,6 +35,4 @@ def run_mutect(
     # Guard against slow file system
     time.sleep(1)
     
-    os.rename(idx_file_name, index_file)
-    
-    time.sleep(10)
+    os.unlink(idx_file_name)
