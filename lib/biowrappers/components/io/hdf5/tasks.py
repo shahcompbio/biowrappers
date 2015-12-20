@@ -38,11 +38,11 @@ def _get_min_itemsize(file_list):
             
             df = hdf_store[table_name]
             
-            if df.shape[0] == 0:
+            if df.empty:
                 continue
             
             for col in df.columns:
-                if df[col].dtype == object:
+                if df[col].dtype in [object, str]:
                     size = df[col].map(lambda x: len(x)).max()
                     
                     if pd.np.isnan(size):
