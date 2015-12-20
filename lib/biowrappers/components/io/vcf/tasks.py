@@ -180,7 +180,7 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
     for file_idx, records in itertools.groupby(reader, key=line_group):
         df = []
         
-        for record in enumerate(records):
+        for record in records:
             if score_callback is not None:
                 score = score_callback(record)
             
