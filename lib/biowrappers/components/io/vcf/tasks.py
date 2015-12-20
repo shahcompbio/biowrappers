@@ -191,9 +191,11 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
             
             df.append(row)
         
-        offset = file_idx * chunk_size
+        beg = file_idx * chunk_size
         
-        df = pd.DataFrame(df, index=range(offset, offset + chunk_size))
+        end = beg + len(df)
+        
+        df = pd.DataFrame(df, index=range(beg, end))
         
         hdf_store.append(table_name, df, min_itemsize={'chrom' : 8})
     
