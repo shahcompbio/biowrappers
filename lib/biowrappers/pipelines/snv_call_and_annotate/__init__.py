@@ -42,13 +42,13 @@ def call_and_annotate_pipeline(
         config[prog]['kwargs']['chromosomes'] = chromosomes
         
         snv_vcf_files[prog] = pypeliner.managed.File(
-            get_sample_out_file(prog, 'vcf.gz', raw_data_dir), 
+            get_sample_out_file(prog, 'vcf.gz', raw_data_dir),
             'tumour_sample_id'
         )
         
         if prog in ('strelka', 'vardict'):
             indel_vcf_files[prog] = pypeliner.managed.File(
-                get_sample_out_file(prog, 'vcf.gz', raw_data_dir, sub_output='indel'), 
+                get_sample_out_file(prog, 'vcf.gz', raw_data_dir, sub_output='indel'),
                 'tumour_sample_id'
             )
     
@@ -70,7 +70,7 @@ def call_and_annotate_pipeline(
             func=museq.museq_pipeline,
             args=(
                 normal_bam_file.as_input(),
-                [tumour_bam_files.as_input(),],
+                [tumour_bam_files.as_input(), ],
                 ref_genome_fasta_file.as_input(),
                 snv_vcf_files['museq'].as_output()
             ),
@@ -84,7 +84,7 @@ def call_and_annotate_pipeline(
             func=museq.museq_pipeline,
             args=(
                 normal_bam_file.as_input(),
-                tumour_bam_files.as_input().keys(),
+                [pypeliner.managed.InputFile(x) for x in tumour_bam_paths.values()],
                 ref_genome_fasta_file.as_input(),
                 snv_vcf_files['museq_multi_sample'].as_output()
             ),
