@@ -84,7 +84,7 @@ def call_and_annotate_pipeline(
             func=museq.museq_pipeline,
             args=(
                 normal_bam_file.as_input(),
-                tumour_bam_files.as_input(),
+                tumour_bam_files.as_input().keys(),
                 ref_genome_fasta_file.as_input(),
                 snv_vcf_files['museq_multi_sample'].as_output()
             ),
