@@ -31,14 +31,19 @@ def call_and_annotate_pipeline(
     
     workflow.setobj(pypeliner.managed.OutputChunks('tumour_sample_id', axes_origin=[0, ]), tumour_bam_paths.keys())
     
-    snv_vcf_files = {}
-    
     indel_vcf_files = {}
     
-    for prog in ('museq', 'mutect', 'strelka', 'vardict'):
-        if prog not in config:
-            continue
-        
+    snv_vcf_files = {}
+    
+    indel_progs = ('strelka', 'vardict')
+    
+    indel_progs = [x for x in indel_progs if x in config]
+    
+    snv_progs = ('museq', 'mutect', 'strelka', 'vardict')
+    
+    snv_progs = [x for x in snv_progs if x in config]
+    
+    for prog in snv_progs:
         config[prog]['kwargs']['chromosomes'] = chromosomes
         
         snv_vcf_files[prog] = pypeliner.managed.File(
@@ -46,7 +51,7 @@ def call_and_annotate_pipeline(
             'tumour_sample_id'
         )
         
-        if prog in ('strelka', 'vardict'):
+        if prog in indel_progs:
             indel_vcf_files[prog] = pypeliner.managed.File(
                 get_sample_out_file(prog, 'vcf.gz', raw_data_dir, sub_output='indel'),
                 'tumour_sample_id'
@@ -55,7 +60,9 @@ def call_and_annotate_pipeline(
     if 'museq_multi_sample' in config:
         config['museq_multi_sample']['kwargs']['chromosomes'] = chromosomes
         
-        snv_vcf_files['museq_multi_sample'] = pypeliner.managed.File(get_sample_out_file('museq_multi_sample', 'vcf.gz', out_dir).format(tumour_sample_id='all'))
+        snv_vcf_files['museq_multi_sample'] = pypeliner.managed.File(
+            get_sample_out_file('museq_multi_sample', 'vcf.gz', out_dir).format(tumour_sample_id='all')
+        )
     
     normal_bam_file = pypeliner.managed.File(normal_bam_path)
     
@@ -137,6 +144,42 @@ def call_and_annotate_pipeline(
             kwargs=config['vardict']['kwargs']
         )
     
+    vcf_score_callbacks = {
+        'museq' : lambda x: x.INFO['PS'],
+        'mutect' : None,
+        'strelka' : lambda x: x.INFO['QSS'],
+        'vardict' : None
+    }
+    
+    for prog in snv_progs:
+        workflow.transform(
+            name='convert_{0}_vcf_to_hdf5'.format(prog),
+            axes=('tumour_sample_id',),
+            func=vcf_tasks.convert_vcf_to_hdf5,
+            args=(
+                snv_vcf_files[prog].as_input(),
+                pypeliner.managed.TempOutputFile('{0}.h5'.format(prog), 'tumour_sample_id'),
+                pypeliner.managed.TempInputObj('/snv/vcf/{prog}/{{tumour_sample_id}}'.format(prog=prog), 'tumour_sample_id')
+            ),
+            kwargs={
+                'score_callback' : vcf_score_callbacks[prog] 
+            }
+        )
+    
+    workflow.transform(
+        name='convert_museq_multi_sample_vcf_to_hdf5',
+        axes=(),
+        func=vcf_tasks.convert_vcf_to_hdf5,
+        args=(
+            snv_vcf_files['museq_multi_sample'].as_input(),
+            pypeliner.managed.TempOutputFile('museq_multi_sample.h5'),
+            '/snv/vcf/museq_multi_sample/all',
+        ),
+        kwargs={
+            'score_callback' : vcf_score_callbacks['museq']
+        }
+    )
+    
     if len(indel_vcf_files) > 0:
         workflow.transform(
             name='merge_indels',
@@ -175,7 +218,9 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempOutputFile('all.snv.vcf.gz')
         )
     )
-      
+    
+    config['snpeff']['kwargs'].update({'table_name' : '/snv/snpeff'})
+    
     workflow.subworkflow(
         name='snpeff_snvs',
         func=snpeff.snpeff_pipeline,
@@ -259,18 +304,25 @@ def call_and_annotate_pipeline(
         kwargs=tumour_snv_counts_kwargs
     )
     
+    tables = [
+        pypeliner.managed.TempInputFile('cosmic.h5'),
+        pypeliner.managed.TempInputFile('snpeff.h5'),
+        pypeliner.managed.TempInputFile('mappability.h5'),
+        pypeliner.managed.TempInputFile('tri_nucleotide_context.h5'),
+        pypeliner.managed.TempInputFile('normal_counts.h5'),
+        pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id'),
+        pypeliner.managed.TempInputFile('museq_multi_sample.h5')
+    ]
+    
+    for prog in snv_progs:
+        tables.append(pypeliner.managed.TempInputFile('{0}.h5'.format(prog), 'tumour_sample_id'))
+    
     workflow.transform(
         name='build_results_file',
         ctx={'mem' : 2},
         func=hdf5_tasks.concatenate_tables,
-        args=((
-               pypeliner.managed.TempInputFile('cosmic.h5'),
-               pypeliner.managed.TempInputFile('snpeff.h5'),
-               pypeliner.managed.TempInputFile('mappability.h5'),
-               pypeliner.managed.TempInputFile('tri_nucleotide_context.h5'),
-               pypeliner.managed.TempInputFile('normal_counts.h5'),
-               pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id')
-            ),
+        args=(
+            tables,
             pypeliner.managed.OutputFile(results_file)
         ),
         
