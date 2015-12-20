@@ -145,9 +145,9 @@ def call_and_annotate_pipeline(
         )
     
     vcf_score_callbacks = {
-        'museq' : lambda x: x.INFO['PS'],
+        'museq' : museq_vcf_score_callback,
         'mutect' : None,
-        'strelka' : lambda x: x.INFO['QSS'],
+        'strelka' : strelka_vcf_score_callback,
         'vardict' : None
     }
     
@@ -339,3 +339,9 @@ def get_sample_out_file(cmd, ext, out_dir, sub_output=None):
     make_parent_directory(out_file)
     
     return out_file
+
+def museq_vcf_score_callback(record):
+    return record.INFO['PS']
+
+def strelka_vcf_score_callback(record):
+    return record.INFO['QSS']
