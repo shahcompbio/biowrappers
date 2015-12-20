@@ -26,9 +26,11 @@ def run_classify(
         '--min_normal_depth', min_normal_depth,
         '--min_tumour_depth', min_tumour_depth,
         '--min_somatic_probability', min_somatic_probability,
-        '--multi_sample', len(tumour_bam_files) > 1,
         '--region', region
     ]
+    
+    if len(tumour_bam_files) > 1:
+        cmd.append('--multi_sample')
     
     cmd.append('--tumour_bam_files')
     cmd.extend(tumour_bam_files)
