@@ -23,7 +23,8 @@ def call_and_annotate_pipeline(
         normal_bam_path,
         tumour_bam_paths,
         ref_genome_fasta_file,
-        out_dir,
+        raw_data_dir,
+        results_file,
         chromosomes=default_chromosomes):
     
     workflow = Workflow()
@@ -31,15 +32,15 @@ def call_and_annotate_pipeline(
     workflow.setobj(pypeliner.managed.OutputChunks('tumour_sample_id', axes_origin=[0, ]), tumour_bam_paths.keys())
     
     snv_vcf_files = {
-        'museq' : pypeliner.managed.File(get_sample_out_file('museq', 'vcf.gz', out_dir), 'tumour_sample_id'),
-        'mutect' : pypeliner.managed.File(get_sample_out_file('mutect', 'vcf.gz', out_dir), 'tumour_sample_id'),
-        'strelka' : pypeliner.managed.File(get_sample_out_file('strelka', 'vcf.gz', out_dir, sub_output='snv'), 'tumour_sample_id'),
-        'vardict' : pypeliner.managed.File(get_sample_out_file('vardict', 'vcf.gz', out_dir, sub_output='snv'), 'tumour_sample_id')
+        'museq' : pypeliner.managed.File(get_sample_out_file('museq', 'vcf.gz', raw_data_dir), 'tumour_sample_id'),
+        'mutect' : pypeliner.managed.File(get_sample_out_file('mutect', 'vcf.gz', raw_data_dir), 'tumour_sample_id'),
+        'strelka' : pypeliner.managed.File(get_sample_out_file('strelka', 'vcf.gz', raw_data_dir, sub_output='snv'), 'tumour_sample_id'),
+        'vardict' : pypeliner.managed.File(get_sample_out_file('vardict', 'vcf.gz', raw_data_dir, sub_output='snv'), 'tumour_sample_id')
     }
     
     indel_vcf_files = {
-        'strelka' : pypeliner.managed.File(get_sample_out_file('strelka', 'vcf.gz', out_dir, sub_output='indel'), 'tumour_sample_id'),
-        'vardict' : pypeliner.managed.File(get_sample_out_file('vardict', 'vcf.gz', out_dir, sub_output='indel'), 'tumour_sample_id')
+        'strelka' : pypeliner.managed.File(get_sample_out_file('strelka', 'vcf.gz', raw_data_dir, sub_output='indel'), 'tumour_sample_id'),
+        'vardict' : pypeliner.managed.File(get_sample_out_file('vardict', 'vcf.gz', raw_data_dir, sub_output='indel'), 'tumour_sample_id')
     }
     
     normal_bam_file = pypeliner.managed.File(normal_bam_path)
@@ -240,7 +241,7 @@ def call_and_annotate_pipeline(
                pypeliner.managed.TempInputFile('normal_counts.h5'),
                pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id')
             ),
-            pypeliner.managed.OutputFile(os.path.join(out_dir, 'results.h5'))
+            pypeliner.managed.OutputFile(results_file)
         ),
         
     )
