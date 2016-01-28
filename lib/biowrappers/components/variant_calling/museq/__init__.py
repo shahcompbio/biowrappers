@@ -52,7 +52,7 @@ def museq_pipeline(
     workflow.transform(
         name='write_vcf',
         axes=('regions',),
-        ctx={'mem' : 4},
+        ctx={'mem' : 8},
         func=tasks.write_vcf,
         args=(
             pypeliner.managed.TempInputFile('classified.h5', 'regions'),
