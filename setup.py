@@ -9,6 +9,5 @@ setup(
       author='Andrew Roth',
       author_email='andrewjlroth@gmail.com',
       url='https://bitbucket.org/aroth85/biowrappers',
-      package_dir = {'biowrappers': 'lib/biowrappers'},    
-      packages=find_packages('lib')
+      packages=find_packages(),
      )
