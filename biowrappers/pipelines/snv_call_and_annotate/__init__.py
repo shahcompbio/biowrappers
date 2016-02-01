@@ -65,7 +65,7 @@ def call_and_annotate_pipeline(
         config['museq_multi_sample']['kwargs']['chromosomes'] = chromosomes
         
         snv_vcf_files['museq_multi_sample'] = pypeliner.managed.File(
-            get_sample_out_file('museq_multi_sample', 'vcf.gz', out_dir).format(tumour_sample_id='all')
+            get_sample_out_file('museq_multi_sample', 'vcf.gz', raw_data_dir).format(tumour_sample_id='all')
         )
     
     normal_bam_file = pypeliner.managed.File(normal_bam_path)
