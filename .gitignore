@@ -1,2 +1,4 @@
 biowrappers.egg-info
 *.pyc
+/.project
+/.pydevproject
