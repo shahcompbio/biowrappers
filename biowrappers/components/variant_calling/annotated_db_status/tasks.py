@@ -21,7 +21,7 @@ def annotate_db_status(db_vcf_file, target_vcf_file, out_file, table_name):
         try:
             db_position_records = [x for x in db_reader.fetch(chrom, coord, coord)]
         
-        except KeyError:
+        except ValueError:
             db_position_records = []
         
         for alt in record.ALT:
