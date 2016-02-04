@@ -23,7 +23,7 @@ def concatenate_tables(in_files, out_file):
             
             for col in df.columns:
                 if df[col].dtype == object:
-                        df[col] = df[col].astype(str)
+                    df[col] = df[col].astype(str)
             
             out_store.append(table_name, df, min_itemsize=min_itemsize[table_name])
         
