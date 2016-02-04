@@ -21,9 +21,10 @@ def concatenate_tables(in_files, out_file):
         for table_name in in_store.keys():
             df = in_store[table_name]
             
-            for col in df.columns:
-                if df[col].dtype == object:
-                    df[col] = df[col].astype(str)
+            non_numeric_cols = df.select_dtypes(exclude=[pd.np.number, ]).columns
+            
+            for col in non_numeric_cols:
+                df[col] = df[col].astype(str)
             
             out_store.append(table_name, df, min_itemsize=min_itemsize[table_name])
         
@@ -47,15 +48,15 @@ def _get_min_itemsize(file_list):
             if df.empty:
                 continue
             
-            for col in df.columns:
-                if df[col].dtype == object:
-                    df[col] = df[col].astype(str)
+            non_numeric_cols = df.select_dtypes(exclude=[pd.np.number, ]).columns
+            
+            for col in non_numeric_cols:
+                df[col] = df[col].astype(str)
                 
-                if df[col].dtype == str:
-                    size = df[col].map(lambda x: len(x)).max()
-                    
-                    if (col not in min_sizes[table_name]) or (size > min_sizes[table_name][col]):
-                        min_sizes[table_name][col] = size
+                size = df[col].str.len().max()
+                
+                if (col not in min_sizes[table_name]) or (size > min_sizes[table_name][col]):
+                    min_sizes[table_name][col] = size
         
         hdf_store.close()
         
