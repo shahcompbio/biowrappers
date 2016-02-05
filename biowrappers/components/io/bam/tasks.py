@@ -3,14 +3,17 @@ Created on Feb 3, 2016
 
 @author: Andrew Roth
 '''
-import gzip
 import glob
+import gzip
 import pypeliner
 import os
 import shutil
+import tempfile
 import time
 
-def collate_bam(in_file, out_file):
+from biowrappers.components.utils import flatten_input
+
+def collate(in_file, out_file):
     
     out_prefix = out_file + '.shuffle'
     
@@ -20,8 +23,7 @@ def collate_bam(in_file, out_file):
     
     shutil.move(out_prefix + '.bam', out_file)
 
-def split_bam_to_fastq(in_file, read_files, tmp_dir, split_size=int(1e7)):
-    print in_file, tmp_dir
+def convert_to_fastqs(in_file, read_files, tmp_dir, split_size=int(1e7)):
     
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
@@ -44,11 +46,11 @@ def split_bam_to_fastq(in_file, read_files, tmp_dir, split_size=int(1e7)):
         'gz=1',
         'filename={0}'.format(in_file),
         'split={0}'.format(split_size),
-        '>/dev/null'
+        '>', '/dev/null'
     )
     
     num_files = len(glob.glob(prefix[1] + '*.gz'))
-        
+    
     last_file_idx = num_files - 1
     
     num_fn_digits = 6
@@ -60,7 +62,7 @@ def split_bam_to_fastq(in_file, read_files, tmp_dir, split_size=int(1e7)):
     last_file_idx = '0' * (num_fn_digits - len_last_file_idx) + str(last_file_idx)
 
     # Merge last file into first so all files have at least minimum number of reads
-    if last_file_idx != 0:
+    if num_files > 1:
         for r_id in read_ids:
             first_file = os.path.join(tmp_dir, 'read_{0}_{1}.gz'.format(r_id, first_file_idx))
              
@@ -80,3 +82,71 @@ def split_bam_to_fastq(in_file, read_files, tmp_dir, split_size=int(1e7)):
             out_file = read_files[r_id][idx]
              
             shutil.move(tmp_file, out_file)
+
+def mark_duplicates(in_file, out_file, compression_level=9, num_threads=1):
+    
+    try:
+        tmp_dir = tempfile.mkdtemp()
+        
+        pypeliner.commandline.execute(
+            'sambamba',
+            'markdup',
+            '-l', compression_level,
+            '-t', num_threads,
+            '--tmpdir', tmp_dir,
+            in_file,
+            out_file
+        )
+    
+    finally:
+        shutil.rmtree(tmp_dir)
+
+def merge(
+    in_files,
+    out_file,
+    attach_read_group_from_file_name=False,
+    header_file=None,
+    compression_level=9,
+    num_compression_threads=0):
+    
+    cmd = [
+        'samtools',
+        'merge',
+        '-c',
+        '-p',
+        '-f',
+        '-l', compression_level,
+        '-@', num_compression_threads,
+    ]
+    
+    if attach_read_group_from_file_name:
+        cmd.append('-r')
+        
+    if header_file is not None:
+        cmd.extend(['-h', header_file])
+    
+    cmd.append(out_file)
+    
+    for file_name in flatten_input(in_files):
+        cmd.append(file_name)
+        
+    pypeliner.commandline.execute(*cmd)
+    
+def sort(in_file, out_file, max_mem='2G', name_sort=False, compression_level=9, num_threads=1):
+
+    cmd = [
+        'samtools',
+        'sort',
+        '-l', compression_level,
+        '-m', max_mem,
+        '-o', out_file,
+        '-@', num_threads,
+    ]
+     
+    if name_sort:
+        cmd.append('-n')
+     
+    cmd.append(in_file)
+     
+    pypeliner.commandline.execute(*cmd)
+

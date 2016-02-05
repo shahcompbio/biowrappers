@@ -1,0 +1,35 @@
+pypeliner:
+  nativespec : '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
+    
+  nocleanup : False
+
+  maxjobs : 100
+  
+  pretend : False
+  
+  submit : asyncqsub
+
+  tmpdir : log
+
+# Minimum number of reads per BAM file during realignment process
+split_size: 10000000
+
+ref_genome:
+  # Path to file
+  file: /foo/bar/GRCh37-lite.fa
+  
+  header:
+    # Download url for ref genome
+    UR : http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome
+    # Source of genome
+    AS : hg19/1000genomes
+    # Species
+    SP : Homo sapiens
+    
+read_group:
+  ID : read_group_id
+  PL : illumina
+  PU : run_id.lane
+  LB : my_library 
+  SM : sample_foo
+  CN : sequence_center
