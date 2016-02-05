@@ -45,7 +45,7 @@ def realignment_pipeline(
     workflow.transform(
         name='aln_read_1',
         axes=('split',),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bwa_tasks.run_aln,
         args=(
             read_1.as_input(),
@@ -57,7 +57,7 @@ def realignment_pipeline(
     workflow.transform(
         name='aln_read_2',
         axes=('split',),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bwa_tasks.run_aln,
         args=(
             read_2.as_input(),
@@ -69,7 +69,7 @@ def realignment_pipeline(
     workflow.transform(
         name='sampe', 
         axes=('split',),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bwa_tasks.run_sampe, 
         args=(
             read_1.as_input(),
