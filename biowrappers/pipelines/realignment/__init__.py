@@ -27,6 +27,7 @@ def realignment_pipeline(
     workflow.transform(
         name='bam_to_fasta',
         axes=(),
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bam_tasks.convert_to_fastqs, 
         args=(
             pypeliner.managed.InputFile(in_file),
@@ -44,6 +45,7 @@ def realignment_pipeline(
     workflow.transform(
         name='aln_read_1',
         axes=('split',),
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bwa_tasks.run_aln,
         args=(
             read_1.as_input(),
@@ -55,6 +57,7 @@ def realignment_pipeline(
     workflow.transform(
         name='aln_read_2',
         axes=('split',),
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bwa_tasks.run_aln,
         args=(
             read_2.as_input(),
@@ -65,7 +68,8 @@ def realignment_pipeline(
     
     workflow.transform(
         name='sampe', 
-        axes=('split',), 
+        axes=('split',),
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bwa_tasks.run_sampe, 
         args=(
             read_1.as_input(),
@@ -83,6 +87,7 @@ def realignment_pipeline(
     workflow.transform(
         name='sort',
         axes=('split',),
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bam_tasks.sort,
         args=(
             pypeliner.managed.TempInputFile('aligned.bam', 'split'),
@@ -93,6 +98,7 @@ def realignment_pipeline(
     workflow.transform(
         name='write_header_file',
         axes=(),
+        ctx={'local' : True},
         func=tasks.write_header_file,
         args=(
             pypeliner.managed.TempInputFile('sorted.bam', 'split'),
@@ -102,8 +108,9 @@ def realignment_pipeline(
     )
     
     workflow.transform(
-        name='merge', 
-        axes=(), 
+        name='merge',
+        axes=(),
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=bam_tasks.merge, 
         args=(
             pypeliner.managed.TempInputFile('sorted.bam', 'split'),
