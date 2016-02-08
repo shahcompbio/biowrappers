@@ -33,7 +33,7 @@ def snv_allele_counts_for_vcf_targets_pipeline(
     workflow.transform(
         name='get_snv_allele_counts_for_vcf_targets',
         axes=('split',),
-        ctx={'mem' : 2, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.get_snv_allele_counts_for_vcf_targets,
         args=(
             pypeliner.managed.InputFile(bam_file),

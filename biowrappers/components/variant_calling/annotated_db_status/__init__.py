@@ -17,7 +17,7 @@ def vcf_db_annotation_pipeline(
     
     workflow.transform(
         name='split_vcf', 
-        ctx={'mem' : 1},
+        ctx={'mem' : 2},
         func=vcf_tasks.split_vcf,
         args=(
             pypeliner.managed.InputFile(target_vcf_file),

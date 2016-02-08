@@ -17,7 +17,7 @@ def snpeff_pipeline(
     
     workflow.transform(
         name='split_vcf',
-        ctx={'mem' : 1},
+        ctx={'mem' : 2},
         func=vcf_tasks.split_vcf,
         args=(
             pypeliner.managed.InputFile(target_vcf_file),
@@ -41,7 +41,7 @@ def snpeff_pipeline(
     workflow.transform(
         name='convert_vcf_to_table',
         axes=('split',),
-        ctx={'mem' : 2},
+        ctx={'mem' : 4},
         func=tasks.convert_vcf_to_table,
         args=(
             pypeliner.managed.TempInputFile('snpeff.vcf', 'split'),
@@ -52,7 +52,7 @@ def snpeff_pipeline(
     
     workflow.transform(
         name='concatenate_tables',
-        ctx={'mem' : 2},
+        ctx={'mem' : 4},
         func=hdf5_tasks.concatenate_tables,
         args=(
             pypeliner.managed.TempInputFile('snpeff.h5', 'split'),

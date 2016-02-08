@@ -29,7 +29,7 @@ def vcf_tric_nucleotide_annotation_pipeline(
     workflow.transform(
         name='annotate_db_status',
         axes=('split',),
-        ctx={'mem' : 2},
+        ctx={'mem' : 4},
         func=tasks.get_tri_nucelotide_context,
         args=(
             pypeliner.managed.InputFile(ref_genome_fasta_file),
