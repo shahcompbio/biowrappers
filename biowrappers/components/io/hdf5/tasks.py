@@ -53,7 +53,7 @@ def _get_min_itemsize(file_list):
             for col in non_numeric_cols:
                 df[col] = df[col].astype(str)
                 
-                size = df[col].str.len().max()
+                size = max(8, df[col].str.len().max())
                 
                 if (col not in min_sizes[table_name]) or (size > min_sizes[table_name][col]):
                     min_sizes[table_name][col] = size
