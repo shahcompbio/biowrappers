@@ -20,7 +20,7 @@ def museq_pipeline(
     min_normal_depth=1,
     min_tumour_depth=1,
     min_somatic_probability=0.0,
-    split_size=int(1e6)):
+    split_size=int(1e7)):
     
     workflow = Workflow()
     

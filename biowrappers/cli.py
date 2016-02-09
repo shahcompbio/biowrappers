@@ -19,7 +19,7 @@ def add_pypeliner_args(parser):
 def add_variant_calling_region_args(parser):
     parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
     
-    parser.add_argument('--split_size', default=int(1e6), type=int)
+    parser.add_argument('--split_size', default=int(1e7), type=int)
     
 def add_normal_tumour_bam_variant_calling_args(parser):
     parser.add_argument('-nb', '--normal_bam_file', required=True)

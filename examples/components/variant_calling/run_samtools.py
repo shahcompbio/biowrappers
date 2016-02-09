@@ -51,7 +51,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--log_dir', default='./')
     
-    parser.add_argument('--split_size', default=int(1e6), type=int)
+    parser.add_argument('--split_size', default=int(1e7), type=int)
         
     args = parser.parse_args()
     

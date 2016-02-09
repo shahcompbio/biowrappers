@@ -13,7 +13,7 @@ def samtools_variant_calling_pipeline(
         indel_vcf_file,
         snv_vcf_file,
         chromosomes=default_chromosomes,
-        split_size=int(1e6)
+        split_size=int(1e7)
     ):
     
     sch.setobj(

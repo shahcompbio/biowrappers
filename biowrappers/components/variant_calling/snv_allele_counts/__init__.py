@@ -70,7 +70,7 @@ def snv_allele_counts_pipeline(
     min_mqual=0,
     report_non_variant_positions=True,
     report_zero_count_positions=False,
-    split_size=int(1e6)):
+    split_size=int(1e7)):
     
     workflow = Workflow()
     
@@ -123,7 +123,7 @@ def snv_variant_position_counts_pipeline(
     min_tumour_depth=0,
     min_variant_depth=0,
     report_strand_counts=False,
-    split_size=int(1e6),
+    split_size=int(1e7),
     table_group=''):
     
     workflow = Workflow()

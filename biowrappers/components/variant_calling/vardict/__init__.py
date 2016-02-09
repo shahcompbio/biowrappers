@@ -16,7 +16,7 @@ def vardict_pipeline(
     snv_vcf_file,
     chromosomes=default_chromosomes,
     min_allele_frequency=0.01,
-    split_size=int(1e6)):
+    split_size=int(1e7)):
     
     workflow = Workflow()
     

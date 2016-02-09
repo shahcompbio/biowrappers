@@ -17,7 +17,7 @@ def mutect_pipeline(
     dbsnp_vcf_file,
     out_file,
     chromosomes=default_chromosomes,
-    split_size=int(1e6)):
+    split_size=int(1e7)):
     
     workflow = Workflow()
     
