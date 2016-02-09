@@ -27,7 +27,7 @@ def call_and_annotate_pipeline(
         results_file,
         chromosomes=default_chromosomes):
     
-    default_ctx = {'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2}
+    default_ctx = {'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2}
     
     big_mem_ctx = {'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2}
     
@@ -164,7 +164,7 @@ def call_and_annotate_pipeline(
             args=(
                 snv_vcf_files[prog].as_input(),
                 pypeliner.managed.TempOutputFile('{0}.h5'.format(prog), 'tumour_sample_id'),
-                pypeliner.managed.TempInputObj('/snv/vcf/{prog}/{{tumour_sample_id}}'.format(prog=prog), 'tumour_sample_id')
+                pypeliner.managed.Template('/snv/vcf/{prog}/{{tumour_sample_id}}'.format(prog=prog), 'tumour_sample_id')
             ),
             kwargs={
                 'score_callback' : vcf_score_callbacks[prog] 
