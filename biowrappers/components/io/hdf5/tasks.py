@@ -29,7 +29,11 @@ def concatenate_tables(in_files, out_file, non_numeric_as_category=True):
             
             if non_numeric_as_category:
                 for col in non_numeric_cols:
-                    df[col] = df[col].astype('category', categories=col_categories[table_name][col])
+                    if df[col].dtype.name == 'category':
+                        df[col] = df[col].cat.set_categories(col_categories[table_name][col])
+                    
+                    else:
+                         df[col] = df[col].astype('category', categories=col_categories[table_name][col])
                 
                 out_store.append(table_name, df)
             
