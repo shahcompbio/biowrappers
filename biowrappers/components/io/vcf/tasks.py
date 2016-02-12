@@ -65,7 +65,7 @@ def finalise_vcf(in_file, compressed_file):
     
     workflow.transform(
         name='compress_vcf',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=compress_vcf,
         args=(
             pypeliner.managed.InputFile(in_file),
@@ -75,7 +75,7 @@ def finalise_vcf(in_file, compressed_file):
     
     workflow.transform(
         name='index_vcf',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=index_vcf,
         args=(
             pypeliner.managed.InputFile(compressed_file),
