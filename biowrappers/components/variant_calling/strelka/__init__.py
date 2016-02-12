@@ -42,7 +42,7 @@ def strelka_pipeline(
     
     workflow.transform(
         name='count_fasta_bases',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.count_fasta_bases,
         args=(
             pypeliner.managed.InputFile(ref_genome_fasta_file),
@@ -65,7 +65,7 @@ def strelka_pipeline(
     workflow.transform(
         name='call_somatic_variants',
         axes=('chrom', 'coord'),
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.call_somatic_variants,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
@@ -84,7 +84,7 @@ def strelka_pipeline(
     workflow.transform(
         name='add_indel_filters',
         axes=('chrom',),
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.filter_indel_file_list,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'chrom', 'coord'),
@@ -100,7 +100,7 @@ def strelka_pipeline(
     workflow.transform(
         name='add_snv_filters',
         axes=('chrom',),
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.filter_snv_file_list,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.unfiltered.vcf', 'chrom', 'coord'),
@@ -114,7 +114,7 @@ def strelka_pipeline(
     
     workflow.transform(
         name='merge_indels',
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
@@ -124,7 +124,7 @@ def strelka_pipeline(
     
     workflow.transform(
         name='merge_snvs',
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
@@ -134,7 +134,7 @@ def strelka_pipeline(
     
     workflow.transform(
         name='filter_indels',
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf'),
@@ -144,7 +144,7 @@ def strelka_pipeline(
     
     workflow.transform(
         name='filter_snvs',
-        ctx={'mem' : 4},
+        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf'),
