@@ -22,7 +22,7 @@ def concatenate_tables(in_files, out_file, non_numeric_as_category=True):
     for file_name in in_files:
         in_store = pd.HDFStore(file_name, 'r')
         
-        for table_name in in_store.keys():
+        for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
             
             non_numeric_cols = _get_non_numeric_columns(df)
@@ -44,13 +44,16 @@ def concatenate_tables(in_files, out_file, non_numeric_as_category=True):
     out_store.close()
 
 def _get_min_itemsize(file_list):
+    '''
+    Get the minimum string size for all columns in a list of tables from a list of HDFStores.
+    '''
     
     min_sizes = {}
     
     for file_name in file_list:
         hdf_store = pd.HDFStore(file_name, 'r')
         
-        for table_name in hdf_store.keys():
+        for table_name in _iter_table_names(hdf_store):
             if table_name not in min_sizes:
                 min_sizes[table_name] = {}
             
@@ -81,7 +84,7 @@ def _get_column_categories(file_list):
     for file_name in file_list:
         hdf_store = pd.HDFStore(file_name, 'r')
         
-        for table_name in hdf_store.keys():
+        for table_name in _iter_table_names(hdf_store):
             if table_name not in categories:
                 categories[table_name] = {}
             
@@ -103,9 +106,44 @@ def _get_column_categories(file_list):
     return categories
 
 def _get_non_numeric_columns(df):
+    '''
+    Find the set of non-numeric (int, float, complex) columns in a table.
+    '''
+    
     return df.select_dtypes(exclude=[pd.np.number, ]).columns
 
+def _iter_table_names(store):
+    '''
+    Returns an iterator over all non-metadata tables in Pandas HDFStore.
+    '''
+    
+    meta_data_tables = _get_meta_data_tables(store)
+    
+    for table_name in store.keys():
+        if table_name in meta_data_tables:
+            continue
+        
+        yield table_name
+
+def _get_meta_data_tables(store):
+    '''
+    Find all tables in and HDFStore which are pandas meta-data tables.
+    '''
+    
+    meta_tables = set()
+    
+    for table_name in store.keys():
+        for meta_table_name in store.keys():
+            if ('meta' in meta_table_name) and meta_table_name.startswith(table_name):
+                meta_tables.add(meta_table_name)
+    
+    return meta_tables
+
 def convert_hdf5_to_tsv(in_file, key, out_file, compress=False, index=False):
+    '''
+    Convert and pandas HDF5 table to tsv format.
+    '''
+    
     df = pd.read_hdf(in_file, key)
     
     if compress:
