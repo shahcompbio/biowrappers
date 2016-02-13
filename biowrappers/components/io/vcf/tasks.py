@@ -138,6 +138,19 @@ def concatenate_vcf(in_files, out_file, variant_filter='all'):
                 
                 else:
                     continue
+
+def concatenate_vcf_fast(in_files, out_file):
+    """ Fast concatenation of VCF file using `vcftools`.
+    
+    :param in_files: dict with values being files to be concatenated. Files will be concatenated based on sorted order of keys.
+    
+    :param out_file: path where output file will be written in VCF format.
+    
+    """
+    
+    cmd = ['vcf-concat', ] + [in_files[x] for x in sorted(in_files.keys())] + ['>', out_file]
+    
+    pypeliner.commandline.execute(*cmd)
                 
 def split_vcf(in_file, out_file_callback, lines_per_file):
     """ Split a VCF file into smaller files.
@@ -201,3 +214,11 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
     
     hdf_store.close()
     
+def sort_vcf(in_file, out_file):
+
+    pypeliner.commandline.execute(
+        'vcf-sort',
+        in_file,
+        '>',
+        out_file
+    )
