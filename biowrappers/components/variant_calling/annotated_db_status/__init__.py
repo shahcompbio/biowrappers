@@ -16,8 +16,8 @@ def vcf_db_annotation_pipeline(
     workflow = Workflow()
     
     workflow.transform(
-        name='split_vcf', 
-        ctx={'mem' : 2},
+        name='split_vcf',
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.split_vcf,
         args=(
             pypeliner.managed.InputFile(target_vcf_file),
@@ -29,7 +29,7 @@ def vcf_db_annotation_pipeline(
     workflow.transform(
         name='annotate_db_status',
         axes=('split',),
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.annotate_db_status,
         args=(
             pypeliner.managed.InputFile(db_vcf_file),
@@ -41,7 +41,7 @@ def vcf_db_annotation_pipeline(
     
     workflow.transform(
         name='merge_tables',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=hdf5_tasks.concatenate_tables,
         args=(
             pypeliner.managed.TempInputFile('annotated.h5', 'split'),

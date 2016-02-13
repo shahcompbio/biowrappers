@@ -17,7 +17,7 @@ def vcf_mappability_annotation_pipeline(
     
     workflow.transform(
         name='split_vcf',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.split_vcf,
         args=(
             pypeliner.managed.InputFile(vcf_file),
@@ -29,7 +29,7 @@ def vcf_mappability_annotation_pipeline(
     workflow.transform(
         name='annotate_db_status',
         axes=('split',),
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.get_mappability,
         args=(
             pypeliner.managed.InputFile(mappability_file),
@@ -41,7 +41,7 @@ def vcf_mappability_annotation_pipeline(
     
     workflow.transform(
         name='merge_tables',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=hdf5_tasks.concatenate_tables,
         args=(
             pypeliner.managed.TempInputFile('mappability.h5', 'split'),

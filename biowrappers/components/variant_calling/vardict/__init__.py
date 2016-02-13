@@ -67,7 +67,7 @@ def vardict_pipeline(
     
     workflow.transform(
         name='concatenate_vcf',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('result.vcf', 'regions'),
@@ -86,7 +86,7 @@ def vardict_pipeline(
 
     workflow.transform(
         name='filter_indels',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('result.merged.vcf.gz'),
@@ -106,7 +106,7 @@ def vardict_pipeline(
    
     workflow.transform(
         name='filter_snvs',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('result.merged.vcf.gz'),

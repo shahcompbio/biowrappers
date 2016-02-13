@@ -54,7 +54,7 @@ def mutect_pipeline(
     
     workflow.transform(
         name='filter_snvs',
-        ctx={'mem' : 2},
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('merged.vcf'),
