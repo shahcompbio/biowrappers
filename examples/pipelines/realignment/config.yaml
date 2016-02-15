@@ -27,7 +27,9 @@ ref_genome:
     SP : Homo sapiens
     
 read_group:
+  # Required
   ID : read_group_id
+  # Optional
   PL : illumina
   PU : run_id.lane
   LB : my_library 
