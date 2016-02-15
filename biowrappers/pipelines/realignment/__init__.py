@@ -8,9 +8,9 @@ import biowrappers.components.alignment.bwa.tasks as bwa_tasks
 import tasks
 
 def realignment_pipeline(
-        config,
-        in_file, 
-        out_file):
+    config,
+    in_file, 
+    out_file):
 
     ref_genome = pypeliner.managed.InputFile(config['ref_genome']['file'])
     
