@@ -25,6 +25,9 @@ def concatenate_tables(in_files, out_file, non_numeric_as_category=True):
         for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
             
+            if df.empty:
+                continue
+            
             non_numeric_cols = _get_non_numeric_columns(df)
             
             if non_numeric_as_category:
@@ -33,7 +36,7 @@ def concatenate_tables(in_files, out_file, non_numeric_as_category=True):
                         df[col] = df[col].cat.set_categories(col_categories[table_name][col])
                     
                     else:
-                         df[col] = df[col].astype('category', categories=col_categories[table_name][col])
+                        df[col] = df[col].astype('category', categories=col_categories[table_name][col])
                 
                 out_store.append(table_name, df)
             
