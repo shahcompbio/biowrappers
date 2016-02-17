@@ -83,23 +83,34 @@ def convert_to_fastqs(in_file, read_files, tmp_dir, split_size=int(1e7)):
              
             shutil.move(tmp_file, out_file)
 
-def mark_duplicates(in_file, out_file, compression_level=9, num_threads=1):
+def mark_duplicates(in_files, out_file, compression_level=9, num_threads=1, tmp_dir=None):
     
     try:
-        tmp_dir = tempfile.mkdtemp()
+        if tmp_dir is None:
+            tmp_dir = tempfile.mkdtemp()
+            
+            clean_up = True
         
-        pypeliner.commandline.execute(
+        else:
+            clean_up = False
+        
+        cmd = [
             'sambamba',
             'markdup',
             '-l', compression_level,
             '-t', num_threads,
-            '--tmpdir', tmp_dir,
-            in_file,
-            out_file
-        )
+            '--tmpdir', tmp_dir
+        ]
+        
+        cmd.extend(flatten_input(in_files))
+        
+        cmd.append(out_file)
+        
+        pypeliner.commandline.execute(*cmd)
     
     finally:
-        shutil.rmtree(tmp_dir)
+        if clean_up:
+            shutil.rmtree(tmp_dir)
 
 def merge(
     in_files,
