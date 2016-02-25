@@ -312,6 +312,7 @@ def call_and_annotate_pipeline(
     
     tables = [
         pypeliner.managed.TempInputFile('cosmic.h5'),
+        pypeliner.managed.TempInputFile('dbsnp.h5'),
         pypeliner.managed.TempInputFile('snpeff.h5'),
         pypeliner.managed.TempInputFile('mappability.h5'),
         pypeliner.managed.TempInputFile('tri_nucleotide_context.h5'),
