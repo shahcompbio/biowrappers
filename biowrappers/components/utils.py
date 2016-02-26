@@ -6,6 +6,7 @@ Created on Nov 21, 2015
 import os
 import random
 import time
+import errno
 
 def get_ancestor_directory(path, level=1):
     '''
@@ -73,6 +74,38 @@ def flatten_input(files):
                 parsed_files.append(x)
     
     return parsed_files
+
+def remove(filename):
+    '''
+    Remove a file that may not exist
+    '''
+    try:
+        os.remove(filename)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+def symlink(filename, link_name=None, link_directory=None):
+    '''
+    Create a symlink, with additional options for flexibility,
+
+    Args:
+        filename (str): file to link to
+
+    KwArgs:
+        link_name (str): base name of the link, defaults to same as link to
+        link_directory (str): directory of the, defaults to directory of link to
+
+    '''
+    if link_name is None:
+        link_name = os.path.basename(filename)
+    if link_directory is None:
+        link_directory = os.getcwd()
+    link_filename = os.path.join(link_directory, link_name)
+    remove(link_filename)
+    filename = os.path.abspath(filename)
+    os.symlink(filename, link_filename)
+    return link_filename
 
 if __name__ == '__main__':
     import doctest
