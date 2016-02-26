@@ -8,6 +8,17 @@ import pysam
 
 from biowrappers.components.utils import flatten_input
 
+def get_read_group_config(file_name):
+    bam = pysam.AlignmentFile(file_name, mode='rb')
+    
+    assert len(bam.header['RG']) == 1
+    
+    config = bam.header['RG'][0].copy()
+    
+    bam.close()
+    
+    return config
+
 def write_header_file(in_files, out_file, seq_info):
     
     bam = pysam.AlignmentFile(flatten_input(in_files)[0], mode='r')

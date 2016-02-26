@@ -22,7 +22,26 @@ def realignment_pipeline(
     
     read_2_sai = pypeliner.managed.TempFile('read_2.sai', 'split')
     
+    read_group_config = pypeliner.managed.TempObj('read_group_config')
+    
     workflow = Workflow()
+    
+    if 'read_group' in config:
+        workflow.setobj(
+            obj=read_group_config.as_output(), 
+            value=config['read_group']
+        )
+    
+    else:
+        workflow.transform(
+            name='get_read_group_config', 
+            ctx={'local' : True}, 
+            func=tasks.get_read_group_config,
+            ret=read_group_config.as_output(),
+            args=(
+                pypeliner.managed.InputFile(in_file),
+            )
+        )
     
     workflow.transform(
         name='bam_to_fasta',
@@ -80,7 +99,7 @@ def realignment_pipeline(
             pypeliner.managed.TempOutputFile('aligned.bam', 'split'),
         ),
         kwargs={
-            'read_group_info' : config['read_group']
+            'read_group_info' : read_group_config.as_input()
         },
     )
     
