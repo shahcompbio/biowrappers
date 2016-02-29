@@ -3,8 +3,6 @@ Created on Dec 13, 2015
 
 @author: Andrew Roth
 '''
-from biowrappers.components.variant_calling.utils import default_chromosomes
-
 def add_pypeliner_args(parser):
     parser.add_argument('-c', '--cleanup_tmp_files', default=True, action='store_false')
     
@@ -17,6 +15,8 @@ def add_pypeliner_args(parser):
     parser.add_argument('-s', '--submit_method', choices=['asyncqsub', 'drmaa', 'local'], default='local')
 
 def add_variant_calling_region_args(parser):
+    from biowrappers.components.variant_calling.utils import default_chromosomes
+
     parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)
     
     parser.add_argument('--split_size', default=int(1e7), type=int)
