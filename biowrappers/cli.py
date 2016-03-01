@@ -21,18 +21,17 @@ def add_variant_calling_region_args(parser):
     
     parser.add_argument('--split_size', default=int(1e7), type=int)
     
-def add_normal_tumour_bam_variant_calling_args(parser):
+def add_normal_tumour_bam_args(parser):
     parser.add_argument('-nb', '--normal_bam_file', required=True)
     
     parser.add_argument('-tb', '--tumour_bam_file', required=True)
-    
-    parser.add_argument('-rg', '--ref_genome_fasta_file', required=True)    
 
-def add_normal_multiple_tumour_bam_variant_calling_args(parser):
+def add_normal_multiple_tumour_bam_args(parser):
     parser.add_argument('-nb', '--normal_bam_file', required=True)
     
     parser.add_argument('-tb', '--tumour_bam_files', nargs='+', required=True)
-    
+
+def add_ref_genome_arg(parser):
     parser.add_argument('-rg', '--ref_genome_fasta_file', required=True)    
 
 def load_pypeliner_config(args):
