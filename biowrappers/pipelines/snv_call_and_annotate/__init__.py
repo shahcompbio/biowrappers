@@ -22,7 +22,6 @@ def call_and_annotate_pipeline(
         config,
         normal_bam_path,
         tumour_bam_paths,
-        ref_genome_fasta_file,
         raw_data_dir,
         results_file,
         chromosomes=default_chromosomes):
@@ -72,7 +71,7 @@ def call_and_annotate_pipeline(
     
     tumour_bam_files = pypeliner.managed.File('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_paths)
     
-    ref_genome_fasta_file = pypeliner.managed.File(ref_genome_fasta_file)
+    ref_genome_fasta_file = pypeliner.managed.File(config['ref_genome']['fasta_file'])
     
     if 'museq' in config:
         workflow.subworkflow(
@@ -111,7 +110,7 @@ def call_and_annotate_pipeline(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
                 ref_genome_fasta_file.as_input(),
-                config['annotate_cosmic_status']['db_vcf_file'],
+                config['cosmic']['db_vcf_file'],
                 config['annotate_dbsnp_status']['db_vcf_file'],
                 snv_vcf_files['mutect'].as_output()
             ),
@@ -241,7 +240,7 @@ def call_and_annotate_pipeline(
         name='annotate_snv_cosmic_status',
         func=annotated_db_status.vcf_db_annotation_pipeline,
         args=(
-            pypeliner.managed.InputFile(config['annotate_cosmic_status']['db_vcf_file']),
+            pypeliner.managed.InputFile(config['cosmic']['db_vcf_file']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('cosmic.h5'),
         ),
