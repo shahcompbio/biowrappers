@@ -43,11 +43,19 @@ def get_snv_allele_counts_for_vcf_targets(
         counts = df.iloc[0]
         
         ref_base = record.REF
+
+        # Skip record with reference base == N
+        if ref_base == 'N':
+            continue
                     
         for alt_base in record.ALT:
             alt_base = str(alt_base)
             
             if (len(ref_base) != 1) or (len(alt_base) != 1):
+                continue
+
+            # Skip record with alt base == N
+            if alt_base == 'N':
                 continue
     
             # Format output record
