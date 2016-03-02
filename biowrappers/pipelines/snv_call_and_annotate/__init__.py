@@ -10,7 +10,7 @@ import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.variant_calling.annotated_db_status as annotated_db_status
 import biowrappers.components.variant_calling.mappability as mappability
-import biowrappers.components.variant_calling.museq as museq
+import biowrappers.components.variant_calling.nuseq as nuseq
 import biowrappers.components.variant_calling.mutect as mutect
 import biowrappers.components.variant_calling.snpeff as snpeff
 import biowrappers.components.variant_calling.snv_allele_counts as snv_allele_counts
@@ -42,7 +42,7 @@ def call_and_annotate_pipeline(
     
     indel_progs = [x for x in indel_progs if x in config]
     
-    snv_progs = ('museq', 'mutect', 'strelka', 'vardict')
+    snv_progs = ('nuseq', 'mutect', 'strelka', 'vardict')
     
     snv_progs = [x for x in snv_progs if x in config]
     
@@ -60,11 +60,11 @@ def call_and_annotate_pipeline(
                 'tumour_sample_id'
             )
     
-    if 'museq_multi_sample' in config:
-        config['museq_multi_sample']['kwargs']['chromosomes'] = chromosomes
+    if 'nuseq_multi_sample' in config:
+        config['nuseq_multi_sample']['kwargs']['chromosomes'] = chromosomes
         
-        snv_vcf_files['museq_multi_sample'] = pypeliner.managed.File(
-            get_sample_out_file('museq_multi_sample', 'vcf.gz', raw_data_dir).format(tumour_sample_id='all')
+        snv_vcf_files['nuseq_multi_sample'] = pypeliner.managed.File(
+            get_sample_out_file('nuseq_multi_sample', 'vcf.gz', raw_data_dir).format(tumour_sample_id='all')
         )
     
     normal_bam_file = pypeliner.managed.File(normal_bam_path)
@@ -73,39 +73,54 @@ def call_and_annotate_pipeline(
     
     ref_genome_fasta_file = pypeliner.managed.File(config['ref_genome']['fasta_file'])
     
-    if 'museq' in config:
+    if 'nuseq' in config:
         workflow.subworkflow(
-            name='museq',
+            name='nuseq',
             axes=('tumour_sample_id',),
-            func=museq.museq_pipeline,
+            func=nuseq.create_nuseq_classify_workflow,
             args=(
                 normal_bam_file.as_input(),
                 [tumour_bam_files.as_input(), ],
                 ref_genome_fasta_file.as_input(),
-                snv_vcf_files['museq'].as_output()
+                snv_vcf_files['nuseq'].as_output()
             ),
-            kwargs=config['museq']['kwargs']
+            kwargs=config['nuseq']['kwargs']
         )
     
-    if 'museq_multi_sample' in config:
+    if 'nuseq_multi_sample' in config:
         workflow.subworkflow(
-            name='museq_multi_sample',
+            name='nuseq_multi_sample',
             axes=(),
-            func=museq.museq_pipeline,
+            func=nuseq.create_nuseq_classify_workflow,
             args=(
                 normal_bam_file.as_input(),
                 [pypeliner.managed.InputFile(x) for x in tumour_bam_paths.values()],
                 ref_genome_fasta_file.as_input(),
-                snv_vcf_files['museq_multi_sample'].as_output()
+                snv_vcf_files['nuseq_multi_sample'].as_output()
             ),
-            kwargs=config['museq_multi_sample']['kwargs']
+            kwargs=config['nuseq_multi_sample']['kwargs']
+        )
+            
+        workflow.transform(
+            name='convert_nuseq_multi_sample_vcf_to_hdf5',
+            axes=(),
+            ctx=default_ctx,
+            func=vcf_tasks.convert_vcf_to_hdf5,
+            args=(
+                snv_vcf_files['nuseq_multi_sample'].as_input(),
+                pypeliner.managed.TempOutputFile('nuseq_multi_sample.h5'),
+                '/snv/vcf/nuseq_multi_sample/all',
+            ),
+            kwargs={
+                'score_callback' : vcf_score_callbacks['nuseq']
+            }
         )
             
     if 'mutect' in config:
         workflow.subworkflow(
             name='mutect',
             axes=('tumour_sample_id',),
-            func=mutect.mutect_pipeline,
+            func=mutect.create_mutect_workflow,
             args=(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
@@ -121,7 +136,7 @@ def call_and_annotate_pipeline(
         workflow.subworkflow(
             name='strelka',
             axes=('tumour_sample_id',),
-            func=strelka.strelka_pipeline,
+            func=strelka.create_strelka_workflow,
             args=(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
@@ -136,7 +151,7 @@ def call_and_annotate_pipeline(
         workflow.subworkflow(
             name='vardict',
             axes=('tumour_sample_id',),
-            func=vardict.vardict_pipeline,
+            func=vardict.create_vardict_workflow,
             args=(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
@@ -146,13 +161,6 @@ def call_and_annotate_pipeline(
             ),
             kwargs=config['vardict']['kwargs']
         )
-    
-    vcf_score_callbacks = {
-        'museq' : museq_vcf_score_callback,
-        'mutect' : None,
-        'strelka' : strelka_vcf_score_callback,
-        'vardict' : None
-    }
     
     for prog in snv_progs:
         workflow.transform(
@@ -169,21 +177,7 @@ def call_and_annotate_pipeline(
                 'score_callback' : vcf_score_callbacks[prog] 
             }
         )
-    
-    workflow.transform(
-        name='convert_museq_multi_sample_vcf_to_hdf5',
-        axes=(),
-        ctx=default_ctx,
-        func=vcf_tasks.convert_vcf_to_hdf5,
-        args=(
-            snv_vcf_files['museq_multi_sample'].as_input(),
-            pypeliner.managed.TempOutputFile('museq_multi_sample.h5'),
-            '/snv/vcf/museq_multi_sample/all',
-        ),
-        kwargs={
-            'score_callback' : vcf_score_callbacks['museq']
-        }
-    )
+
     
     if len(indel_vcf_files) > 0:
         workflow.transform(
@@ -228,7 +222,7 @@ def call_and_annotate_pipeline(
     
     workflow.subworkflow(
         name='snpeff_snvs',
-        func=snpeff.snpeff_pipeline,
+        func=snpeff.create_snpeff_annotation_workflow,
         args=(
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('snpeff.h5'),
@@ -238,7 +232,7 @@ def call_and_annotate_pipeline(
 
     workflow.subworkflow(
         name='annotate_snv_cosmic_status',
-        func=annotated_db_status.vcf_db_annotation_pipeline,
+        func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
             pypeliner.managed.InputFile(config['cosmic']['db_vcf_file']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -249,7 +243,7 @@ def call_and_annotate_pipeline(
     
     workflow.subworkflow(
         name='annotate_snv_dbsnp_status',
-        func=annotated_db_status.vcf_db_annotation_pipeline,
+        func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
             pypeliner.managed.InputFile(config['annotate_dbsnp_status']['db_vcf_file']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -260,7 +254,7 @@ def call_and_annotate_pipeline(
     
     workflow.subworkflow(
         name='snv_mappability',
-        func=mappability.vcf_mappability_annotation_pipeline,
+        func=mappability.create_vcf_mappability_annotation_workflow,
         args=(
             pypeliner.managed.InputFile(config['mappability']['mappability_file']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -271,7 +265,7 @@ def call_and_annotate_pipeline(
      
     workflow.subworkflow(
         name='snv_tri_nucleotide_context',
-        func=tri_nucleotide_context.vcf_tric_nucleotide_annotation_pipeline,
+        func=tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow,
         args=(
             ref_genome_fasta_file.as_input(),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -285,7 +279,7 @@ def call_and_annotate_pipeline(
     
     workflow.subworkflow(
         name='normal_snv_counts',
-        func=snv_allele_counts.snv_allele_counts_for_vcf_targets_pipeline,
+        func=snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow,
         args=(
             normal_bam_file.as_input(),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -300,7 +294,7 @@ def call_and_annotate_pipeline(
     workflow.subworkflow(
         name='tumour_snv_counts',
         axes=('tumour_sample_id',),
-        func=snv_allele_counts.snv_allele_counts_for_vcf_targets_pipeline,
+        func=snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow,
         args=(
             tumour_bam_files.as_input(),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -317,7 +311,7 @@ def call_and_annotate_pipeline(
         pypeliner.managed.TempInputFile('tri_nucleotide_context.h5'),
         pypeliner.managed.TempInputFile('normal_counts.h5'),
         pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id'),
-        pypeliner.managed.TempInputFile('museq_multi_sample.h5')
+        pypeliner.managed.TempInputFile('nuseq_multi_sample.h5')
     ]
     
     for prog in snv_progs:
@@ -346,8 +340,15 @@ def get_sample_out_file(cmd, ext, out_dir, sub_output=None):
     
     return out_file
 
-def museq_vcf_score_callback(record):
+def nuseq_vcf_score_callback(record):
     return record.INFO['PS']
 
 def strelka_vcf_score_callback(record):
     return record.INFO['QSS']
+  
+vcf_score_callbacks = {
+    'nuseq' : nuseq_vcf_score_callback,
+    'mutect' : None,
+    'strelka' : strelka_vcf_score_callback,
+    'vardict' : None
+}
