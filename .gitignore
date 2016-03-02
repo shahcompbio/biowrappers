@@ -3,3 +3,5 @@ biowrappers.egg-info
 /.project
 /.pydevproject
 *local.yaml
+/build
+/dist
