@@ -43,7 +43,8 @@ def load_pypeliner_config(args):
         'submit' : args.submit_method,
         'nativespec' : args.native_spec,
         'maxjobs' : args.max_jobs,
-        'nocleanup' : not args.cleanup_tmp_files
+        'nocleanup' : not args.cleanup_tmp_files,
+        'repopulate' : args.repopulate
     }
     
     return config
