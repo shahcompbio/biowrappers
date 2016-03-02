@@ -14,7 +14,7 @@ def add_pypeliner_args(parser):
     
     parser.add_argument('-s', '--submit_method', choices=['asyncqsub', 'drmaa', 'local'], default='local')
 
-    parser.add_argument('-rp', '--repopulate', action = "store_true")
+    parser.add_argument('-rp', '--repopulate', action = "store_true", default=False)
 
 def add_variant_calling_region_args(parser):
     from biowrappers.components.variant_calling.utils import default_chromosomes
