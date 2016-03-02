@@ -6,7 +6,7 @@ import biowrappers.components.variant_calling.utils as utils
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
-def samtools_variant_calling_pipeline(
+def create_samtools_variant_calling_workflow(
         sch,
         bam_file,
         ref_genome_fasta_file,

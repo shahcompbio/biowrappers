@@ -8,7 +8,7 @@ import tasks
 
 from biowrappers.components.variant_calling.utils import default_chromosomes
 
-def vardict_pipeline(
+def create_vardict_workflow(
     normal_bam_file,
     tumour_bam_file,
     ref_genome_fasta_file,

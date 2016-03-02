@@ -9,7 +9,7 @@ import tasks
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
-def mutect_pipeline(
+def create_mutect_workflow(
     normal_bam_file,
     tumour_bam_file,
     ref_genome_fasta_file,

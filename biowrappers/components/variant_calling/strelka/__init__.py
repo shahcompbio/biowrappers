@@ -10,7 +10,7 @@ import biowrappers.components.variant_calling.utils as utils
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
-def strelka_pipeline(
+def create_strelka_workflow(
     normal_bam_file,
     tumour_bam_file,
     ref_genome_fasta_file,

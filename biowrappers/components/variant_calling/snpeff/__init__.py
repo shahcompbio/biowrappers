@@ -6,7 +6,7 @@ import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
-def snpeff_pipeline(
+def create_snpeff_annotation_workflow(
     target_vcf_file,
     out_file,
     data_base='GRCh37.75',

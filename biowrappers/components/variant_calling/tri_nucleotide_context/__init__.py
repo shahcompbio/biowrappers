@@ -6,7 +6,7 @@ import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
-def vcf_tric_nucleotide_annotation_pipeline(
+def create_vcf_tric_nucleotide_annotation_workflow(
     ref_genome_fasta_file,
     vcf_file,
     out_file,

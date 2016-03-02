@@ -7,7 +7,7 @@ import biowrappers.components.variant_calling.utils as utils
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
-def snv_allele_counts_for_vcf_targets_pipeline(
+def create_snv_allele_counts_for_vcf_targets_workflow(
     bam_file,
     vcf_file,
     out_file,
@@ -60,7 +60,7 @@ def snv_allele_counts_for_vcf_targets_pipeline(
     
     return workflow
 
-def snv_allele_counts_pipeline(
+def create_snv_allele_counts_workflow(
     bam_file,
     out_file,
     table_name,
@@ -111,7 +111,7 @@ def snv_allele_counts_pipeline(
     
     return workflow
 
-def snv_variant_position_counts_pipeline(
+def create_snv_variant_position_counts_workflow(
     normal_bam_file,
     tumour_bam_files,
     out_file,

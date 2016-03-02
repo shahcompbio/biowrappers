@@ -6,7 +6,7 @@ import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
-def vcf_db_annotation_pipeline(
+def create_vcf_db_annotation_workflow(
     db_vcf_file,
     target_vcf_file,
     out_file,
