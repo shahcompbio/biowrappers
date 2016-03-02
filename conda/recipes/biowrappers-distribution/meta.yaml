@@ -4,25 +4,25 @@ package:
 
 requirements:
   run:
-    - bcftools
-    - biobambam
-    - biowrappers
-    - bwa
-    - bx-python
-    - htslib
-    - nuseq
+    - bcftools==1.3
+    - biobambam==2.0.25
+    - biowrappers==0.1.0
+    - bwa==0.7.12
+    - bx-python==0.7.3
+    - htslib==1.3
+    - nuseq==0.1.0
     - pandas
-    - pypeliner
-    - pysam
+    - pypeliner==0.4.3
+    - pysam==0.8.4
     - pysftp
     - pytables
     - pyvcf
-    - sambamba
-    - samtools
-    - snpeff
-    - strelka
-    - vardict
-    - vardict-java
+    - sambamba==0.5.9
+    - samtools==1.3
+    - snpeff==4.2
+    - strelka==1.0.14
+    - vardict==2016.02.19
+    - vardict-java==1.4.5
 
 build:
   number: 0
