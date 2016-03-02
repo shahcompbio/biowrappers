@@ -17,7 +17,7 @@ def run_classify(
     min_somatic_probability=0):
     
     cmd = [
-        'bw-museq',
+        'nuseq',
         'classify',
         '--normal_bam_file', normal_bam_file,
         '--ref_genome_fasta_file', ref_genome_fasta_file,
@@ -40,7 +40,7 @@ def run_classify(
 def write_vcf(in_file, out_file, indel_threshold=0.05):
     
     cmd = [
-        'bw-museq',
+        'nuseq',
         'write_vcf',
         '--in_file', in_file,
         '--out_file', out_file,

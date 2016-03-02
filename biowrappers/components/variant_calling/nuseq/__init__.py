@@ -7,14 +7,12 @@ import biowrappers.components.variant_calling.utils as utils
 
 import tasks
 
-default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
-
-def museq_pipeline(
+def create_nuseq_classify_workflow(
     normal_bam_file,
     tumour_bam_files,
     ref_genome_fasta_file,
     out_file,
-    chromosomes=default_chromosomes,
+    chromosomes=utils.default_chromosomes,
     chunk_size=int(1e5),
     indel_threshold=0.05,
     min_normal_depth=1,
@@ -91,4 +89,3 @@ def museq_pipeline(
     )
     
     return workflow
-    

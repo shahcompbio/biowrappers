@@ -1,14 +1,14 @@
 import pypeliner
 
 import biowrappers.cli as cli
-import biowrappers.components.variant_calling.museq as museq
+import biowrappers.components.variant_calling.nuseq as nuseq
 
 def main(args):
     config = cli.load_pypeliner_config(args)
     
     pyp = pypeliner.app.Pypeline([], config)
     
-    workflow = museq.museq_pipeline(
+    workflow = nuseq.create_nuseq_classify_workflow(
         args.normal_bam_file,
         args.tumour_bam_files,
         args.ref_genome_fasta_file,
