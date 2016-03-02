@@ -1,0 +1,29 @@
+package:
+  name: biowrappers-distribution
+  version: "0.1.0"
+
+requirements:
+  run:
+    - bcftools
+    - biobambam
+    - biowrappers
+    - bwa
+    - bx-python
+    - htslib
+    - mutect
+    - nuseq
+    - pandas
+    - pypeliner
+    - pysam
+    - pysftp
+    - pytables
+    - pyvcf
+    - sambamba
+    - samtools
+    - snpeff
+    - strelka
+    - vardict
+    - vardict-java
+
+build:
+  number: 0

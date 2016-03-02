@@ -30,8 +30,10 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     
-    cli.add_normal_tumour_bam_variant_calling_args(parser)
+    cli.add_normal_tumour_bam_args(parser)
     
+    cli.add_ref_genome_arg(parser)
+
     parser.add_argument('--out_prefix', required=True)
     
     cli.add_variant_calling_region_args(parser)
