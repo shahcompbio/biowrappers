@@ -28,7 +28,7 @@ def vardict_pipeline(
     workflow.transform(
         name='run_vardict',
         axes=('regions',),
-        ctx={'mem' : 4, 'num_retry' : 4, 'mem_retry_increment' : 2},
+        ctx={'mem' : 12, 'num_retry' : 4, 'mem_retry_increment' : 2},
         func=tasks.run_vardict,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),

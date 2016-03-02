@@ -17,30 +17,29 @@ def run_vardict(
     tumour_sample_name=None):
     
     cmd = [
-        'bw-vardict',
-        'run_vardict',
-        '--normal_bam_file', normal_bam_file,
-        '--tumour_bam_file', tumour_bam_file,
-        '--ref_genome_fasta_file', ref_genome_fasta_file,
-        '--out_file', out_file,
-        '--min_allele_frequency', min_allele_frequency
+        'vardict-java',
+        '-b', '{0}|{1}'.format(tumour_bam_file, normal_bam_file),
+        '-f', min_allele_frequency,
+        '-G', ref_genome_fasta_file,
+        '-th', 1
     ]
 
     if region is not None:
-        cmd.extend(['--region', region])
+        cmd.extend(['-R', region])
     
     if tumour_sample_name is not None:
-        cmd.extend(['--tumour_sample_name', tumour_sample_name])
+        cmd.extend(['-N', tumour_sample_name])
+    
+    cmd.extend(['>', out_file])
     
     pypeliner.commandline.execute(*cmd)
     
 def run_vardict_test_somatic(in_file, out_file):
 
     cmd = [
-        'bw-vardict',
-        'test_somatic',
-        '--in_file', in_file,
-        '--out_file', out_file,
+        'testsomatic.R',
+        '<', in_file,
+        '>', out_file
     ]
     
     pypeliner.commandline.execute(*cmd)
@@ -51,11 +50,10 @@ def run_vardict_var_to_vcf(
     min_allele_frequency=0.01):
     
     cmd = [
-        'bw-vardict',
-        'convert_to_vcf',
-        '--in_file', in_file,
-        '--out_file', out_file,
-        '--min_allele_frequency', min_allele_frequency
+        'var2vcf_paired.pl',
+        '-f', min_allele_frequency,
+        '<', in_file,
+        '>', out_file
     ]
     
     pypeliner.commandline.execute(*cmd)
