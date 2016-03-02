@@ -8,7 +8,7 @@ def main(args):
     
     pyp = pypeliner.app.Pypeline([], config)
     
-    workflow = mutect.mutect_pipeline(
+    workflow = mutect.create_mutect_workflow(
         args.normal_bam_file, 
         args.tumour_bam_file, 
         args.ref_genome_fasta_file,

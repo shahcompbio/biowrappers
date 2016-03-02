@@ -16,7 +16,7 @@ def main(args):
     
     workflow.subworkflow(
         name='snpeff',
-        func=snpeff.snpeff_pipeline, 
+        func=snpeff.create_snpeff_annotation_workflow, 
         args=(
               pypeliner.managed.InputFile(args.target_vcf_file),
               pypeliner.managed.TempOutputFile('snpeff.h5')

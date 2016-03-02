@@ -12,7 +12,7 @@ def main(args):
     
     snv_vcf_file = args.out_prefix + '.snv.vcf.gz'
     
-    workflow = vardict.vardict_pipeline(
+    workflow = vardict.create_vardict_workflow(
         args.normal_bam_file, 
         args.tumour_bam_file, 
         args.ref_genome_fasta_file,

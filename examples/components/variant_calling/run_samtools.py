@@ -24,7 +24,7 @@ def main(args):
     
     snv_vcf_file = args.out_prefix + '.snv.vcf.gz'
     
-    samtools.samtools_variant_calling_pipeline(
+    samtools.create_samtools_variant_calling_workflow(
         scheduler,
         args.bam_file,  
         args.ref_genome_fasta_file, 
