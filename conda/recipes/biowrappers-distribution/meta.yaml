@@ -10,7 +10,6 @@ requirements:
     - bwa
     - bx-python
     - htslib
-    - mutect
     - nuseq
     - pandas
     - pypeliner

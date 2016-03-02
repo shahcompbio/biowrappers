@@ -1,0 +1,10 @@
+package:
+  name: biowrappers-distribution-restricted
+  version: "0.1.0"
+
+requirements:
+  run:
+    - mutect
+
+build:
+  number: 0
