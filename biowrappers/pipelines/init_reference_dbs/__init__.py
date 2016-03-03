@@ -1,12 +1,12 @@
 from pypeliner.workflow import Workflow
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
+import biowrappers.components.download as download
+import biowrappers.components.download.tasks as download_tasks
 import pypeliner
 
-import tasks
-
 def create_init_reference_dbs_workflow(config):
-    
+   
     workflow = Workflow()
     
     if 'cosmic' in config:
@@ -28,7 +28,7 @@ def create_init_reference_dbs_workflow(config):
                 pypeliner.managed.OutputFile(config['dbsnp']['local_path']),
             )
         )
-     
+    
     if 'mappability' in config:
         workflow.subworkflow(
             name='mappability', 
@@ -77,7 +77,7 @@ def create_cosmic_download_workflow(config, out_file):
         name='download_files',
         axes=('files',),
         ctx={'local' : True},
-        func=tasks.download_from_sftp,
+        func=download_tasks.download_from_sftp,
         args=(
             pypeliner.managed.TempOutputFile('download.vcf.gz', 'files'),
             config['host'],
@@ -126,7 +126,7 @@ def create_dbsnp_download_workflow(config, out_file):
     
     workflow.subworkflow(
         name='download', 
-        func=create_download_workflow, 
+        func=create_download_workflow,
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
@@ -145,34 +145,13 @@ def create_dbsnp_download_workflow(config, out_file):
     
     return workflow
 
-def create_download_workflow(url, file_name):
-    
-    workflow = Workflow()
-        
-    workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('url'),
-        value=url
-    )
-    
-    workflow.transform(
-        name='download',
-        ctx={'local' : True},
-        func=tasks.download_from_url,
-        args=(
-            pypeliner.managed.TempInputObj('url'),
-            pypeliner.managed.OutputFile(file_name)
-        )
-    )
-    
-    return workflow
-
 def create_ref_genome_download_and_index_workflow(config, out_file):
     
     workflow = Workflow()
     
     workflow.subworkflow(
-        name='download', 
-        func=create_download_workflow, 
+        name='download',
+        func=create_download_workflow,
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
