@@ -45,6 +45,15 @@ def get_reference_dbs_workflow(config):
         )
     )
 
+    workflow.subworkflow(
+        name='delly_exclude', 
+        func=download.get_download_workflow, 
+        args=(
+            config['delly']['exclude_url'],
+            pypeliner.managed.OutputFile(config['delly']['exclude_file']),
+        )
+    )
+
     return workflow
 
 def get_cosmic_workflow(config, out_file):
