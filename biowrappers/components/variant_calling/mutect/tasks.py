@@ -17,7 +17,7 @@ def run_mutect(
     out_file):
     
     cmd = [
-        'bw-mutect',
+        'mutect',
         '--normal_bam_file', normal_bam_file,
         '--tumour_bam_file', tumour_bam_file,
         '--ref_genome_fasta_file', ref_genome_fasta_file,
