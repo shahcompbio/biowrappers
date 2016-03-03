@@ -87,8 +87,8 @@ def mark_duplicates(
     in_files, 
     out_file, 
     compression_level=9,
+    hash_table_size=262144,    
     io_buffer_size=128,
-    hash_table_size=262144, 
     num_threads=1, 
     overflow_list_size=200000,
     tmp_dir=None):
