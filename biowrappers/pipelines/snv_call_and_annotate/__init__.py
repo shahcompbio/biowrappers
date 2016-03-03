@@ -224,6 +224,7 @@ def call_and_annotate_pipeline(
         name='snpeff_snvs',
         func=snpeff.create_snpeff_annotation_workflow,
         args=(
+            config['snpeff']['db'],
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('snpeff.h5'),
         ),
