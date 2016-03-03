@@ -1,9 +1,10 @@
 from pypeliner.workflow import Workflow
 
+import pypeliner
+
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.io.download as download
 import biowrappers.components.io.download.tasks as download_tasks
-import pypeliner
 
 def create_init_reference_dbs_workflow(config):
     
@@ -31,8 +32,8 @@ def create_init_reference_dbs_workflow(config):
     
     if 'mappability' in config:
         workflow.subworkflow(
-            name='mappability', 
-            func=create_download_workflow, 
+            name='mappability',
+            func=create_download_workflow,
             args=(
                 config['mappability']['url'],
                 pypeliner.managed.OutputFile(config['mappability']['local_path']),
@@ -61,7 +62,7 @@ def create_init_reference_dbs_workflow(config):
 
     workflow.subworkflow(
         name='delly_exclude', 
-        func=download.get_download_workflow, 
+        func=download.create_download_workflow, 
         args=(
             config['delly']['exclude_url'],
             pypeliner.managed.OutputFile(config['delly']['exclude_file']),

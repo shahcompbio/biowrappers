@@ -4,7 +4,7 @@ from pypeliner.workflow import Workflow
 import tasks
 
 
-def get_download_workflow(url, file_name):
+def create_download_workflow(url, file_name):
     
     workflow = Workflow()
         
