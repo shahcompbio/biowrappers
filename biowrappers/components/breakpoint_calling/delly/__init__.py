@@ -26,7 +26,7 @@ def delly_pipeline(
     workflow = Workflow()
     
     workflow.setobj(
-        obj=pypeliner.managed.TempOutputChunks('sv_type'),
+        obj=pypeliner.managed.OutputChunks('sv_type'),
         value=('DEL', 'DUP', 'INV', 'TRA'),
     )
 
@@ -55,7 +55,7 @@ def delly_pipeline(
         args=(
             'dellySomaticFilter',
             '-v', mgd.TempInputFile('out.vcf', 'sv_type'),
-            '-o', mgd.TempInputFile('somatic.vcf', 'sv_type'),
+            '-o', mgd.TempOutputFile('somatic.vcf', 'sv_type'),
             '-t', mgd.Instance('sv_type'),
         ),
     )
