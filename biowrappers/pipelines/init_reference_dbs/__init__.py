@@ -5,49 +5,53 @@ import pypeliner
 
 import tasks
 
-
-def get_reference_dbs_workflow(config):
+def create_init_reference_dbs_workflow(config):
+    
     workflow = Workflow()
     
-    workflow.subworkflow(
-        name='cosmic',
-        func=get_cosmic_workflow,
-        args=(
-            config['cosmic'],
-            pypeliner.managed.OutputFile(config['cosmic']['db_vcf_file']),
+    if 'cosmic' in config:
+        workflow.subworkflow(
+            name='cosmic',
+            func=create_cosmic_download_workflow,
+            args=(
+                config['cosmic'],
+                pypeliner.managed.OutputFile(config['cosmic']['db_vcf_file']),
+            )
         )
-    )
     
-    workflow.subworkflow(
-        name='dbsnp',
-        func=get_dbsnp_workflow,
-        args=(
-            config['dbsnp'],
-            pypeliner.managed.OutputFile(config['dbsnp']['db_vcf_file']),
+    if 'dbsnp' in config:
+        workflow.subworkflow(
+            name='dbsnp',
+            func=create_dbsnp_download_workflow,
+            args=(
+                config['dbsnp'],
+                pypeliner.managed.OutputFile(config['dbsnp']['db_vcf_file']),
+            )
         )
-    )
      
-    workflow.subworkflow(
-        name='mappability', 
-        func=get_download_workflow, 
-        args=(
-            config['mappability']['url'],
-            pypeliner.managed.OutputFile(config['mappability']['mappability_file']),
+    if 'mappability' in config:
+        workflow.subworkflow(
+            name='mappability', 
+            func=create_download_workflow, 
+            args=(
+                config['mappability']['url'],
+                pypeliner.managed.OutputFile(config['mappability']['mappability_file']),
+            )
         )
-    )
     
-    workflow.subworkflow(
-        name='ref_genome', 
-        func=get_ref_genome_workflow, 
-        args=(
-            config['ref_genome'],
-            pypeliner.managed.OutputFile(config['ref_genome']['fasta_file']),
+    if 'ref_genome' in config:
+        workflow.subworkflow(
+            name='ref_genome', 
+            func=create_ref_genome_download_and_index_workflow, 
+            args=(
+                config['ref_genome'],
+                pypeliner.managed.OutputFile(config['ref_genome']['fasta_file']),
+            )
         )
-    )
 
     return workflow
 
-def get_cosmic_workflow(config, out_file):
+def create_cosmic_download_workflow(config, out_file):
     
     workflow = Workflow()
     
@@ -106,13 +110,13 @@ def get_cosmic_workflow(config, out_file):
         
     return workflow
 
-def get_dbsnp_workflow(config, out_file):
+def create_dbsnp_download_workflow(config, out_file):
     
     workflow = Workflow()
     
     workflow.subworkflow(
         name='download', 
-        func=get_download_workflow, 
+        func=create_download_workflow, 
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
@@ -131,7 +135,7 @@ def get_dbsnp_workflow(config, out_file):
     
     return workflow
 
-def get_download_workflow(url, file_name):
+def create_download_workflow(url, file_name):
     
     workflow = Workflow()
         
@@ -152,13 +156,13 @@ def get_download_workflow(url, file_name):
     
     return workflow
 
-def get_ref_genome_workflow(config, out_file):
+def create_ref_genome_download_and_index_workflow(config, out_file):
     
     workflow = Workflow()
     
     workflow.subworkflow(
         name='download', 
-        func=get_download_workflow, 
+        func=create_download_workflow, 
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
@@ -196,4 +200,3 @@ def get_ref_genome_workflow(config, out_file):
     )
     
     return workflow
-    
