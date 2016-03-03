@@ -58,6 +58,17 @@ def create_init_reference_dbs_workflow(config):
                 config['snpeff']['db']
             )
         )
+        
+    if 'snpeff' in config:
+        for db_name in config['snpeff']['db']:
+            workflow.commandline(
+                name='download_snpeff_db_{0}'.format(db_name), 
+                args=(
+                    'snpEff',
+                    'download',
+                    db_name
+                )
+            )
 
     workflow.subworkflow(
         name='delly_exclude', 
