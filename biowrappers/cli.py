@@ -49,3 +49,11 @@ def load_pypeliner_config(args):
     
     return config
     
+def get_tumour_bam_file_dict(args):
+    tumour_bam_files = {}
+    for bam_file in args.tumour_bam_files:
+        sample_id = os.path.basename(bam_file).rstrip('.bam')
+        tumour_bam_files[sample_id] = bam_file
+
+    return tumour_bam_files
+
