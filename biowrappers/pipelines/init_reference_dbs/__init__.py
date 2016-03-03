@@ -15,7 +15,7 @@ def create_init_reference_dbs_workflow(config):
             func=create_cosmic_download_workflow,
             args=(
                 config['cosmic'],
-                pypeliner.managed.OutputFile(config['cosmic']['db_vcf_file']),
+                pypeliner.managed.OutputFile(config['cosmic']['local_path']),
             )
         )
     
@@ -25,7 +25,7 @@ def create_init_reference_dbs_workflow(config):
             func=create_dbsnp_download_workflow,
             args=(
                 config['dbsnp'],
-                pypeliner.managed.OutputFile(config['dbsnp']['db_vcf_file']),
+                pypeliner.managed.OutputFile(config['dbsnp']['local_path']),
             )
         )
      
@@ -35,7 +35,7 @@ def create_init_reference_dbs_workflow(config):
             func=create_download_workflow, 
             args=(
                 config['mappability']['url'],
-                pypeliner.managed.OutputFile(config['mappability']['mappability_file']),
+                pypeliner.managed.OutputFile(config['mappability']['local_path']),
             )
         )
     
@@ -45,20 +45,19 @@ def create_init_reference_dbs_workflow(config):
             func=create_ref_genome_download_and_index_workflow, 
             args=(
                 config['ref_genome'],
-                pypeliner.managed.OutputFile(config['ref_genome']['fasta_file']),
+                pypeliner.managed.OutputFile(config['ref_genome']['local_path']),
             )
         )
         
     if 'snpeff' in config:
-        for db_name in config['snpeff']['db']:
-            workflow.commandline(
-                name='download_snpeff_db_{0}'.format(db_name), 
-                args=(
-                    'snpEff',
-                    'download',
-                    db_name
-                )
+        workflow.commandline(
+            name='snpeff', 
+            args=(
+                'snpEff',
+                'download',
+                config['snpeff']['db']
             )
+        )
 
     return workflow
 
@@ -69,8 +68,8 @@ def create_cosmic_download_workflow(config, out_file):
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('remote_path', 'files'),
         value={
-            'coding' : config['coding']['remote_path'],
-            'non_coding' : config['non_coding']['remote_path']
+            'coding' : config['remote_paths']['coding'],
+            'non_coding' : config['remote_paths']['non_coding']
         },
     )
     

@@ -71,7 +71,7 @@ def call_and_annotate_pipeline(
     
     tumour_bam_files = pypeliner.managed.File('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_paths)
     
-    ref_genome_fasta_file = pypeliner.managed.File(config['ref_genome']['fasta_file'])
+    ref_genome_fasta_file = pypeliner.managed.File(config['databases']['ref_genome']['local_path'])
     
     if 'nuseq' in config:
         workflow.subworkflow(
@@ -125,8 +125,8 @@ def call_and_annotate_pipeline(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
                 ref_genome_fasta_file.as_input(),
-                config['cosmic']['db_vcf_file'],
-                config['annotate_dbsnp_status']['db_vcf_file'],
+                config['databases']['cosmic']['local_path'],
+                config['databases']['dbsnp']['local_path'],
                 snv_vcf_files['mutect'].as_output()
             ),
             kwargs=config['mutect']['kwargs']
@@ -235,7 +235,7 @@ def call_and_annotate_pipeline(
         name='annotate_snv_cosmic_status',
         func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['cosmic']['db_vcf_file']),
+            pypeliner.managed.InputFile(config['databases']['cosmic']['db_vcf_file']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('cosmic.h5'),
         ),
@@ -246,7 +246,7 @@ def call_and_annotate_pipeline(
         name='annotate_snv_dbsnp_status',
         func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['annotate_dbsnp_status']['db_vcf_file']),
+            pypeliner.managed.InputFile(config['databases']['dbsnp']['local_path']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('dbsnp.h5'),
         ),
@@ -257,7 +257,7 @@ def call_and_annotate_pipeline(
         name='snv_mappability',
         func=mappability.create_vcf_mappability_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['mappability']['mappability_file']),
+            pypeliner.managed.InputFile(config['databases']['mappability']['local_file']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('mappability.h5')
         ),

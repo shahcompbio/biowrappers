@@ -1,44 +1,49 @@
-pypeliner:
-  nativespec : '-V -q all.q -l mem_token={mem}G,mem_free={mem}G,h_vmem={mem}G'
-    
-  nocleanup : False
-
-  maxjobs : 100
+# Replace /path/to/ref_db_dir with the path were data is stored.
+#
+# If the sections for mutect, nuseq, strelka or vardict are excluded, those tools will not be run. 
+#
+# For each section (except snpeff) only the local_path entry is required for the pipeline.
+# For snpeff the db entry is required.
+# The remaining information is there to allow the config to be used with the init_db_pipeline.
+databases:
+  cosmic:
+    download_method: sftp
+    user_name: cosmic_user_name
+    password: cosmic_password
+    host: sftp-cancer.sanger.ac.uk
+    remote_paths:
+      coding: /files/grch37/cosmic/v75/VCF/CosmicCodingMuts.vcf.gz 
+      non_coding: /files/grch37/cosmic/v75/VCF/CosmicNonCodingVariants.vcf.gz
+    local_path: /path/to/ref_db_dir/cosmic_v75.vcf.gz
   
-  pretend : False
+  dbsnp:
+    url: ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b146_GRCh37p13/VCF/common_all_20151104.vcf.gz
+    local_path: /path/to/ref_db_dir/dbsnp_b146_GRCh37p13.vcf.gz
   
-  submit : asyncqsub
-
-  tmpdir : log
+  mappability:
+    url: http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3/wgEncodeCrgMapabilityAlign50mer.bigWig
+    local_path: /path/to/ref_db_dir/wgEncodeCrgMapabilityAlign50mer.bigWig
   
-  #loglevel: DEBUG
-
+  ref_genome: 
+    url: http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa
+    local_path: /path/to/ref_db_dir/GRCh37-lite.fa
+  
+  snpeff:
+    db: GRCh37.75
+  
 annotate_cosmic_status:
-  db_name: cosmic_v68
-  
-  db_vcf_file: /home/andrew/Desktop/museq_test/input/cosmic_v68.vcf.gz
-  
   kwargs:
     split_size: 10000
-  
     table_name: /snv/db_status/cosmic 
     
 annotate_dbsnp_status:
-  db_name: dbsnp
-  
-  db_vcf_file: /home/andrew/Desktop/museq_test/input/common_all_20150605.vcf.gz
-  
   kwargs:
     split_size: 10000
-  
     table_name: /snv/db_status/dbsnp
         
 mappability:
-  mappability_file: /home/andrew/Desktop/museq_test/input/wgEncodeCrgMapabilityAlign50mer.bigWig
-  
   kwargs:
     split_size: 10000
-  
     table_name: /snv/mappability
 
 museq:
@@ -54,35 +59,27 @@ mutect:
 
 snpeff:
   kwargs:
-    data_base: GRCh37.75
-    
     split_size: 1000
 
 snv_counts:
   kwargs:
     count_duplicates: False
-    
     min_bqual: 30
-    
     min_mqual: 30
-    
     split_size: 10000
 
 strelka:
   kwargs:
     split_size: 1000000
-    
+    # True if WGSS / False if exome
     use_depth_thresholds: True
 
 tri_nucleotide_context:
   kwargs:
     split_size: 10000
-    
     table_name: /snv/tri_nucleotide_context
 
 vardict:
   kwargs:
     split_size: 1000000
-    
     min_allele_frequency: 0.01
-  

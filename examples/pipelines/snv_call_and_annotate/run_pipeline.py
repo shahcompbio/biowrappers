@@ -5,6 +5,8 @@ from biowrappers.components.utils import make_directory
 from biowrappers.components.variant_calling.utils import default_chromosomes
 from biowrappers.pipelines.snv_call_and_annotate import call_and_annotate_pipeline 
 
+import biowrappers.cli as cli
+
 def main(args):
     make_directory(args.out_dir)
     
@@ -24,11 +26,10 @@ def main(args):
         args.out_dir, 
         chromosomes=args.chromosomes
     )
-        
-    if args.log_dir is not None:
-        config['pypeliner']['tmpdir'] = args.log_dir
-        
-    pyp = pypeliner.app.Pypeline([], config['pypeliner'])
+    
+    pyp_config = cli.load_pypeliner_config(args)
+            
+    pyp = pypeliner.app.Pypeline([], pyp_config)
     
     pyp.run(workflow)
 
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--exome', default=False, action='store_true')
     
-    parser.add_argument('--log_dir', default='./')
+    cli.add_pypeliner_args(parser)
     
     args = parser.parse_args()
     
