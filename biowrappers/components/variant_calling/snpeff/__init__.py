@@ -7,9 +7,9 @@ import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
 def create_snpeff_annotation_workflow(
+    db,
     target_vcf_file,
     out_file,
-    data_base='GRCh37.75',
     split_size=int(1e3),
     table_name='snpeff'):
     
@@ -32,10 +32,10 @@ def create_snpeff_annotation_workflow(
         ctx={'mem' : 5, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_snpeff,
         args=(
+            db,
             pypeliner.managed.TempInputFile('split.vcf', 'split'),
             pypeliner.managed.TempOutputFile('snpeff.vcf', 'split')
-        ),
-        kwargs={'data_base' : data_base}
+        )
     )
     
     workflow.transform(
