@@ -11,7 +11,13 @@ def main(args):
     make_directory(args.out_dir)
     
     with open(args.config_file) as fh:
-        config = yaml.load(fh)
+        # Replace {ref_path_db} in config with desired path
+        config_str = fh.readlines()
+        
+        config_str = config_str.format(ref_db_path=args.ref_db_path)
+        
+        # Load config
+        config = yaml.load(config_str)
     
     if args.exome:
         config['strelka']['kwargs']['use_depth_thresholds'] = False
@@ -40,14 +46,14 @@ if __name__ == '__main__':
     
     parser.add_argument('--config_file', required=True)
     
+    parser.add_argument('--ref_db_path', required=True)
+    
     parser.add_argument('--normal_bam_file', required=True)
     
     parser.add_argument('--tumour_bam_files', nargs='+', required=True)
     
     parser.add_argument('--tumour_sample_ids', nargs='+', required=True)
-    
-    parser.add_argument('--ref_genome_fasta_file', required=True)
-    
+  
     parser.add_argument('--out_dir', required=True)
     
     parser.add_argument('--chromosomes', nargs='+', default=default_chromosomes)

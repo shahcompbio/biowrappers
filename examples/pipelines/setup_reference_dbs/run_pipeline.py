@@ -7,7 +7,13 @@ import biowrappers.cli as cli
     
 def main(args):
     with open(args.config_file) as fh:
-        config = yaml.load(fh)
+        # Replace {ref_path_db} in config with desired path
+        config_str = fh.readlines()
+        
+        config_str = config_str.format(ref_db_path=args.ref_db_path)
+        
+        # Load config
+        config = yaml.load(config_str)
     
     workflow = create_setup_reference_dbs_workflow(config['databases'])
     
@@ -23,6 +29,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     
     parser.add_argument('--config_file', required=True)
+    
+    parser.add_argument('--ref_db_path', required=True)
     
     cli.add_pypeliner_args(parser)
     

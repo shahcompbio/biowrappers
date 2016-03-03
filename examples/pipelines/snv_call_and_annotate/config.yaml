@@ -1,4 +1,5 @@
-# Replace /path/to/ref_db_dir with the path were data is stored.
+# Replace {ref_db_path} with the path were data is stored.
+# Note the example pipeline replaces this automatically using the command line argument --ref_db_path.
 #
 # If the sections for mutect, nuseq, strelka or vardict are excluded, those tools will not be run. 
 #
@@ -14,19 +15,19 @@ databases:
     remote_paths:
       coding: /files/grch37/cosmic/v75/VCF/CosmicCodingMuts.vcf.gz 
       non_coding: /files/grch37/cosmic/v75/VCF/CosmicNonCodingVariants.vcf.gz
-    local_path: /path/to/ref_db_dir/cosmic_v75.vcf.gz
+    local_path: '{ref_db_path}/cosmic_v75.vcf.gz'
   
   dbsnp:
     url: ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b146_GRCh37p13/VCF/common_all_20151104.vcf.gz
-    local_path: /path/to/ref_db_dir/dbsnp_b146_GRCh37p13.vcf.gz
+    local_path: '{ref_db_path}/dbsnp_b146_GRCh37p13.vcf.gz'
   
   mappability:
     url: http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3/wgEncodeCrgMapabilityAlign50mer.bigWig
-    local_path: /path/to/ref_db_dir/wgEncodeCrgMapabilityAlign50mer.bigWig
+    local_path: '{ref_db_path}/wgEncodeCrgMapabilityAlign50mer.bigWig'
   
   ref_genome: 
     url: http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa
-    local_path: /path/to/ref_db_dir/GRCh37-lite.fa
+    local_path: '{ref_db_path}/GRCh37-lite.fa'
   
   snpeff:
     db: GRCh37.75
