@@ -83,7 +83,15 @@ def convert_to_fastqs(in_file, read_files, tmp_dir, split_size=int(1e7)):
              
             shutil.move(tmp_file, out_file)
 
-def mark_duplicates(in_files, out_file, compression_level=9, num_threads=1, tmp_dir=None):
+def mark_duplicates(
+    in_files, 
+    out_file, 
+    compression_level=9,
+    io_buffer_size=128,
+    hash_table_size=262144, 
+    num_threads=1, 
+    overflow_list_size=200000,
+    tmp_dir=None):
     
     try:
         if tmp_dir is None:
@@ -97,9 +105,13 @@ def mark_duplicates(in_files, out_file, compression_level=9, num_threads=1, tmp_
         cmd = [
             'sambamba',
             'markdup',
+            '-p',
             '-l', compression_level,
             '-t', num_threads,
-            '--tmpdir', tmp_dir
+            '--io-buffer-size={0}'.format(io_buffer_size),
+            '--hash-table-size={0}'.format(hash_table_size),
+            '--overflow-list-size={0}'.format(overflow_list_size),
+            '--tmpdir', tmp_dir,
         ]
         
         cmd.extend(flatten_input(in_files))
