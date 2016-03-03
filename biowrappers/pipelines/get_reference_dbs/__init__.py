@@ -1,8 +1,8 @@
 from pypeliner.workflow import Workflow
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
-import biowrappers.components.download as download
-import biowrappers.components.download.tasks as download_tasks
+import biowrappers.components.io.download as download
+import biowrappers.components.io.download.tasks as download_tasks
 import pypeliner
 
 
