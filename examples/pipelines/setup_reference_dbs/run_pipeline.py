@@ -1,7 +1,7 @@
 import pypeliner
 import yaml
 
-from biowrappers.pipelines.init_reference_dbs import create_init_reference_dbs_workflow
+from biowrappers.pipelines.setup_reference_dbs import create_setup_reference_dbs_workflow
 
 import biowrappers.cli as cli
     
@@ -9,7 +9,7 @@ def main(args):
     with open(args.config_file) as fh:
         config = yaml.load(fh)
     
-    workflow = create_init_reference_dbs_workflow(config['databases'])
+    workflow = create_setup_reference_dbs_workflow(config['databases'])
     
     pyp_config = cli.load_pypeliner_config(args)
     

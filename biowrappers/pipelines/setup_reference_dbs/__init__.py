@@ -6,7 +6,7 @@ import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.io.download as download
 import biowrappers.components.io.download.tasks as download_tasks
 
-def create_init_reference_dbs_workflow(config):
+def create_setup_reference_dbs_workflow(config):
     
     workflow = Workflow()
     
