@@ -6,7 +6,7 @@ import biowrappers.components.io.download.tasks as download_tasks
 import pypeliner
 
 def create_init_reference_dbs_workflow(config):
-   
+    
     workflow = Workflow()
     
     if 'cosmic' in config:
