@@ -48,6 +48,17 @@ def create_init_reference_dbs_workflow(config):
                 pypeliner.managed.OutputFile(config['ref_genome']['fasta_file']),
             )
         )
+        
+    if 'snpeff' in config:
+        for db_name in config['snpeff']['db']:
+            workflow.commandline(
+                name='download_snpeff_db_{0}'.format(db_name), 
+                args=(
+                    'snpEff',
+                    'download',
+                    db_name
+                )
+            )
 
     return workflow
 
