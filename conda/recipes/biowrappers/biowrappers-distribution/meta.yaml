@@ -32,6 +32,7 @@ requirements:
     # misc
     - pysftp
     - pytables
+    - pyyaml
 
 build:
   number: 0
