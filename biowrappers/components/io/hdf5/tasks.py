@@ -161,3 +161,19 @@ def convert_hdf5_to_tsv(in_file, key, out_file, compress=False, index=False):
     
     with f_open(out_file, 'w') as fh:
         df.to_csv(fh, index=index, sep='\t')
+
+def merge_hdf5(in_files, out_file):
+    '''
+    Merge pandas HDF5 tables
+    '''
+
+    out_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+    
+    for prefix, file_name in in_files.iteritems():
+        in_store = pd.HDFStore(file_name, 'r')
+        
+        for table_name in _iter_table_names(in_store):
+            df = in_store[table_name]
+
+            out_store[prefix + '/' + table_name] = df
+
