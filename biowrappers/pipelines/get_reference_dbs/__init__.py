@@ -1,9 +1,9 @@
 from pypeliner.workflow import Workflow
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
+import biowrappers.components.download as download
+import biowrappers.components.download.tasks as download_tasks
 import pypeliner
-
-import tasks
 
 
 def get_reference_dbs_workflow(config):
@@ -29,7 +29,7 @@ def get_reference_dbs_workflow(config):
      
     workflow.subworkflow(
         name='mappability', 
-        func=get_download_workflow, 
+        func=download.get_download_workflow, 
         args=(
             config['mappability']['url'],
             pypeliner.managed.OutputFile(config['mappability']['mappability_file']),
@@ -63,7 +63,7 @@ def get_cosmic_workflow(config, out_file):
         name='download_files',
         axes=('files',),
         ctx={'local' : True},
-        func=tasks.download_from_sftp,
+        func=download_tasks.download_from_sftp,
         args=(
             pypeliner.managed.TempOutputFile('download.vcf.gz', 'files'),
             config['host'],
@@ -112,7 +112,7 @@ def get_dbsnp_workflow(config, out_file):
     
     workflow.subworkflow(
         name='download', 
-        func=get_download_workflow, 
+        func=download.get_download_workflow, 
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
@@ -131,34 +131,13 @@ def get_dbsnp_workflow(config, out_file):
     
     return workflow
 
-def get_download_workflow(url, file_name):
-    
-    workflow = Workflow()
-        
-    workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('url'),
-        value=url
-    )
-    
-    workflow.transform(
-        name='download',
-        ctx={'local' : True},
-        func=tasks.download_from_url,
-        args=(
-            pypeliner.managed.TempInputObj('url'),
-            pypeliner.managed.OutputFile(file_name)
-        )
-    )
-    
-    return workflow
-
 def get_ref_genome_workflow(config, out_file):
     
     workflow = Workflow()
     
     workflow.subworkflow(
         name='download', 
-        func=get_download_workflow, 
+        func=download.get_download_workflow, 
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
