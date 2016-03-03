@@ -59,6 +59,15 @@ def create_init_reference_dbs_workflow(config):
             )
         )
 
+    workflow.subworkflow(
+        name='delly_exclude', 
+        func=download.get_download_workflow, 
+        args=(
+            config['delly']['exclude_url'],
+            pypeliner.managed.OutputFile(config['delly']['exclude_file']),
+        )
+    )
+
     return workflow
 
 def create_cosmic_download_workflow(config, out_file):
