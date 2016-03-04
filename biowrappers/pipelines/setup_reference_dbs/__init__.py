@@ -71,6 +71,8 @@ def create_setup_reference_dbs_workflow(config):
                 config['snpeff']['db']
             )
         )
+    
+    return workflow
 
 def create_cosmic_download_workflow(config, out_file):
     

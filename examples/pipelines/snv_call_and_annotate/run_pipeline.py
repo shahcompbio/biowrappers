@@ -12,7 +12,7 @@ def main(args):
     
     with open(args.config_file) as fh:
         # Replace {ref_path_db} in config with desired path
-        config_str = fh.readlines()
+        config_str = fh.read()
         
         config_str = config_str.format(ref_db_path=args.ref_db_path)
         
