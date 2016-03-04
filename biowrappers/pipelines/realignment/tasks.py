@@ -9,7 +9,7 @@ import pysam
 from biowrappers.components.utils import flatten_input
 
 def get_read_group_config(file_name):
-    bam = pysam.AlignmentFile(file_name, mode='rb')
+    bam = pysam.AlignmentFile(file_name, mode='rb', check_sq=False)
     
     assert len(bam.header['RG']) == 1
     
