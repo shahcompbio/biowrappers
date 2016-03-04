@@ -1,10 +1,11 @@
 from pypeliner.workflow import Workflow
 
-import pypeliner
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.io.download as download
 import biowrappers.components.io.download.tasks as download_tasks
+
+import pypeliner
 
 def create_setup_reference_dbs_workflow(config):
     
@@ -139,7 +140,7 @@ def create_dbsnp_download_workflow(config, out_file):
     
     workflow.subworkflow(
         name='download',
-        func=download.create_download_workflow, 
+        func=download.create_download_workflow,
         args=(
             config['url'], 
             pypeliner.managed.OutputFile(out_file)
