@@ -5,3 +5,4 @@ biowrappers.egg-info
 *local.yaml
 /build
 /dist
+/.settings
