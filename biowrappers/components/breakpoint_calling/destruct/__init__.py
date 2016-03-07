@@ -21,11 +21,11 @@ def destruct_pipeline(
     bam_files = tumour_bam_files
     bam_files[normal_sample_id] = normal_bam_file
 
-    utils.make_parent_directory(os.path.join(raw_data_dir, 'raw'))
+    utils.make_directory(os.path.join(raw_data_dir, 'raw'))
     breakpoint_file = os.path.join(raw_data_dir, 'raw', 'breakpoint.tsv')
     breakpoint_library_file = os.path.join(raw_data_dir, 'raw', 'breakpoint_library.tsv')
 
-    utils.make_parent_directory(os.path.join(raw_data_dir, 'somatic'))
+    utils.make_directory(os.path.join(raw_data_dir, 'somatic'))
     somatic_breakpoint_file = os.path.join(raw_data_dir, 'somatic', 'breakpoint.tsv')
     somatic_breakpoint_library_file = os.path.join(raw_data_dir, 'somatic', 'breakpoint_library.tsv')
 
