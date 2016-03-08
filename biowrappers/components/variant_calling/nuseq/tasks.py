@@ -30,7 +30,7 @@ def run_classify(
     ]
     
     if len(tumour_bam_files) > 1:
-        cmd.append('--multi_sample')
+        cmd.extend(['--model_file', 'multi_sample'])
     
     cmd.append('--tumour_bam_files')
     cmd.extend(tumour_bam_files)
