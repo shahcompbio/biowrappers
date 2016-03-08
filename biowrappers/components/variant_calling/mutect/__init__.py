@@ -29,7 +29,7 @@ def create_mutect_workflow(
     workflow.transform(
         name='run_classify',
         axes=('regions',),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_mutect,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
