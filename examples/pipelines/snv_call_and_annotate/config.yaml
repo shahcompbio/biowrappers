@@ -47,16 +47,23 @@ mappability:
     split_size: 10000
     table_name: /snv/mappability
 
-museq:
+mutect:
+  kwargs:
+    split_size: 1000000 
+
+nuseq:
   kwargs:
     indel_threshold: 0.05
     min_normal_depth: 1
     min_tumour_depth: 1
-    min_somatic_probability: 0.5
+    min_somatic_probability: 0.75
 
-mutect:
+nuseq_multi_sample:
   kwargs:
-    split_size: 1000000 
+    indel_threshold: 0.05
+    min_normal_depth: 1
+    min_tumour_depth: 1
+    min_somatic_probability: 0.75
 
 snpeff:
   kwargs:

@@ -224,7 +224,7 @@ def call_and_annotate_pipeline(
         name='snpeff_snvs',
         func=snpeff.create_snpeff_annotation_workflow,
         args=(
-            config['snpeff']['db'],
+            config['databases']['snpeff']['db'],
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('snpeff.h5'),
         ),
@@ -235,7 +235,7 @@ def call_and_annotate_pipeline(
         name='annotate_snv_cosmic_status',
         func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['databases']['cosmic']['db_vcf_file']),
+            pypeliner.managed.InputFile(config['databases']['cosmic']['local_path']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('cosmic.h5'),
         ),
@@ -257,7 +257,7 @@ def call_and_annotate_pipeline(
         name='snv_mappability',
         func=mappability.create_vcf_mappability_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['databases']['mappability']['local_file']),
+            pypeliner.managed.InputFile(config['databases']['mappability']['local_path']),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('mappability.h5')
         ),
@@ -312,11 +312,13 @@ def call_and_annotate_pipeline(
         pypeliner.managed.TempInputFile('tri_nucleotide_context.h5'),
         pypeliner.managed.TempInputFile('normal_counts.h5'),
         pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id'),
-        pypeliner.managed.TempInputFile('nuseq_multi_sample.h5')
     ]
     
     for prog in snv_progs:
         tables.append(pypeliner.managed.TempInputFile('{0}.h5'.format(prog), 'tumour_sample_id'))
+    
+    if 'nuseq_multi_sample' in config:
+        tables.append(pypeliner.managed.TempInputFile('nuseq_multi_sample.h5'))
     
     workflow.transform(
         name='build_results_file',

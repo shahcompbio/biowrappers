@@ -1,3 +1,4 @@
+import os
 import pypeliner
 import yaml
 
@@ -24,12 +25,16 @@ def main(args):
     
     tumour_bam_files = dict(zip(args.tumour_sample_ids, args.tumour_bam_files))
     
+    raw_data_dir = os.path.join(args.out_dir, 'raw_data')
+    
+    results_dir = os.path.join(args.out_dir, 'results.h5')
+    
     workflow = call_and_annotate_pipeline(
         config, 
         args.normal_bam_file, 
         tumour_bam_files, 
-        args.ref_genome_fasta_file, 
-        args.out_dir, 
+        raw_data_dir,
+        results_dir, 
         chromosomes=args.chromosomes
     )
     
