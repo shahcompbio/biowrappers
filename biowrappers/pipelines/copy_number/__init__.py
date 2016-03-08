@@ -6,7 +6,7 @@ import pypeliner
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 from biowrappers.components.utils import make_parent_directory
 
-import remixt.workflow
+import biowrappers.components.copy_number_calling.remixt as remixt
 
 
 def call_and_annotate_pipeline(
