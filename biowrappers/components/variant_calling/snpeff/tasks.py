@@ -11,10 +11,12 @@ import vcf
 def run_snpeff(db, in_vcf_file, out_file):
     
     cmd = [
-        'bw-snpeff',
+        'snpEff',
         '-noStats',
         '-noLog',
         '-classic',
+        '-Xms1g',
+        '-Xmx4g',
         db,
         in_vcf_file,
         '>',
