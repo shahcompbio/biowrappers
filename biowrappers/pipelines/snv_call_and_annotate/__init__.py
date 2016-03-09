@@ -275,7 +275,7 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('cosmic.h5'),
         ),
-        kwargs=get_config(config['annotate_cosmic_status']['kwargs'], '/snv/cosmic')
+        kwargs=get_config(config['annotate_cosmic_status']['kwargs'], '/snv/db_status/cosmic')
     )
     
     workflow.subworkflow(
@@ -286,7 +286,7 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('dbsnp.h5'),
         ),
-        kwargs=get_config(config['annotate_dbsnp_status']['kwargs'], '/snv/dbsnp')
+        kwargs=get_config(config['annotate_dbsnp_status']['kwargs'], '/snv/db_status/dbsnp')
     )    
     
     workflow.subworkflow(

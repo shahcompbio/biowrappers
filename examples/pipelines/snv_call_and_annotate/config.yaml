@@ -35,17 +35,14 @@ databases:
 annotate_cosmic_status:
   kwargs:
     split_size: 10000
-    table_name: /snv/db_status/cosmic 
     
 annotate_dbsnp_status:
   kwargs:
     split_size: 10000
-    table_name: /snv/db_status/dbsnp
         
 mappability:
   kwargs:
     split_size: 10000
-    table_name: /snv/mappability
 
 mutect:
   kwargs:
@@ -85,7 +82,6 @@ strelka:
 tri_nucleotide_context:
   kwargs:
     split_size: 10000
-    table_name: /snv/tri_nucleotide_context
 
 vardict:
   kwargs:
