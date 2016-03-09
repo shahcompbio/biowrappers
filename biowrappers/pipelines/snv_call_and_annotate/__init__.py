@@ -191,7 +191,7 @@ def call_and_annotate_pipeline(
             func=vcf_tasks.convert_vcf_to_hdf5,
             args=(
                 indel_vcf_files[prog].as_input(),
-                pypeliner.managed.TempOutputFile('{0}.h5'.format(prog), 'tumour_sample_id'),
+                pypeliner.managed.TempOutputFile('indel_{0}.h5'.format(prog), 'tumour_sample_id'),
                 pypeliner.managed.Template('/indel/vcf/{prog}/{{tumour_sample_id}}'.format(prog=prog), 'tumour_sample_id')
             ),
             kwargs={
@@ -229,7 +229,7 @@ def call_and_annotate_pipeline(
             func=vcf_tasks.convert_vcf_to_hdf5,
             args=(
                 snv_vcf_files[prog].as_input(),
-                pypeliner.managed.TempOutputFile('{0}.h5'.format(prog), 'tumour_sample_id'),
+                pypeliner.managed.TempOutputFile('snv_{0}.h5'.format(prog), 'tumour_sample_id'),
                 pypeliner.managed.Template('/snv/vcf/{prog}/{{tumour_sample_id}}'.format(prog=prog), 'tumour_sample_id')
             ),
             kwargs={
@@ -255,60 +255,19 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempOutputFile('all.snv.vcf.gz')
         )
     )
-
-    workflow.subworkflow(
-        name='snpeff_snvs',
-        func=snpeff.create_snpeff_annotation_workflow,
-        args=(
-            config['databases']['snpeff']['db'],
-            pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
-            pypeliner.managed.TempOutputFile('snpeff.h5'),
-        ),
-        kwargs=get_config(config['snpeff']['kwargs'], '/snv/snpeff')
-    )
-
-    workflow.subworkflow(
-        name='annotate_snv_cosmic_status',
-        func=annotated_db_status.create_vcf_db_annotation_workflow,
-        args=(
-            pypeliner.managed.InputFile(config['databases']['cosmic']['local_path']),
-            pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
-            pypeliner.managed.TempOutputFile('cosmic.h5'),
-        ),
-        kwargs=get_config(config['annotate_cosmic_status']['kwargs'], '/snv/db_status/cosmic')
-    )
     
     workflow.subworkflow(
-        name='annotate_snv_dbsnp_status',
-        func=annotated_db_status.create_vcf_db_annotation_workflow,
+        name='annotate_snvs', 
+        axes=(), 
+        func=create_annotation_workflow, 
         args=(
-            pypeliner.managed.InputFile(config['databases']['dbsnp']['local_path']),
+            config,
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
-            pypeliner.managed.TempOutputFile('dbsnp.h5'),
+            pypeliner.managed.TempOutputFile('snv_annotations.h5'),
         ),
-        kwargs=get_config(config['annotate_dbsnp_status']['kwargs'], '/snv/db_status/dbsnp')
-    )    
-    
-    workflow.subworkflow(
-        name='snv_mappability',
-        func=mappability.create_vcf_mappability_annotation_workflow,
-        args=(
-            pypeliner.managed.InputFile(config['databases']['mappability']['local_path']),
-            pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
-            pypeliner.managed.TempOutputFile('mappability.h5')
-        ),
-        kwargs=get_config(config['mappability']['kwargs'], '/snv/mappability')
-    )
-     
-    workflow.subworkflow(
-        name='snv_tri_nucleotide_context',
-        func=tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow,
-        args=(
-            ref_genome_fasta_file.as_input(),
-            pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
-            pypeliner.managed.TempOutputFile('tri_nucleotide_context.h5')
-        ),
-        kwargs=get_config(config['tri_nucleotide_context']['kwargs'], '/snv/tri_nucleotide_context')
+        kwargs={
+            'variant_type' : 'snv'
+        }
     )
 
     workflow.subworkflow(
@@ -319,7 +278,7 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('normal_counts.h5'),
         ),
-        kwargs=get_config(config['snv_counts']['kwargs'], '/snv/counts/normal')
+        kwargs=get_kwargs(config['snv_counts']['kwargs'], '/snv/counts/normal')
     )
 
     workflow.subworkflow(
@@ -331,21 +290,20 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('tumour_counts.h5', 'tumour_sample_id')
         ),
-        kwargs=get_config(config['snv_counts']['kwargs'], pypeliner.managed.Template('/snv/counts/{tumour_sample_id}', 'tumour_sample_id'))
+        kwargs=get_kwargs(config['snv_counts']['kwargs'], pypeliner.managed.Template('/snv/counts/{tumour_sample_id}', 'tumour_sample_id'))
     )
     
     tables = [
-        pypeliner.managed.TempInputFile('cosmic.h5'),
-        pypeliner.managed.TempInputFile('dbsnp.h5'),
-        pypeliner.managed.TempInputFile('snpeff.h5'),
-        pypeliner.managed.TempInputFile('mappability.h5'),
-        pypeliner.managed.TempInputFile('tri_nucleotide_context.h5'),
+        pypeliner.managed.TempInputFile('snv_annotations.h5'),
         pypeliner.managed.TempInputFile('normal_counts.h5'),
         pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id'),
     ]
-    
+
+    for prog in indel_progs:
+        tables.append(pypeliner.managed.TempInputFile('indel_{0}.h5'.format(prog), 'tumour_sample_id'))
+            
     for prog in snv_progs:
-        tables.append(pypeliner.managed.TempInputFile('{0}.h5'.format(prog), 'tumour_sample_id'))
+        tables.append(pypeliner.managed.TempInputFile('snv_{0}.h5'.format(prog), 'tumour_sample_id'))
     
     if 'nuseq_multi_sample' in config:
         tables.append(pypeliner.managed.TempInputFile('nuseq_multi_sample.h5'))
@@ -363,6 +321,94 @@ def call_and_annotate_pipeline(
     
     return workflow
 
+def create_annotation_workflow(config, in_vcf_file, out_file, variant_type='snv'):
+    
+    annotators = (
+        'cosmic_status', 
+        'dbsnp_status',
+        'mappability',
+        'snpeff',
+        'tri_nucleotide_context'
+    )
+    
+    kwargs = {}
+    
+    temp_result_files = {}
+    
+    for a in annotators:
+        kwargs[a] = get_kwargs(config[a]['kwargs'], '/{0}/{1}'.format(variant_type, a))
+        
+        temp_result_files[a] = pypeliner.managed.TempFile('{0}.h5'.format(a))
+    
+    workflow= Workflow()
+    
+    workflow.subworkflow(
+        name='snpeff',
+        func=snpeff.create_snpeff_annotation_workflow,
+        args=(
+            config['databases']['snpeff']['db'],
+            pypeliner.managed.InputFile(in_vcf_file),
+            temp_result_files['snpeff'].as_output(),
+        ),
+        kwargs=kwargs['snpeff']
+    )
+
+    workflow.subworkflow(
+        name='cosmic_status',
+        func=annotated_db_status.create_vcf_db_annotation_workflow,
+        args=(
+            pypeliner.managed.InputFile(config['databases']['cosmic']['local_path']),
+            pypeliner.managed.InputFile(in_vcf_file),
+            temp_result_files['cosmic_status'].as_output(),
+        ),
+        kwargs=kwargs['cosmic_status']
+    )
+    
+    workflow.subworkflow(
+        name='dbsnp_status',
+        func=annotated_db_status.create_vcf_db_annotation_workflow,
+        args=(
+            pypeliner.managed.InputFile(config['databases']['dbsnp']['local_path']),
+            pypeliner.managed.InputFile(in_vcf_file),
+            temp_result_files['dbsnp_status'].as_output(),
+        ),
+        kwargs=kwargs['dbsnp_status']
+    )    
+    
+    workflow.subworkflow(
+        name='mappability',
+        func=mappability.create_vcf_mappability_annotation_workflow,
+        args=(
+            pypeliner.managed.InputFile(config['databases']['mappability']['local_path']),
+            pypeliner.managed.InputFile(in_vcf_file),
+            temp_result_files['mappability'].as_output(),
+        ),
+        kwargs=kwargs['mappability']
+    )
+     
+    workflow.subworkflow(
+        name='snv_tri_nucleotide_context',
+        func=tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow,
+        args=(
+            pypeliner.managed.InputFile(config['databases']['ref_genome']['local_path']),
+            pypeliner.managed.InputFile(in_vcf_file),
+            temp_result_files['tri_nucleotide_context'].as_output(),
+        ),
+        kwargs=kwargs['snv_tri_nucleotide_context']
+    )
+    
+    workflow.transform(
+        name='build_results_file',
+        ctx=default_ctx,
+        func=hdf5_tasks.concatenate_tables,
+        args=(
+            [x.as_input() for x in temp_result_files.values()],
+            pypeliner.managed.OutputFile(out_file)
+        ),
+    )
+    
+    return workflow
+    
 def get_sample_out_file(cmd, ext, out_dir, sub_output=None):
     if sub_output is not None:
         cmd = os.path.join(cmd, sub_output)
@@ -373,7 +419,7 @@ def get_sample_out_file(cmd, ext, out_dir, sub_output=None):
     
     return out_file
 
-def get_config(config, table_name):
+def get_kwargs(config, table_name):
     
     config = config.copy()
     
