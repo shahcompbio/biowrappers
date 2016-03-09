@@ -32,11 +32,11 @@ databases:
   snpeff:
     db: GRCh37.75
   
-annotate_cosmic_status:
+cosmic_status:
   kwargs:
     split_size: 10000
     
-annotate_dbsnp_status:
+dbsnp_status:
   kwargs:
     split_size: 10000
         
