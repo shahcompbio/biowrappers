@@ -302,6 +302,7 @@ def call_and_annotate_pipeline(
     # Create final output
     #===================================================================================================================
     tables = [
+        pypeliner.managed.TempInputFile('indel_annotations.h5'),
         pypeliner.managed.TempInputFile('snv_annotations.h5'),
         pypeliner.managed.TempInputFile('normal_counts.h5'),
         pypeliner.managed.TempInputFile('tumour_counts.h5', 'tumour_sample_id'),
@@ -395,14 +396,14 @@ def create_annotation_workflow(config, in_vcf_file, out_file, variant_type='snv'
     )
      
     workflow.subworkflow(
-        name='snv_tri_nucleotide_context',
+        name='tri_nucleotide_context',
         func=tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow,
         args=(
             pypeliner.managed.InputFile(config['databases']['ref_genome']['local_path']),
             pypeliner.managed.InputFile(in_vcf_file),
             temp_result_files['tri_nucleotide_context'].as_output(),
         ),
-        kwargs=kwargs['snv_tri_nucleotide_context']
+        kwargs=kwargs['tri_nucleotide_context']
     )
     
     workflow.transform(
