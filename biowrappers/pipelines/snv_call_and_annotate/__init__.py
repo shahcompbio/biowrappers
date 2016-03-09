@@ -22,19 +22,6 @@ default_ctx = {'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2}
 
 big_mem_ctx = {'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2}
 
-vcf_score_callbacks = {
-    'indel' : {
-        'strelka' : lambda record: record.INFO['QSI'],
-        'vardict' : None
-    },
-    'snv': {
-        'mutect' : None,
-        'nuseq' : lambda record: record.INFO['PS'],
-        'strelka' : lambda record: record.INFO['QSI'],
-        'vardict' : None
-    }
-}
-
 def call_and_annotate_pipeline(
         config,
         normal_bam_path,
@@ -114,9 +101,10 @@ def call_and_annotate_pipeline(
                 '/snv/vcf/nuseq_multi_sample/all',
             ),
             kwargs={
-                'score_callback' : vcf_score_callbacks['nuseq']
+                'score_callback' : vcf_score_callbacks['snv']['nuseq']
             }
         )
+        
     #===================================================================================================================
     # Single sample calling
     #===================================================================================================================
@@ -217,6 +205,20 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempOutputFile('all.indel.vcf.gz')
         )
     )
+#     
+#     workflow.subworkflow(
+#         name='annotate_indels', 
+#         axes=(), 
+#         func=create_annotation_workflow, 
+#         args=(
+#             config,
+#             pypeliner.managed.TempInputFile('all.indel.vcf.gz'),
+#             pypeliner.managed.TempOutputFile('indel_annotations.h5'),
+#         ),
+#         kwargs={
+#             'variant_type' : 'indel'
+#         }
+#     )    
     
     #===================================================================================================================
     # SNV
@@ -290,9 +292,15 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
             pypeliner.managed.TempOutputFile('tumour_counts.h5', 'tumour_sample_id')
         ),
-        kwargs=get_kwargs(config['snv_counts']['kwargs'], pypeliner.managed.Template('/snv/counts/{tumour_sample_id}', 'tumour_sample_id'))
+        kwargs=get_kwargs(
+            config['snv_counts']['kwargs'], 
+            pypeliner.managed.Template('/snv/counts/{tumour_sample_id}', 'tumour_sample_id')
+        )
     )
     
+    #===================================================================================================================
+    # Create final output
+    #===================================================================================================================
     tables = [
         pypeliner.managed.TempInputFile('snv_annotations.h5'),
         pypeliner.managed.TempInputFile('normal_counts.h5'),
@@ -426,4 +434,25 @@ def get_kwargs(config, table_name):
     config['table_name'] = table_name
     
     return config
-    
+
+def nuseq_callback(record):
+    return record.INFO['PS']
+
+def strelka_indel_callback(record):
+    return record.INFO['QSI']
+
+def strelka_snv_callback(record):
+    return record.INFO['QSS']
+
+vcf_score_callbacks = {
+    'indel' : {
+        'strelka' : strelka_indel_callback,
+        'vardict' : None
+    },
+    'snv': {
+        'mutect' : None,
+        'nuseq' : nuseq_callback,
+        'strelka' : strelka_snv_callback,
+        'vardict' : None
+    }
+}
