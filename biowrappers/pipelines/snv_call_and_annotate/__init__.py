@@ -50,13 +50,13 @@ def call_and_annotate_pipeline(
         config[prog]['kwargs']['chromosomes'] = chromosomes
         
         snv_vcf_files[prog] = pypeliner.managed.File(
-            get_sample_out_file(prog, 'vcf.gz', raw_data_dir),
+            get_sample_out_file(prog, 'vcf.gz', raw_data_dir, 'snv'),
             'tumour_sample_id'
         )
         
         if prog in indel_progs:
             indel_vcf_files[prog] = pypeliner.managed.File(
-                get_sample_out_file(prog, 'vcf.gz', raw_data_dir, sub_output='indel'),
+                get_sample_out_file(prog, 'vcf.gz', raw_data_dir, 'indel'),
                 'tumour_sample_id'
             )
     
@@ -417,11 +417,9 @@ def create_annotation_workflow(config, in_vcf_file, out_file, variant_type='snv'
     
     return workflow
     
-def get_sample_out_file(cmd, ext, out_dir, sub_output=None):
-    if sub_output is not None:
-        cmd = os.path.join(cmd, sub_output)
-        
-    out_file = os.path.join(out_dir, cmd, '{{tumour_sample_id}}.{0}'.format(ext))
+def get_sample_out_file(cmd, ext, out_dir, variant_type):
+
+    out_file = os.path.join(out_dir, variant_type, cmd, '{{tumour_sample_id}}.{0}'.format(ext))
     
     make_parent_directory(out_file)
     
