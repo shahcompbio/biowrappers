@@ -205,20 +205,20 @@ def call_and_annotate_pipeline(
             pypeliner.managed.TempOutputFile('all.indel.vcf.gz')
         )
     )
-#     
-#     workflow.subworkflow(
-#         name='annotate_indels', 
-#         axes=(), 
-#         func=create_annotation_workflow, 
-#         args=(
-#             config,
-#             pypeliner.managed.TempInputFile('all.indel.vcf.gz'),
-#             pypeliner.managed.TempOutputFile('indel_annotations.h5'),
-#         ),
-#         kwargs={
-#             'variant_type' : 'indel'
-#         }
-#     )    
+     
+    workflow.subworkflow(
+        name='annotate_indels', 
+        axes=(), 
+        func=create_annotation_workflow, 
+        args=(
+            config,
+            pypeliner.managed.TempInputFile('all.indel.vcf.gz'),
+            pypeliner.managed.TempOutputFile('indel_annotations.h5'),
+        ),
+        kwargs={
+            'variant_type' : 'indel'
+        }
+    )    
     
     #===================================================================================================================
     # SNV
