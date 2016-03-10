@@ -115,7 +115,7 @@ def call_and_annotate_pipeline(
             func=nuseq.create_nuseq_classify_workflow,
             args=(
                 normal_bam_file.as_input(),
-                tumour_bam_files.as_input(),
+                [tumour_bam_files.as_input(),],
                 ref_genome_fasta_file.as_input(),
                 snv_vcf_files['nuseq'].as_output()
             ),
