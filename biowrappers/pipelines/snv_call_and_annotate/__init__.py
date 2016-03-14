@@ -325,7 +325,9 @@ def call_and_annotate_pipeline(
             tables,
             pypeliner.managed.OutputFile(results_file)
         ),
-        
+        kwargs={
+            'drop_duplicates' : True,
+        }
     )
     
     return workflow
