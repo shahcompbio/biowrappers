@@ -3,14 +3,81 @@ Created on Nov 4, 2015
 
 @author: Andrew Roth
 '''
+from collections import defaultdict
+
 import gzip
 import pandas as pd
 
 from biowrappers.components.utils import flatten_input
 
-def concatenate_tables(in_files, out_file, non_numeric_as_category=True):
+def concatenate_tables(
+    in_files, 
+    out_file,
+    drop_duplicates=False,
+    in_memory=True, 
+    non_numeric_as_category=True
+):
     in_files = flatten_input(in_files)
     
+    # Only support drop duplicatess in memory
+    if drop_duplicates or in_memory:
+        _concatenate_tables_in_memory(
+            in_files, 
+            out_file, 
+            drop_duplicates=drop_duplicates, 
+            non_numeric_as_category=non_numeric_as_category
+        )
+    
+    else:
+        _concatenate_tables_on_disk(
+            in_files, 
+            out_file, 
+            non_numeric_as_category=non_numeric_as_category
+        )
+
+def _concatenate_tables_in_memory(
+    in_files, 
+    out_file,
+    drop_duplicates=False, 
+    non_numeric_as_category=True
+):
+    
+    tables = defaultdict(list)
+    
+    for file_name in in_files:
+        in_store = pd.HDFStore(file_name, 'r')
+        
+        for table_name in _iter_table_names(in_store):
+            df = in_store[table_name]
+            
+            if df.empty:
+                continue
+            
+            tables[table_name].append(df)
+   
+        in_store.close()
+    
+    for table_name in tables:
+        tables[table_name] = pd.concat(tables[table_name])
+        
+        if drop_duplicates:
+            tables[table_name] = tables[table_name].drop_duplicates()
+            
+        if non_numeric_as_category:
+            non_numeric_cols = _get_non_numeric_columns(tables[table_name])
+            
+            for col in non_numeric_cols:
+                tables[table_name][col] = tables[table_name][col].astype('category')
+    
+    out_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+    
+    for table_name in tables:
+        
+        out_store[table_name] = tables[table_name]
+    
+    out_store.close()
+    
+def _concatenate_tables_on_disk(in_files, out_file, non_numeric_as_category=True):
     if non_numeric_as_category:
         col_categories = _get_column_categories(in_files)
     
@@ -176,4 +243,3 @@ def merge_hdf5(in_files, out_file):
             df = in_store[table_name]
 
             out_store[prefix + '/' + table_name] = df
-
