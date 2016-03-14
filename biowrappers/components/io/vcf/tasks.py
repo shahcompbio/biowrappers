@@ -187,10 +187,28 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
     chunk_size = 1000
     
     reader = vcf.Reader(filename=in_file)
+        
+    max_alt_size = 8
     
+    max_ref_size = 8    
+    
+    for record in reader:
+                
+        max_ref_size = max(
+            max_ref_size, 
+            len(str(record.REF))
+        )
+        
+        for alt in record.ALT:
+            max_alt_size = max(
+                max_alt_size, 
+                len(str(record.ALT))
+            )
+            
     hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
-
+    
     for file_idx, records in itertools.groupby(reader, key=line_group):
+        
         df = []
         
         for record in records:
@@ -200,17 +218,32 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
             else:
                 score = record.QUAL
             
-            row = {'chrom' : record.CHROM, 'coord' : record.POS, 'score' : score}
+            for alt in record.ALT:
+                row = {
+                    'chrom' : record.CHROM, 
+                    'coord' : record.POS, 
+                    'ref' : str(record.REF),
+                    'alt' : str(alt), 
+                    'score' : score
+                }
             
-            df.append(row)
-        
+                df.append(row)
+
         beg = file_idx * chunk_size
         
         end = beg + len(df)
         
         df = pd.DataFrame(df, index=range(beg, end))
         
-        hdf_store.append(table_name, df, min_itemsize={'chrom' : 8})
+        hdf_store.append(
+            table_name, 
+            df, 
+            min_itemsize={
+                'chrom' : 8,
+                'ref' : max_ref_size,
+                'alt' : max_alt_size
+            }
+        )
     
     hdf_store.close()
     
