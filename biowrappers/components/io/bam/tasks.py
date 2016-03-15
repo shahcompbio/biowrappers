@@ -83,6 +83,10 @@ def convert_to_fastqs(in_file, read_files, tmp_dir, split_size=int(1e7)):
              
             shutil.move(tmp_file, out_file)
 
+def index(bam_file, index_file):
+    
+    pypeliner.commandline.execute('samtools', 'index', bam_file, index_file)
+
 def mark_duplicates(
     in_files, 
     out_file, 
