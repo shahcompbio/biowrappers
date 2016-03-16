@@ -29,7 +29,7 @@ def create_snpeff_annotation_workflow(
     workflow.transform(
         name='run_snpeff',
         axes=('split',),
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 4},
+        ctx={'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.run_snpeff,
         args=(
             db,
