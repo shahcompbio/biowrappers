@@ -19,25 +19,30 @@ def annotate_db_status(db_vcf_file, target_vcf_file, out_file, table_name):
         coord = record.POS 
         
         try:
-            db_position_records = [x for x in db_reader.fetch(chrom, coord, coord)]
+            db_position_records = [x for x in db_reader.fetch(chrom, coord - 1, coord)]
         
         except ValueError:
             db_position_records = []
         
-        for alt in record.ALT:
-            for db_record in db_position_records:
+        for db_record in db_position_records:
+            
+            if (db_record.CHROM != chrom) or (db_record.POS != coord):
+                continue
+                            
+            if db_record.is_indel:
+                indel = 1
+                
+            else:
+                indel = 0
+            
+            for alt in record.ALT:
+                
                 if (record.REF == db_record.REF) and (alt in db_record.ALT):
                     exact_match = 1
                 
                 else:
                     exact_match = 0
-                
-                if db_record.is_indel:
-                    indel = 1
-                    
-                else:
-                    indel = 0
-                
+
                 out_row = {
                     'chrom' : chrom,
                     'coord' : coord,
