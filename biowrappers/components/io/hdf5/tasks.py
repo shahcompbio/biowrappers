@@ -73,8 +73,8 @@ def _concatenate_tables_in_memory(
     
     for table_name in tables:
         
-        out_store[table_name] = tables[table_name]
-    
+        out_store.put(table_name, tables[table_name], format='table')
+        
     out_store.close()
     
 def _concatenate_tables_on_disk(in_files, out_file, non_numeric_as_category=True):
