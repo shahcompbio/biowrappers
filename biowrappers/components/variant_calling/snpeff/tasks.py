@@ -16,7 +16,7 @@ def run_snpeff(db, in_vcf_file, out_file):
         '-noLog',
         '-classic',
         '-Xms1g',
-        '-Xmx12g',
+        '-Xmx16g',
         db,
         in_vcf_file,
         '>',
