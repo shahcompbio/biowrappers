@@ -186,25 +186,40 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
     
     chunk_size = 1000
     
+    #===================================================================================================================
+    # find all entries in categories
+    #===================================================================================================================
     reader = vcf.Reader(filename=in_file)
-        
-    max_alt_size = 8
     
-    max_ref_size = 8    
+    chrom_categories = set()
+    
+    ref_categories = set()
+    
+    alt_categories = set()  
     
     for record in reader:
-                
-        max_ref_size = max(
-            max_ref_size, 
-            len(str(record.REF))
-        )
         
+        chrom_categories.add(str(record.CHROM))
+        
+        ref_categories.add(str(record.REF))        
+
         for alt in record.ALT:
-            max_alt_size = max(
-                max_alt_size, 
-                len(str(record.ALT))
-            )
             
+            alt_categories.add(str(alt))
+    
+    chrom_categories = sorted(chrom_categories)
+    
+    ref_categories = sorted(ref_categories)
+    
+    alt_categories = sorted(alt_categories)
+    
+    #===================================================================================================================
+    # convert
+    #===================================================================================================================
+    
+    # reopen reader to restart iter
+    reader = vcf.Reader(filename=in_file)
+        
     hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
     
     for file_idx, records in itertools.groupby(reader, key=line_group):
@@ -220,10 +235,10 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
             
             for alt in record.ALT:
                 row = {
-                    'chrom' : record.CHROM, 
-                    'coord' : record.POS, 
+                    'chrom' : record.CHROM,
+                    'coord' : record.POS,
                     'ref' : str(record.REF),
-                    'alt' : str(alt), 
+                    'alt' : str(alt),
                     'score' : score
                 }
             
@@ -235,15 +250,15 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
         
         df = pd.DataFrame(df, index=range(beg, end))
         
-        hdf_store.append(
-            table_name, 
-            df, 
-            min_itemsize={
-                'chrom' : 8,
-                'ref' : max_ref_size,
-                'alt' : max_alt_size
-            }
-        )
+        df['chrom'] = df['chrom'].astype('category', categories=chrom_categories)
+        
+        df['alt'] = df['alt'].astype('category', categories=alt_categories)
+        
+        df['ref'] = df['ref'].astype('category', categories=ref_categories)
+        
+        df = df[['chrom', 'coord', 'ref', 'alt', 'score']]
+
+        hdf_store.append(table_name, df)
     
     hdf_store.close()
     
