@@ -21,7 +21,7 @@ def get_read_group_config(file_name):
 
 def write_header_file(in_files, out_file, seq_info):
     
-    bam = pysam.AlignmentFile(flatten_input(in_files)[0], mode='r')
+    bam = pysam.AlignmentFile(flatten_input(in_files)[0], mode='r', check_sq=False)
     
     header = bam.header.copy()
     

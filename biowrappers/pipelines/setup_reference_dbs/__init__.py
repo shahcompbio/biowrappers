@@ -70,8 +70,39 @@ def create_setup_reference_dbs_workflow(config):
                 config['snpeff']['db']
             )
         )
-    
+
+    if 'chrom_info' in config:
+        workflow.subworkflow(
+            name='chrom_info',
+            func=download.create_download_workflow,
+            args=(
+                config['chrom_info']['url'],
+                pypeliner.managed.OutputFile(config['chrom_info']['local_path']),
+            )
+        )
+
+    if 'titan' in config:
+        workflow.subworkflow(
+            name='gc_wig',
+            func=create_gc_wig_file,
+            args=(
+                config['titan']['config'],
+                pypeliner.managed.InputFile(config['ref_genome']['local_path']),
+                pypeliner.managed.OutputFile(config['titan']['config']['gc_wig']),
+            )
+        )
+
+        workflow.subworkflow(
+            name='mappability_wig',
+            func=create_mappability_wig_file,
+            args=(
+                config['titan']['config'],
+                pypeliner.managed.OutputFile(config['titan']['config']['mappability_wig']),
+            )
+        )
+
     return workflow
+
 
 def create_cosmic_download_workflow(config, out_file):
     
@@ -207,3 +238,51 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
     )
     
     return workflow
+
+
+def create_gc_wig_file(config, genome_file, out_file):
+
+    workflow = Workflow()
+
+    workflow.commandline(
+        name='create_gc',
+        ctx={'mem': 4},
+        args=(
+            'gcCounter',
+            '-w', config['window_size'],
+            pypeliner.managed.InputFile(genome_file),
+            '>',
+            pypeliner.managed.OutputFile(out_file),            
+        ),
+    )
+
+    return workflow
+
+
+def create_mappability_wig_file(config, out_file):
+
+    workflow = Workflow()
+    
+    workflow.subworkflow(
+        name='download_mappability_bigwig',
+        func=download.create_download_workflow,
+        args=(
+            config['mappability_url'],
+            pypeliner.managed.TempOutputFile('mappability_bigwig'),
+        )
+    )
+
+    workflow.commandline(
+        name='convert_mappability_to_wig',
+        ctx={'mem': 4},
+        args=(
+            'mapCounter',
+            '-w', config['window_size'],
+            pypeliner.managed.TempInputFile('mappability_bigwig'),
+            '>',
+            pypeliner.managed.OutputFile(out_file),
+        ),
+    )
+
+    return workflow
+

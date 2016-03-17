@@ -6,7 +6,11 @@ import pypeliner
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 from biowrappers.components.utils import make_parent_directory
 
-import biowrappers.components.copy_number_calling.remixt as remixt
+import biowrappers.components.copy_number_calling.remixt
+import biowrappers.components.copy_number_calling.titan
+import biowrappers.components.copy_number_calling.clonehd
+
+import remixt.workflow
 
 
 def call_and_annotate_pipeline(
@@ -16,12 +20,39 @@ def call_and_annotate_pipeline(
     somatic_breakpoint_file,
     raw_data_dir,
     results_file,
+    normal_id='normal',
 ):
     workflow = Workflow()
     
     workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('tumour_sample_id'),
+        obj=pypeliner.managed.OutputChunks('tumour_id'),
         value=tumour_bam_files.keys(),
+    )
+
+    tumour_seq_data_template = os.path.join(raw_data_dir, 'seqdata', 'sample_{tumour_id}.h5')
+    normal_seq_data_filename = os.path.join(raw_data_dir, 'seqdata', 'sample_{}.h5'.format(normal_id))
+
+    workflow.subworkflow(
+        name='extract_seqdata_workflow_normal',
+        func=remixt.workflow.create_extract_seqdata_workflow,
+        args=(
+            pypeliner.managed.InputFile(normal_bam_file),
+            pypeliner.managed.OutputFile(normal_seq_data_filename),
+            config['remixt'].get('extract_seqdata', {}),
+            config['remixt']['ref_data_dir'],
+        ),
+    )
+
+    workflow.subworkflow(
+        name='extract_seqdata_workflow_tumour',
+        axes=('tumour_id',),
+        func=remixt.workflow.create_extract_seqdata_workflow,
+        args=(
+            pypeliner.managed.InputFile('bam', 'tumour_id', fnames=tumour_bam_files),
+            pypeliner.managed.OutputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
+            config['remixt'].get('extract_seqdata', {}),
+            config['remixt']['ref_data_dir'],
+        ),
     )
 
     merge_inputs = {}
@@ -33,19 +64,59 @@ def call_and_annotate_pipeline(
 
         workflow.subworkflow(
             name='remixt',
-            func=remixt.remixt_pipeline,
+            func=biowrappers.components.copy_number_calling.remixt.create_remixt_workflow,
             args=(
-                pypeliner.managed.InputFile(normal_bam_file),
-                pypeliner.managed.InputFile('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_files),
-                pypeliner.managed.InputFile(somatic_breakpoint_file),
+                pypeliner.managed.InputFile(normal_seq_data_filename),
+                pypeliner.managed.InputFile('tumour_seqdata', 'tumour_id', template=tumour_seq_data_template),
                 config['remixt']['config'],
-                config['remixt']['ref_data_dir'],
                 pypeliner.managed.OutputFile(remixt_results_filename),
                 remixt_raw_data,
             ),
+            kwargs={
+                'somatic_breakpoint_file': pypeliner.managed.InputFile(somatic_breakpoint_file),
+                'ref_data_dir': config['remixt']['ref_data_dir'],
+            },
         )
 
         merge_inputs['/copy_number/remixt'] = pypeliner.managed.InputFile(remixt_results_filename)
+
+    if 'titan' in config:
+        titan_raw_data = os.path.join(raw_data_dir, 'titan')
+        titan_results_filename = os.path.join(titan_raw_data, 'results.h5')
+        make_parent_directory(titan_results_filename)
+
+        workflow.subworkflow(
+            name='titan',
+            func=biowrappers.components.copy_number_calling.titan.create_titan_workflow,
+            args=(
+                pypeliner.managed.InputFile(normal_seq_data_filename),
+                pypeliner.managed.InputFile('tumour_seqdata', 'tumour_id', template=tumour_seq_data_template),
+                config['titan']['config'],
+                pypeliner.managed.OutputFile(titan_results_filename),
+                titan_raw_data,
+            ),
+        )
+
+        merge_inputs['/copy_number/titan'] = pypeliner.managed.InputFile(titan_results_filename)
+
+    if 'clonehd' in config:
+        clonehd_raw_data = os.path.join(raw_data_dir, 'clonehd')
+        clonehd_results_filename = os.path.join(clonehd_raw_data, 'results.h5')
+        make_parent_directory(clonehd_results_filename)
+
+        workflow.subworkflow(
+            name='clonehd',
+            func=biowrappers.components.copy_number_calling.clonehd.create_clonehd_workflow,
+            args=(
+                pypeliner.managed.InputFile(normal_seq_data_filename),
+                pypeliner.managed.InputFile('tumour_seqdata', 'tumour_id', template=tumour_seq_data_template),
+                config['clonehd']['config'],
+                pypeliner.managed.OutputFile(clonehd_results_filename),
+                clonehd_raw_data,
+            ),
+        )
+
+        merge_inputs['/copy_number/clonehd'] = pypeliner.managed.InputFile(titan_results_filename)
 
     workflow.transform(
         name='merge_results',
@@ -54,7 +125,7 @@ def call_and_annotate_pipeline(
         args=(
             merge_inputs,
             pypeliner.managed.OutputFile(results_file),
-        )
+        ),
     )
 
     return workflow

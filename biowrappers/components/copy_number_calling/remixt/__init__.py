@@ -7,19 +7,28 @@ import biowrappers.components.utils as utils
 
 import remixt.workflow
 
+import tasks
 
-def remixt_pipeline(
-    normal_bam_file,
-    tumour_bam_files,
-    somatic_breakpoint_filename,
+
+def create_remixt_workflow(
+    normal_seqdata_file,
+    tumour_seqdata_files,
     config,
-    ref_data_dir,
     out_file,
     raw_data_dir,
-    normal_sample_id='normal',
+    somatic_breakpoint_file=None,
+    ref_data_dir=None,
 ):
+    if somatic_breakpoint_file is None:
+        raise ValueError('somatic breakpoints required')
+
+    if ref_data_dir is None:
+        raise ValueError('ref data directory required')
+
     results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
+    selected_files = os.path.join(raw_data_dir, 'selected', 'sample_{sample_id}.h5')
     utils.make_parent_directory(results_files)
+    utils.make_parent_directory(selected_files)
 
     segment_filename = os.path.join(raw_data_dir, 'segment.tsv')
 
@@ -27,7 +36,7 @@ def remixt_pipeline(
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sample_id'),
-        value=tumour_bam_files.keys(),
+        value=tumour_seqdata_files.keys(),
     )
 
     workflow.transform(
@@ -40,19 +49,18 @@ def remixt_pipeline(
             ref_data_dir,
         ),
         kwargs={
-            'breakpoint_filename': pypeliner.managed.InputFile(somatic_breakpoint_filename),
+            'breakpoint_filename': pypeliner.managed.InputFile(somatic_breakpoint_file),
         },
     )
 
     workflow.subworkflow(
-        name='remixt_pipeline',
-        func=remixt.workflow.create_remixt_workflow,
+        name='remixt',
+        func=remixt.workflow.create_remixt_seqdata_workflow,
         args=(
             pypeliner.managed.InputFile(segment_filename),
-            pypeliner.managed.InputFile(somatic_breakpoint_filename),
-            pypeliner.managed.InputFile('tumour_bam', 'sample_id', fnames=tumour_bam_files),
-            pypeliner.managed.InputFile(normal_bam_file),
-            normal_sample_id,
+            pypeliner.managed.InputFile(somatic_breakpoint_file),
+            pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
+            pypeliner.managed.InputFile(normal_seqdata_file),
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_files, axes_origin=[]),
             raw_data_dir,
             config,
@@ -60,19 +68,27 @@ def remixt_pipeline(
         ),
     )
 
-    merge_inputs = {}
-    for sample_id in tumour_bam_files.keys():
-        mgd_input = pypeliner.managed.InputFile('results', 'sample_id', template=results_files)
-        merge_inputs['/sample_{sample_id}'.format(sample_id=sample_id)] = mgd_input
+    workflow.transform(
+        name='select_solution',
+        func=tasks.select_solution,
+        axes=('sample_id',),
+        args=(
+            pypeliner.managed.OutputFile('selected', 'sample_id', template=selected_files),
+            pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
+        )
+    )
 
     workflow.transform(
         name='merge_results',
         ctx={'mem': 8},
         func=hdf5_tasks.merge_hdf5,
         args=(
-            merge_inputs,
+            pypeliner.managed.InputFile('selected', 'sample_id', template=selected_files),
             pypeliner.managed.OutputFile(out_file),
-        )
+        ),
+        kwargs={
+            'table_names': '/sample_{}',
+        },
     )
     
     return workflow

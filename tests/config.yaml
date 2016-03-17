@@ -1,0 +1,76 @@
+
+lanes:
+  normal:
+    D1VCPACXX_6:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_6.bam
+    D1VCPACXX_7:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_7.bam
+    D1VCPACXX_8:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_8.bam
+
+  tumour:
+    D1VCPACXX_1:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_1.bam
+    D1VCPACXX_2:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_2.bam
+    D1VCPACXX_3:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_3.bam
+    D1VCPACXX_4:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_4.bam
+    D1VCPACXX_5:
+      url: https://xfer.genome.wustl.edu/gxfer1/project/gms/testdata/bams/hcc1395_1tenth_percent/gerald_D1VCPACXX_5.bam
+
+ref_genome: 
+  url: http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa
+  fasta_file: {ref_db_dir}/GRCh37-lite.fa
+
+realignment:
+  # Minimum number of reads per BAM file during realignment process
+  split_size: 10000000
+
+  ref_genome:
+    # Path to file
+    file: {ref_db_dir}/GRCh37-lite.fa
+    
+    header:
+      # Download url for ref genome
+      UR : http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome
+      # Source of genome
+      AS : hg19/1000genomes
+      # Species
+      SP : Homo sapiens
+
+
+# Breakpoint calling
+#
+
+destruct:
+  config:
+    _empty: '_empty'
+  ref_data_dir: '{ref_db_dir}/destruct'
+
+
+# Copy number calling
+#
+
+breakpoint_filtering:
+  minimum_num_reads: 5
+
+remixt:
+  config:
+    _empty: '_empty'
+  ref_data_dir: '{ref_db_dir}/destruct'
+
+chrom_info:
+  url: 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/chromInfo.txt.gz'
+  local_path: '{ref_db_dir}/titan/chromInfo.txt.gz'
+
+titan:
+  config:
+    chrom_info_filename: '{ref_db_dir}/titan/chromInfo.txt.gz'
+
+clonehd:
+  config:
+    chrom_info_filename: '{ref_db_dir}/titan/chromInfo.txt.gz'
+
+    
