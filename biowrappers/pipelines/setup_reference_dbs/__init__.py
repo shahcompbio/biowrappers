@@ -176,7 +176,9 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
         args=(
             'samtools',
             'dict',
-            pypeliner.managed.InputFile(out_file)
+            pypeliner.managed.InputFile(out_file),
+            '>',
+            pypeliner.managed.OutputFile(out_file + '.build_dict.log'),
         )
     )
     
@@ -186,7 +188,9 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
         args=(
             'samtools',
             'faidx',
-            pypeliner.managed.InputFile(out_file)
+            pypeliner.managed.InputFile(out_file),
+            '>',
+            pypeliner.managed.OutputFile(out_file + '.build_fai.log'),
         )
     )
     
@@ -196,7 +200,9 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
         args=(
             'bwa',
             'index',
-            pypeliner.managed.InputFile(out_file)
+            pypeliner.managed.InputFile(out_file),
+            '>',
+            pypeliner.managed.OutputFile(out_file + '.build_bwa_index.log'),
         )
     )
     
