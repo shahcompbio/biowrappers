@@ -40,8 +40,6 @@ def create_setup_reference_dbs_workflow(config):
                 pypeliner.managed.OutputFile(config['delly']['local_path']),
             )
         )
-    
-        return workflow
         
     if 'mappability' in config:
         workflow.subworkflow(
