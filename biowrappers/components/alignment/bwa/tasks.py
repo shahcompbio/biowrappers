@@ -3,6 +3,7 @@ Created on Feb 3, 2016
 
 @author: Andrew Roth
 '''
+import os
 import pypeliner
 
 def run_aln(in_fastq_file, ref_genome_fasta_file, out_sai_file):
@@ -14,6 +15,7 @@ def run_aln(in_fastq_file, ref_genome_fasta_file, out_sai_file):
         '>',
         out_sai_file
     )
+    assert os.path.getsize(out_sai_file) > 0
     
 def run_sampe(
     in_fastq_file_1,
@@ -75,3 +77,4 @@ def run_sampe(
     cmd.extend(['>', out_file])
     
     pypeliner.commandline.execute(*cmd)
+
