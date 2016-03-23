@@ -116,7 +116,7 @@ def call_and_annotate_pipeline(
             ),
         )
 
-        merge_inputs['/copy_number/clonehd'] = pypeliner.managed.InputFile(titan_results_filename)
+        merge_inputs['/copy_number/clonehd'] = pypeliner.managed.InputFile(clonehd_results_filename)
 
     workflow.transform(
         name='merge_results',
