@@ -3,11 +3,10 @@ import yaml
 import pypeliner
 from pypeliner.workflow import Workflow
 
-from biowrappers.components.utils import make_directory
-import biowrappers.components.io.download as download
-from biowrappers.pipelines.realignment import realignment_pipeline
-from biowrappers.components.io.bam.tasks import mark_duplicates
-
+import biowrappers.components.utils
+import biowrappers.components.io.download
+import biowrappers.pipelines.realignment
+import biowrappers.components.io.bam.tasks
 import biowrappers.pipelines.breakpoint_call_and_annotate
 import biowrappers.pipelines.copy_number
 
@@ -15,7 +14,7 @@ import tasks
 
 
 def main(args):
-    make_directory(args.out_dir)
+    biowrappers.components.utils.make_directory(args.out_dir)
     
     with open(args.config_file) as config_file:
         config_text = config_file.read()
@@ -50,7 +49,7 @@ def main(args):
     workflow.subworkflow(
         name='download_lanes',
         axes=('sample', 'lane'),
-        func=download.create_download_workflow,
+        func=biowrappers.components.io.download.create_download_workflow,
         args=(
             pypeliner.managed.TempInputObj('url', 'sample', 'lane'),
             pypeliner.managed.OutputFile('raw_lane', 'sample', 'lane', template=raw_lane_template),
@@ -60,7 +59,7 @@ def main(args):
     workflow.subworkflow(
         name='realign_lanes',
         axes=('sample', 'lane'),
-        func=realignment_pipeline,
+        func=biowrappers.pipelines.realignment.realignment_pipeline,
         args=(
             config['realignment'],
             pypeliner.managed.InputFile('raw_lane', 'sample', 'lane', template=raw_lane_template),
@@ -71,17 +70,15 @@ def main(args):
     workflow.transform(
         name='merge_and_markdups',
         axes=('sample',),
-        func=mark_duplicates,
+        func=biowrappers.components.io.bam.tasks.mark_duplicates,
         args=(
             pypeliner.managed.InputFile('realigned_lane', 'sample', 'lane', template=realigned_lane_template),
             pypeliner.managed.OutputFile('bam', 'sample', template=sample_bam_template),
         ),
         kwargs={
-            'tmp_dir' : pypeliner.managed.TempSpace('markdup_temp', 'sample')
+            'tmp_dir': pypeliner.managed.TempSpace('markdup_temp', 'sample')
         }
     )
-    pyp.run(workflow)
-    return
 
     normal_bam_file = sample_bam_template.format(sample='normal')
     tumour_bam_file = sample_bam_template.format(sample='tumour')
