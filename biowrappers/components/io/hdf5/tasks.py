@@ -246,4 +246,4 @@ def merge_hdf5(in_files, out_file, table_names='{}'):
         for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
 
-            out_store[table_names.format(*file_key)] = df
+            out_store[table_names.format(*file_key) + '/' + table_name] = df
