@@ -13,6 +13,12 @@ import time
 
 from biowrappers.components.utils import flatten_input
 
+def _get_bam_index_filename(bam_filename):
+    if bam_filename.endswith('.tmp'):
+        return bam_filename[:-4] + '.bai'
+    else:
+        return bam_filename + '.bai'
+
 def collate(in_file, out_file):
     
     out_prefix = out_file + '.shuffle'
@@ -128,6 +134,8 @@ def mark_duplicates(
         if clean_up:
             shutil.rmtree(tmp_dir)
 
+    pypeliner.commandline.execute('samtools', 'index', out_file, _get_bam_index_filename(out_file))
+
 def merge(
     in_files,
     out_file,
@@ -158,6 +166,8 @@ def merge(
         cmd.append(file_name)
         
     pypeliner.commandline.execute(*cmd)
+
+    pypeliner.commandline.execute('samtools', 'index', out_file, _get_bam_index_filename(out_file))
     
 def sort(in_file, out_file, max_mem='2G', name_sort=False, compression_level=9, num_threads=1):
 
@@ -176,4 +186,6 @@ def sort(in_file, out_file, max_mem='2G', name_sort=False, compression_level=9, 
     cmd.append(in_file)
      
     pypeliner.commandline.execute(*cmd)
+
+    pypeliner.commandline.execute('samtools', 'index', out_file, _get_bam_index_filename(out_file))
 
