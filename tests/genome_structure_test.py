@@ -80,8 +80,12 @@ def main(args):
         }
     )
 
+    pyp.run(workflow)
+
     normal_bam_file = sample_bam_template.format(sample='normal')
     tumour_bam_file = sample_bam_template.format(sample='tumour')
+
+    workflow = Workflow(default_ctx={'mem': 8})
 
     breakpoint_raw_data_dir = os.path.join(args.out_dir, 'breakpoints', 'raw')
     breakpoint_results_file = os.path.join(args.out_dir, 'breakpoints', 'results.h5')
