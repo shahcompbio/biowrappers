@@ -59,7 +59,7 @@ breakpoint_filtering:
 remixt:
   config:
     _empty: '_empty'
-  ref_data_dir: '{ref_db_dir}/destruct'
+  ref_data_dir: '{ref_db_dir}/remixt'
 
 chrom_info:
   url: 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/chromInfo.txt.gz'
@@ -68,6 +68,11 @@ chrom_info:
 titan:
   config:
     chrom_info_filename: '{ref_db_dir}/titan/chromInfo.txt.gz'
+    mappability_url: 'http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig'
+    mappability_wig: '{ref_db_dir}/titan/wgEncodeCrgMapabilityAlign100mer.wig'
+    gc_wig: '{ref_db_dir}/titan/GRCh37_gc.wig'
+    window_size: 1000
+    max_copy_number: 5
 
 clonehd:
   config:
