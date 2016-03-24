@@ -37,7 +37,7 @@ def main(args):
     raw_lane_template = os.path.join(args.out_dir, 'lanes', 'raw', '{lane}.bam')
 
     realigned_lane_template = os.path.join(args.out_dir, 'lanes', 'realigned', '{lane}.bam')
-    sample_bam_template = os.path.join(args.out_dir, 'lanes', '{sample}.bam')
+    sample_bam_template = os.path.join(args.out_dir, '{sample}.bam')
 
     workflow = Workflow(default_ctx={'mem': 8})
 
