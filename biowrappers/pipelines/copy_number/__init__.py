@@ -67,7 +67,7 @@ def call_and_annotate_pipeline(
             func=biowrappers.components.copy_number_calling.remixt.create_remixt_workflow,
             args=(
                 pypeliner.managed.InputFile(normal_seq_data_filename),
-                pypeliner.managed.InputFile('tumour_seqdata', 'tumour_id', template=tumour_seq_data_template),
+                pypeliner.managed.InputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
                 config['remixt']['config'],
                 pypeliner.managed.OutputFile(remixt_results_filename),
                 remixt_raw_data,
@@ -90,7 +90,7 @@ def call_and_annotate_pipeline(
             func=biowrappers.components.copy_number_calling.titan.create_titan_workflow,
             args=(
                 pypeliner.managed.InputFile(normal_seq_data_filename),
-                pypeliner.managed.InputFile('tumour_seqdata', 'tumour_id', template=tumour_seq_data_template),
+                pypeliner.managed.InputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
                 config['titan']['config'],
                 pypeliner.managed.OutputFile(titan_results_filename),
                 titan_raw_data,
@@ -109,7 +109,7 @@ def call_and_annotate_pipeline(
             func=biowrappers.components.copy_number_calling.clonehd.create_clonehd_workflow,
             args=(
                 pypeliner.managed.InputFile(normal_seq_data_filename),
-                pypeliner.managed.InputFile('tumour_seqdata', 'tumour_id', template=tumour_seq_data_template),
+                pypeliner.managed.InputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
                 config['clonehd']['config'],
                 pypeliner.managed.OutputFile(clonehd_results_filename),
                 clonehd_raw_data,
