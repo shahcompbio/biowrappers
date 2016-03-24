@@ -3,6 +3,8 @@ Created on Dec 13, 2015
 
 @author: Andrew Roth
 '''
+import os
+
 def add_pypeliner_args(parser):
     parser.add_argument('-c', '--cleanup_tmp_files', default=True, action='store_false')
     
