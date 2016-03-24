@@ -154,9 +154,11 @@ def create_intialization_parameters(config):
     """ Initialize parameter sweep
     """
 
-    normal_contamination = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    num_clusters = [2]
-    ploidy = [1, 2, 3, 4]
+    normal_contamination = config.get('normal_contamination', [0.2, 0.4, 0.6, 0.8])
+    
+    num_clusters = config.get('num_clusters', [1, 2, 3, 4, 5])
+    
+    ploidy = config.get('ploidy', [1, 2, 3, 4])
 
     init_param_values = itertools.product(
         normal_contamination,
@@ -220,7 +222,7 @@ def select_solution(init_params, cn_filename, params_filename, results_filename,
 
         cell_prev_field = 'Clonal cluster cellular prevalence Z={0}'.format(int(row['num_clusters']))
         for idx, cell_prev in enumerate(titan_params[cell_prev_field]):
-            init_params.loc[init_param_idx, 'cell_prev_est_{0}'.format(idx+1)] = cell_prev
+            init_params.loc[init_param_idx, 'cell_prev_est_{0}'.format(idx + 1)] = cell_prev
 
     best_idx = init_params['model_selection_index'].argmin()
 
@@ -228,11 +230,11 @@ def select_solution(init_params, cn_filename, params_filename, results_filename,
 
     if init_params.loc[best_idx, 'num_clusters'] == 1:
         t_1 = init_params.loc[best_idx, 'cell_prev_est_1']
-        mix = [n, (1-n) * t_1]
+        mix = [n, (1 - n) * t_1]
     elif init_params.loc[best_idx, 'num_clusters'] == 2:
         t_1 = init_params.loc[best_idx, 'cell_prev_est_1']
         t_2 = init_params.loc[best_idx, 'cell_prev_est_2']
-        mix = [n, (1-n) * t_2, (1-n) * abs(t_1 - t_2)]
+        mix = [n, (1 - n) * t_2, (1 - n) * abs(t_1 - t_2)]
 
     make_directory(temp_directory)
     cn_best_table_filename = os.path.join(temp_directory, 'cn_best.tsv')
