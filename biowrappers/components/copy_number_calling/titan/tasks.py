@@ -202,14 +202,15 @@ def run_titan(init_params, normal_wig_filename, tumour_wig_filename, tumour_alle
 
 
 def select_solution(
-    init_params, 
-    cn_filename, 
-    params_filename, 
+    init_params,
+    cn_filename,
+    params_filename,
     results_filename,
     titan_loci_filename,
-    titan_segments_filename, 
-    titan_igv_filename,  
-    config
+    titan_segments_filename,
+    titan_igv_filename,
+    config,
+    sample_id,
 ):
     """ Select optimal copy number and mixture
 
@@ -240,6 +241,7 @@ def select_solution(
     
     pypeliner.commandline.execute(
         'createTITANsegmentfiles.pl',
+        '-id', sample_id,
         '-i', cn_filename[best_idx],
         '-o', titan_segments_filename,
         '-igv', titan_igv_filename,
