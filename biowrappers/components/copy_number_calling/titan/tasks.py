@@ -1,16 +1,11 @@
-import os
 import itertools
 import numpy as np
 import pandas as pd
-
-from biowrappers.components.utils import make_directory
-
 import pypeliner
-
 import remixt.seqdataio
 import remixt.segalg
 import remixt.analysis.haplotype
-
+import shutil
 
 def read_chromosome_lengths(chrom_info_filename):
 
@@ -206,7 +201,16 @@ def run_titan(init_params, normal_wig_filename, tumour_wig_filename, tumour_alle
     pypeliner.commandline.execute(*titan_cmd)
 
 
-def select_solution(init_params, cn_filename, params_filename, results_filename, temp_directory, config):
+def select_solution(
+    init_params, 
+    cn_filename, 
+    params_filename, 
+    results_filename,
+    titan_loci_filename,
+    titan_segments_filename, 
+    titan_igv_filename,  
+    config
+):
     """ Select optimal copy number and mixture
 
     """
@@ -231,20 +235,18 @@ def select_solution(init_params, cn_filename, params_filename, results_filename,
     
     for i in range(init_params.loc[best_idx, 'num_clusters']):
         mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
-
-    make_directory(temp_directory)
-    cn_best_table_filename = os.path.join(temp_directory, 'cn_best.tsv')
-    cn_best_igv_filename = os.path.join(temp_directory, 'cn_best.igv')
-
+    
+    shutil.copyfile(cn_filename[best_idx], titan_loci_filename)
+    
     pypeliner.commandline.execute(
         'createTITANsegmentfiles.pl',
         '-i', cn_filename[best_idx],
-        '-o', cn_best_table_filename,
-        '-igv', cn_best_igv_filename,
+        '-o', titan_segments_filename,
+        '-igv', titan_igv_filename,
     )
 
     cn_data = pd.read_csv(
-        cn_best_table_filename,
+        titan_segments_filename,
         sep='\t', converters={'Chromosome': str}
     )
 

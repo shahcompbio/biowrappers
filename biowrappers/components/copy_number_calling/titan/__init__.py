@@ -86,7 +86,9 @@ def create_titan_workflow(
             pypeliner.managed.TempInputFile('cn.tsv', 'sample_id', 'init_param_id'),
             pypeliner.managed.TempInputFile('params.tsv', 'sample_id', 'init_param_id'),
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
-            pypeliner.managed.TempSpace('select_solution_temp', 'sample_id'),
+            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
+            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_segments.tsv'), 'sample_id'),
+            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_igv.tsv'), 'sample_id'),
             config,
         ),
     )
