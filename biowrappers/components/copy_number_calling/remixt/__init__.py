@@ -41,7 +41,7 @@ def create_remixt_workflow(
 
     workflow.transform(
         name='create_segments',
-        ctx={'mem': 4},
+        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=remixt.analysis.segment.create_segments,
         args=(
             pypeliner.managed.OutputFile(segment_filename),
@@ -70,6 +70,7 @@ def create_remixt_workflow(
 
     workflow.transform(
         name='select_solution',
+        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.select_solution,
         axes=('sample_id',),
         args=(
@@ -80,7 +81,7 @@ def create_remixt_workflow(
 
     workflow.transform(
         name='merge_results',
-        ctx={'mem': 8},
+        ctx={'mem': 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=hdf5_tasks.merge_hdf5,
         args=(
             pypeliner.managed.InputFile('selected', 'sample_id', template=selected_files),
