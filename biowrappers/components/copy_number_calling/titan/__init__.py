@@ -27,7 +27,7 @@ def create_titan_workflow(
 
     workflow.transform(
         name='prepare_normal_data',
-        ctx={'mem': 16},
+        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
         func=tasks.prepare_normal_data,
         args=(
             pypeliner.managed.InputFile(normal_seqdata_file),
@@ -40,7 +40,7 @@ def create_titan_workflow(
     workflow.transform(
         name='prepare_tumour_data',
         axes=('sample_id',),
-        ctx={'mem': 16},
+        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
         func=tasks.prepare_tumour_data,
         args=(
             pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
@@ -54,7 +54,7 @@ def create_titan_workflow(
     workflow.transform(
         name='create_intialization_parameters',
         axes=('sample_id',),
-        ctx={'mem': 4},
+        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.create_intialization_parameters,
         ret=pypeliner.managed.TempOutputObj('init_params', 'sample_id', 'init_param_id'),
         args=(config,),
@@ -63,7 +63,7 @@ def create_titan_workflow(
     workflow.transform(
         name='run_titan',
         axes=('sample_id', 'init_param_id'),
-        ctx={'mem': 16},
+        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
         func=tasks.run_titan,
         args=(
             pypeliner.managed.TempInputObj('init_params', 'sample_id', 'init_param_id'),
@@ -79,7 +79,7 @@ def create_titan_workflow(
     workflow.transform(
         name='select_solution',
         axes=('sample_id',),
-        ctx={'mem': 4},
+        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.select_solution,
         args=(
             pypeliner.managed.TempInputObj('init_params', 'sample_id', 'init_param_id'),
@@ -96,7 +96,7 @@ def create_titan_workflow(
 
     workflow.transform(
         name='merge_results',
-        ctx={'mem': 8},
+        ctx={'mem': 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=hdf5_tasks.merge_hdf5,
         args=(
             pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
