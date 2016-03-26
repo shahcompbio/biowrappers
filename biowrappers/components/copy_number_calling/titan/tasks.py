@@ -234,7 +234,7 @@ def select_solution(
 
     mix = [init_params.loc[best_idx, 'norm_contam_est'], ]
     
-    for i in range(init_params.loc[best_idx, 'num_clusters']):
+    for i in range(int(init_params.loc[best_idx, 'num_clusters'])):
         mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
     
     shutil.copyfile(cn_filename[best_idx], titan_loci_filename)
