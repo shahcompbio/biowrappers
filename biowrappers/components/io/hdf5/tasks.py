@@ -208,7 +208,7 @@ def _get_meta_data_tables(store):
     
     for table_name in store.keys():
         for meta_table_name in store.keys():
-            if (meta_table_name.endswith('/meta')) and meta_table_name.startswith(table_name):
+            if (meta_table_name.endswith('/meta')) and ('block' in meta_table_name) and  meta_table_name.startswith(table_name):
                 meta_tables.add(meta_table_name)
     
     return meta_tables
