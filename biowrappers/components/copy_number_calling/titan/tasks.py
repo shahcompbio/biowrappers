@@ -209,6 +209,7 @@ def select_solution(
     titan_loci_filename,
     titan_segments_filename,
     titan_igv_filename,
+    titan_params_filename,
     config,
     sample_id,
 ):
@@ -236,6 +237,8 @@ def select_solution(
     
     for i in range(int(init_params.loc[best_idx, 'num_clusters'])):
         mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
+    
+    shutil.copyfile(params_filename[best_idx], titan_params_filename)
     
     shutil.copyfile(cn_filename[best_idx], titan_loci_filename)
     

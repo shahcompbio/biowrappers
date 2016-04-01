@@ -89,6 +89,7 @@ def create_titan_workflow(
             pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
             pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_segments.tsv'), 'sample_id'),
             pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_igv.tsv'), 'sample_id'),
+            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_params.tsv'), 'sample_id'),
             config,
             pypeliner.managed.Template('{sample_id}', 'sample_id'),
         ),
