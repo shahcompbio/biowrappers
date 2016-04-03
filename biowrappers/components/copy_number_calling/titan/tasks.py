@@ -206,10 +206,10 @@ def select_solution(
     cn_filename,
     params_filename,
     results_filename,
-    titan_loci_filename,
-    titan_segments_filename,
-    titan_igv_filename,
-    titan_params_filename,
+    output_loci_filename,
+    output_segments_filename,
+    output_igv_filename,
+    output_params_filename,
     config,
     sample_id,
 ):
@@ -238,20 +238,20 @@ def select_solution(
     for i in range(int(init_params.loc[best_idx, 'num_clusters'])):
         mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
     
-    shutil.copyfile(params_filename[best_idx], titan_params_filename)
+    shutil.copyfile(params_filename[best_idx], output_params_filename)
     
-    shutil.copyfile(cn_filename[best_idx], titan_loci_filename)
+    shutil.copyfile(cn_filename[best_idx], output_loci_filename)
     
     pypeliner.commandline.execute(
         'createTITANsegmentfiles.pl',
         '-id', sample_id,
         '-i', cn_filename[best_idx],
-        '-o', titan_segments_filename,
-        '-igv', titan_igv_filename,
+        '-o', output_segments_filename,
+        '-igv', output_igv_filename,
     )
 
     cn_data = pd.read_csv(
-        titan_segments_filename,
+        output_segments_filename,
         sep='\t', converters={'Chromosome': str}
     )
 
