@@ -14,6 +14,7 @@ def create_titan_workflow(
     config,
     out_file,
     raw_data_dir,
+    **kwargs
 ):
     results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
     utils.make_parent_directory(results_files)
