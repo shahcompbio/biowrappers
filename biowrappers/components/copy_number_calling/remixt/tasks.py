@@ -2,31 +2,21 @@ import pandas as pd
 
 
 def select_solution(selected_file, results_file):
-    common_tables = [
-        '/breakpoint_adjacencies',
-        '/breakpoints',
-        '/minor_modes',
-        '/read_depth',
-        '/reference_adjacencies',
-    ]
-
-    solution_tables = [
-        '/betabin_M',
-        '/brk_cn',
-        '/cn',
-        '/h',
-        '/h_init',
-        '/negbin_r',
-    ]
-
     with pd.HDFStore(selected_file, 'w') as selected_store, pd.HDFStore(results_file, 'r') as results_store:
-        for table_name in common_tables:
-            selected_store[table_name] = results_store[table_name]
-
         stats = results_store['stats']
-        solution_stats = stats.loc[stats['bic_optimal']].iloc[0]
-        solution_idx = solution_stats['idx']
+        stats.sort_values('log_likelihood', ascending=False, inplace=True)
+        solution_idx = stats.loc[stats.index[0], 'init_id']
 
-        for table_name in solution_tables:
-            selected_store[table_name] = results_store['/solutions/solution_{}/{}'.format(solution_idx, table_name)]
+        for table_name in results_store.keys():
+            if table_name.startswith('/solutions/solution_'):
+                solution_table_prefix = '/solutions/solution_{}'.format(solution_idx)
+
+                if table_name.startswith(solution_table_prefix):
+                    sub_table_name = table_name[len(solution_table_prefix):]
+
+                    selected_store[sub_table_name] = results_store[table_name]
+
+            else:
+                selected_store[table_name] = results_store[table_name]
+
 
