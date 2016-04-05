@@ -233,11 +233,28 @@ def select_solution(
 
     best_idx = init_params['model_selection_index'].argmin()
 
-    mix = [init_params.loc[best_idx, 'norm_contam_est'], ]
-    
-    for i in range(int(init_params.loc[best_idx, 'num_clusters'])):
-        mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
-    
+    if config.get('convert_output', False):
+        n = init_params.loc[best_idx, 'norm_contam_est']
+
+        if init_params.loc[best_idx, 'num_clusters'] == 1:
+            t_1 = init_params.loc[best_idx, 'cell_prev_est_1']
+
+            mix = [n, (1-n) * t_1]
+
+        elif init_params.loc[best_idx, 'num_clusters'] == 2:
+            t_1 = init_params.loc[best_idx, 'cell_prev_est_1']
+            t_2 = init_params.loc[best_idx, 'cell_prev_est_2']
+
+            mix = [n, (1-n) * t_2, (1-n) * abs(t_1 - t_2)]
+
+        elif init_params.loc[best_idx, 'num_clusters'] > 2:
+            raise ValueError('Unable to convert output for more than 2 clonal clusters')
+
+    else:
+        mix = [init_params.loc[best_idx, 'norm_contam_est'], ]
+        for i in range(int(init_params.loc[best_idx, 'num_clusters'])):
+            mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
+
     shutil.copyfile(params_filename[best_idx], output_params_filename)
     
     shutil.copyfile(cn_filename[best_idx], output_loci_filename)
@@ -268,9 +285,18 @@ def select_solution(
 
     cn_data = cn_data.rename(columns=cn_columns)[cn_columns.values()]
 
-    cn_data['clone'] = cn_data['clone'].fillna(-1).astype(int)
+    if config.get('convert_output', False):
+        cn_data['clone'] = cn_data['clone'].fillna(1).astype(int)
 
-    cn_data['prevalence'] = cn_data['prevalence'].fillna(0).astype(float)
+        cn_data['total_2'] = np.where(cn_data['clone'] == 1, cn_data['total_1'], 2)
+        cn_data['major_2'] = np.where(cn_data['clone'] == 1, cn_data['major_1'], 1)
+        cn_data['minor_2'] = np.where(cn_data['clone'] == 1, cn_data['minor_1'], 1)
+
+        cn_data = cn_data.drop(['clone'], axis=1)
+    else:
+        cn_data['clone'] = cn_data['clone'].fillna(-1).astype(int)
+
+        cn_data['prevalence'] = cn_data['prevalence'].fillna(0).astype(float)
 
     with pd.HDFStore(results_filename, 'w') as store:
         store['mix'] = pd.Series(mix)
