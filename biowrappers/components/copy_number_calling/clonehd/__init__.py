@@ -13,6 +13,7 @@ def create_clonehd_single_workflow(
     tumour_seqdata_file,
     config,
     results_file,
+    **kwargs
 ):
     workflow = Workflow()
 
@@ -66,6 +67,7 @@ def create_clonehd_workflow(
     config,
     out_file,
     raw_data_dir,
+    **kwargs
 ):
     results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
     utils.make_parent_directory(results_files)
