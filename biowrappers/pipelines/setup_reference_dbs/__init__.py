@@ -51,7 +51,7 @@ def create_setup_reference_dbs_workflow(config):
             )
         )
     
-    if 'ref_genome' in config:
+    if 'ref_genome' in config and 'url' in config['ref_genome']:
         workflow.subworkflow(
             name='ref_genome', 
             func=create_ref_genome_download_and_index_workflow, 
