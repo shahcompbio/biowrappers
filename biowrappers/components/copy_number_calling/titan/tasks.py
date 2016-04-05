@@ -139,7 +139,7 @@ def prepare_tumour_data(tumour_filename, het_positions_filename, tumour_wig_file
 
     write_segment_count_wig(tumour_wig_filename, tumour_filename, chromosome_lengths, segment_length=config['window_size'])
 
-    het_positions = pd.read_csv(het_positions_filename, sep='\t')
+    het_positions = pd.read_csv(het_positions_filename, sep='\t', converters={'chromosome': str})
 
     tumour_allele_count = calculate_allele_counts(tumour_filename).merge(het_positions)
     write_titan_format_alleles(tumour_allele_filename, tumour_allele_count)
