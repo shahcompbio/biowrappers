@@ -288,7 +288,7 @@ def report(
 
         cna_filename = cna_subclone_filenames[clone_id]
 
-        cna_data = pd.read_csv(cna_filename, delim_whitespace=True)
+        cna_data = pd.read_csv(cna_filename, delim_whitespace=True, converters={'#chr': str})
         cna_data.rename(columns={'#chr': 'chromosome', 'first-locus': 'start', 'last-locus': 'end'}, inplace=True)
         cna_data.drop(['nloci'], axis=1, inplace=True)
         # Unclear from the documentation, though techically the first datapoint is an endpoint
@@ -301,7 +301,7 @@ def report(
 
         baf_filename = baf_subclone_filenames[clone_id]
 
-        baf_data = pd.read_csv(baf_filename, delim_whitespace=True)
+        baf_data = pd.read_csv(baf_filename, delim_whitespace=True, converters={'#chr': str})
         baf_data.rename(columns={'#chr': 'chromosome', 'first-locus': 'start', 'last-locus': 'end'}, inplace=True)
         baf_data.drop(['nloci'], axis=1, inplace=True)
         baf_data.set_index(['chromosome', 'start', 'end'], inplace=True)
