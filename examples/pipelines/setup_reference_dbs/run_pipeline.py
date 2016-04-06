@@ -10,7 +10,7 @@ def main(args):
         # Replace {ref_path_db} in config with desired path
         config_str = fh.read()
         
-        config_str = config_str.format(ref_db_path=args.ref_db_path)
+        config_str = config_str.format(ref_db_dir=args.ref_db_dir)
         
         # Load config
         config = yaml.load(config_str)
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--config_file', required=True)
     
-    parser.add_argument('--ref_db_path', required=True)
+    parser.add_argument('--ref_db_dir', required=True)
     
     cli.add_pypeliner_args(parser)
     
