@@ -1,6 +1,7 @@
 from pypeliner.workflow import Workflow
 
 import numpy as np
+import pandas as pd
 import pypeliner
 
 import tasks
@@ -9,6 +10,7 @@ default_ctx = {'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2}
 
 def create_tree_search_workflow(
     in_file,
+    nodes_file,
     search_file,
     tree_file,
     grid_search=False,
@@ -104,6 +106,35 @@ def create_tree_search_workflow(
             pypeliner.managed.OutputFile(tree_file)
         )
     )
+
+    workflow.transform(
+        name='get_ml_loss_prob', 
+        ctx={'local' : True}, 
+        func=get_loss_prob, 
+        ret=pypeliner.managed.TempOutputObj('ml_loss_prob'),
+        args=(
+            pypeliner.managed.InputFile(search_file),
+        )
+    )
+    
+    workflow.commandline(
+        name='annotate_posterirors',
+        axes=(),
+        ctx=default_ctx,
+        args=(
+            'PyDollo',
+            'annotate_posteriors',
+            '--log_likelihoods_file', pypeliner.managed.InputFile(in_file),
+            '--tree_file', pypeliner.managed.InputFile(tree_file),
+            '--out_file', pypeliner.managed.OutputFile(nodes_file),
+            '--probability_of_loss', pypeliner.managed.TempInputObj('ml_loss_prob'),
+        ),
+    )
     
     return workflow
+
+def get_loss_prob(file_name):
     
+    df = pd.read_csv(file_name, compression='gzip', sep='\t')
+    
+    return df.iloc[0]['probability_of_loss']
