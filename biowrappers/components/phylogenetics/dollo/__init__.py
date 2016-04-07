@@ -7,7 +7,7 @@ import tasks
 
 default_ctx = {'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2}
 
-def get_tree_search_workflow(
+def create_tree_search_workflow(
     in_file,
     search_file,
     tree_file,
