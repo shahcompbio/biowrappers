@@ -13,6 +13,7 @@ def create_clonehd_single_workflow(
     tumour_seqdata_file,
     config,
     results_file,
+    somatic_breakpoint_file=None,
     **kwargs
 ):
     workflow = Workflow()
@@ -46,6 +47,9 @@ def create_clonehd_single_workflow(
         ),
     )
 
+    if somatic_breakpoint_file is not None:
+        somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
+
     workflow.transform(
         name='report',
         ctx={'mem': 4},
@@ -56,6 +60,9 @@ def create_clonehd_single_workflow(
             pypeliner.managed.TempInputFile('bam_subclone', 'subclone'),
             pypeliner.managed.OutputFile(results_file),
         ),
+        kwargs={
+            'somatic_breakpoint_file': somatic_breakpoint_file,
+        },
     )
 
     return workflow
@@ -67,6 +74,7 @@ def create_clonehd_workflow(
     config,
     out_file,
     raw_data_dir,
+    somatic_breakpoint_file=None,
     **kwargs
 ):
     results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
@@ -79,6 +87,9 @@ def create_clonehd_workflow(
         value=tumour_seqdata_files.keys(),
     )
 
+    if somatic_breakpoint_file is not None:
+        somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
+
     workflow.subworkflow(
         name='run_clonehd',
         axes=('sample_id',),
@@ -89,6 +100,9 @@ def create_clonehd_workflow(
             config,
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
         ),
+        kwargs={
+            'somatic_breakpoint_file': somatic_breakpoint_file,
+        },
     )
 
     workflow.transform(

@@ -7,6 +7,9 @@ import remixt.segalg
 import remixt.analysis.haplotype
 import shutil
 
+from biowrappers.components.copy_number_calling.common.tasks import calculate_breakpoint_copy_number
+
+
 def read_chromosome_lengths(chrom_info_filename):
 
     chrom_info = pd.read_csv(chrom_info_filename, sep='\t', compression='gzip', names=['chrom', 'length', 'twobit'])
@@ -212,6 +215,7 @@ def select_solution(
     output_params_filename,
     config,
     sample_id,
+    breakpoints_filename=None,
 ):
     """ Select optimal copy number and mixture
 
@@ -301,4 +305,9 @@ def select_solution(
     with pd.HDFStore(results_filename, 'w') as store:
         store['mix'] = pd.Series(mix)
         store['cn'] = cn_data
+
+        if config.get('convert_output', False) and breakpoints_filename is not None:
+            store['brk_cn'] = calculate_breakpoint_copy_number(breakpoints_filename, cn_data)
+
+
 

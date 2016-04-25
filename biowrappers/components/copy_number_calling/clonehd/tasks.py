@@ -8,8 +8,11 @@ import pypeliner
 import remixt.seqdataio
 import remixt.segalg
 import remixt.analysis.haplotype
+import remixt.analysis.experiment
+import remixt.cn_model
 
 from biowrappers.components.utils import make_directory
+from biowrappers.components.copy_number_calling.common.tasks import calculate_breakpoint_copy_number
 
 
 def read_chromosome_lengths(chrom_info_filename):
@@ -257,6 +260,7 @@ def report(
     cna_subclone_filenames,
     baf_subclone_filenames,
     results_filename,
+    breakpoints_filename=None,
 ):
     """ Report optimal copy number and mixture
 
@@ -347,9 +351,17 @@ def report(
 
             cn_table.drop(['idx_1', 'idx_2'], axis=1, inplace=True)
 
+    # Post-hoc breakpoint copy number
+    if breakpoints_filename is not None:
+        brk_cn = calculate_breakpoint_copy_number(breakpoints_filename, cn_table)
+    else:
+        brk_cn = None
+
     with pd.HDFStore(results_filename, 'w') as store:
         store['mix'] = pd.Series(mix)
         store['cn'] = cn_table
+        if brk_cn is not None:
+            store['brk_cn'] = brk_cn
 
 
 

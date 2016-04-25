@@ -17,10 +17,10 @@ def call_and_annotate_pipeline(
     config,
     normal_bam_file,
     tumour_bam_files,
-    somatic_breakpoint_file,
     raw_data_dir,
     results_file,
     normal_id='normal',
+    somatic_breakpoint_file=None,
 ):
     workflow = Workflow()
     
@@ -31,6 +31,9 @@ def call_and_annotate_pipeline(
 
     tumour_seq_data_template = os.path.join(raw_data_dir, 'seqdata', 'sample_{tumour_id}.h5')
     normal_seq_data_filename = os.path.join(raw_data_dir, 'seqdata', 'sample_{}.h5'.format(normal_id))
+
+    if somatic_breakpoint_file is not None:
+        somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
 
     workflow.subworkflow(
         name='extract_seqdata_workflow_normal',
@@ -73,7 +76,7 @@ def call_and_annotate_pipeline(
                 remixt_raw_data,
             ),
             kwargs={
-                'somatic_breakpoint_file': pypeliner.managed.InputFile(somatic_breakpoint_file),
+                'somatic_breakpoint_file': somatic_breakpoint_file,
                 'ref_data_dir': config['remixt']['ref_data_dir'],
             },
         )
@@ -95,6 +98,9 @@ def call_and_annotate_pipeline(
                 pypeliner.managed.OutputFile(titan_results_filename),
                 titan_raw_data,
             ),
+            kwargs={
+                'somatic_breakpoint_file': somatic_breakpoint_file,
+            },
         )
 
         merge_inputs['/copy_number/titan'] = pypeliner.managed.InputFile(titan_results_filename)
@@ -114,6 +120,9 @@ def call_and_annotate_pipeline(
                 pypeliner.managed.OutputFile(clonehd_results_filename),
                 clonehd_raw_data,
             ),
+            kwargs={
+                'somatic_breakpoint_file': somatic_breakpoint_file,
+            },
         )
 
         merge_inputs['/copy_number/clonehd'] = pypeliner.managed.InputFile(clonehd_results_filename)

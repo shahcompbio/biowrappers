@@ -14,6 +14,7 @@ def create_titan_workflow(
     config,
     out_file,
     raw_data_dir,
+    somatic_breakpoint_file=None,
     **kwargs
 ):
     results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
@@ -77,6 +78,9 @@ def create_titan_workflow(
         ),
     )
 
+    if somatic_breakpoint_file is not None:
+        somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
+
     workflow.transform(
         name='select_solution',
         axes=('sample_id',),
@@ -94,6 +98,9 @@ def create_titan_workflow(
             config,
             pypeliner.managed.Template('{sample_id}', 'sample_id'),
         ),
+        kwargs={
+            'breakpoints_filename': somatic_breakpoint_file,
+        },
     )
 
     workflow.transform(

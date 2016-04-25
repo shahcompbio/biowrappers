@@ -16,8 +16,8 @@ def create_remixt_workflow(
     config,
     out_file,
     raw_data_dir,
-    somatic_breakpoint_file=None,
     ref_data_dir=None,
+    somatic_breakpoint_file=None,
 ):
     if somatic_breakpoint_file is None:
         raise ValueError('somatic breakpoints required')
