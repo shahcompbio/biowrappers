@@ -21,12 +21,15 @@ def call_and_annotate_pipeline(
     results_file,
     normal_id='normal',
     somatic_breakpoint_file=None,
+    ploidy_config=None,
 ):
+    sample_ids = tumour_bam_files.keys()
+
     workflow = Workflow()
     
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('tumour_id'),
-        value=tumour_bam_files.keys(),
+        value=sample_ids,
     )
 
     tumour_seq_data_template = os.path.join(raw_data_dir, 'seqdata', 'sample_{tumour_id}.h5')
@@ -65,13 +68,19 @@ def call_and_annotate_pipeline(
         remixt_results_filename = os.path.join(remixt_raw_data, 'results.h5')
         make_parent_directory(remixt_results_filename)
 
+        remixt_config = config['remixt']['config']
+        if ploidy_config is not None:
+            if 'fit_model' not in remixt_config:
+                remixt_config['fit_model'] = {}
+            remixt_config['fit_model'].update(ploidy_config)
+
         workflow.subworkflow(
             name='remixt',
             func=biowrappers.components.copy_number_calling.remixt.create_remixt_workflow,
             args=(
                 pypeliner.managed.InputFile(normal_seq_data_filename),
                 pypeliner.managed.InputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
-                config['remixt']['config'],
+                remixt_config,
                 pypeliner.managed.OutputFile(remixt_results_filename),
                 remixt_raw_data,
             ),
