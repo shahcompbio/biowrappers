@@ -31,14 +31,25 @@ def create_setup_reference_dbs_workflow(config):
             )
         )
     
-    if 'delly_exclude' in config:
+    if 'delly' in config:
         workflow.subworkflow(
-            name='delly_exclude', 
-            func=download.create_download_workflow, 
+            name='delly_exclude',
+            func=download.create_download_workflow,
             args=(
                 config['delly']['exclude_url'],
-                pypeliner.managed.OutputFile(config['delly']['local_path']),
+                pypeliner.managed.OutputFile(config['delly']['exclude_file']),
             )
+        )
+
+    if 'destruct' in config:
+        import destruct.create_ref_data
+        workflow.transform(
+            name='destruct_create_ref_data',
+            func=destruct.create_ref_data.create_ref_data,
+            args=(
+                config['destruct']['config'],
+                config['destruct']['ref_data_dir'],
+            ),
         )
         
     if 'mappability' in config:
