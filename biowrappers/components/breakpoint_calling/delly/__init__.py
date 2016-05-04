@@ -23,8 +23,17 @@ def delly_pipeline(
     bams += [utils.symlink(normal_bam_file, link_name='Normal.bam', link_directory=raw_data_dir)]
     utils.symlink(normal_bam_file+'.bai', link_name='Normal.bam.bai', link_directory=raw_data_dir)
 
+    sample_type = {'Normal': 'control'}
+    for lib_id, bam_filename in tumour_bam_files.iterkeys():
+        sample_type[lib_id] = 'tumor'
+
     workflow = Workflow()
     
+    workflow.setobj(
+        obj=pypeliner.managed.TempOutputObj('sample_type', 'sample_id'),
+        value=sample_type,
+    )
+
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sv_type'),
         value=('DEL', 'DUP', 'INV', 'TRA', 'INS'),
@@ -46,6 +55,16 @@ def delly_pipeline(
         axes=('sv_type',),
         ctx={'mem': 64, 'num_retry': 2, 'mem_retry_factor': 2},
         args=tuple(delly_args),
+    )
+
+    workflow.transform(
+        name='write_samples_table',
+        ctx={'mem': 1},
+        func=tasks.write_samples_table,
+        args=(
+            mgd.TempInputObj('sample_type', 'sample_id'),
+            mgd.TempOutputFile('samples.tsv'),
+        ),
     )
 
     workflow.commandline(

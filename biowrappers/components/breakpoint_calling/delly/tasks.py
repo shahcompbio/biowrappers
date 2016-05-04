@@ -1,5 +1,11 @@
-import vcf
+from pysam import VariantFile
 import pandas as pd
+
+
+def write_samples_table(sample_types, sample_table_filename):
+    with open(sample_table_filename, 'w') as f:
+        for sample_id, sample_type in sample_types:
+            f.write('{}\t{}\n'.format(sample_id, sample_type)
 
 
 def convert_vcf(vcf_filename, store_filename):
