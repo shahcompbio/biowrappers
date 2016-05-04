@@ -12,6 +12,16 @@ databases:
   ref_genome: 
     url: 'http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa'
     local_path: '{ref_db_dir}/GRCh37-lite.fa'
+    
+  destruct:
+    config:
+      _empty: '_empty'
+    ref_data_dir: '{ref_db_dir}/destruct'
+
+  delly:
+    exclude_url: 'https://github.com/tobiasrausch/delly/blob/master/excludeTemplates/human.hg19.excl.tsv'
+    exclude_file: '{ref_db_dir}/delly/human.hg19.excl.tsv'
+    ref_genome_fasta_file: '{ref_db_dir}/GRCh37-lite.fa'
 
 realignment:
   # Minimum number of reads per BAM file during realignment process
