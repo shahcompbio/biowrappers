@@ -59,8 +59,8 @@ def call_and_annotate_pipeline(
                 pypeliner.managed.InputFile('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_paths),
                 config['delly']['ref_genome_fasta_file'],
                 config['delly']['exclude_file'],
-                pypeliner.managed.OutputFile(destruct_results_filename),
-                destruct_raw_data,
+                pypeliner.managed.OutputFile(delly_results_filename),
+                delly_raw_data,
             ),
         )
 
