@@ -151,6 +151,20 @@ def concatenate_vcf_fast(in_files, out_file):
     cmd = ['vcf-concat', ] + [in_files[x] for x in sorted(in_files.keys())] + ['>', out_file]
     
     pypeliner.commandline.execute(*cmd)
+
+def concatenate_bcf(in_files, out_file):
+    """ Fast concatenation of BCF file using `bcftools`.
+    
+    :param in_files: dict with values being files to be concatenated. Files will be concatenated based on sorted order of keys.
+    
+    :param out_file: path where output file will be written in VCF format.
+    
+    """
+    
+    cmd = ['bcftools', '-O' 'b' '-o', out_file]
+    cmd += [in_files[x] for x in sorted(in_files.keys())]
+    
+    pypeliner.commandline.execute(*cmd)
                 
 def split_vcf(in_file, out_file_callback, lines_per_file):
     """ Split a VCF file into smaller files.

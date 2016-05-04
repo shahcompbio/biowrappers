@@ -27,15 +27,15 @@ def delly_pipeline(
     
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sv_type'),
-        value=('DEL', 'DUP', 'INV', 'TRA'),
+        value=('DEL', 'DUP', 'INV', 'TRA', 'INS'),
     )
 
     delly_args = [
-        'delly',
+        'delly', 'call',
         '-t', mgd.Instance('sv_type'),
         '-x', delly_excl_chrom,
         '-g', ref_genome_fasta_file,
-        '-o', mgd.TempOutputFile('out.vcf', 'sv_type'),
+        '-o', mgd.TempOutputFile('out.bcf', 'sv_type'),
     ]
 
     for bam in bams:
@@ -53,20 +53,23 @@ def delly_pipeline(
         axes=('sv_type',),
         ctx={'mem': 4, 'num_retry': 2, 'mem_retry_factor': 2},
         args=(
-            'dellySomaticFilter',
-            '-v', mgd.TempInputFile('out.vcf', 'sv_type'),
-            '-o', mgd.TempOutputFile('somatic.vcf', 'sv_type'),
+            'delly', 'filter',
             '-t', mgd.Instance('sv_type'),
+            '-f', 'somatic',
+            '-o', mgd.TempOutputFile('somatic.bcf', 'sv_type'),
+            '-s', mgd.TempInputFile('samples.tsv'),
+            '-g', ref_genome_fasta_file,
+            mgd.TempInputFile('out.bcf', 'sv_type'),
         ),
     )
 
     workflow.transform(
         name='concatenate_vcf',
-        func=vcf_tasks.concatenate_vcf,
+        func=vcf_tasks.concatenate_bcf,
         ctx={'mem': 4, 'num_retry': 2, 'mem_retry_factor': 2},
         args=(
-            mgd.TempInputFile('somatic.vcf', 'sv_type'),
-            mgd.TempOutputFile('somatic.vcf'),
+            mgd.TempInputFile('somatic.bcf', 'sv_type'),
+            mgd.TempOutputFile('somatic.bcf'),
         ),
     )
 
