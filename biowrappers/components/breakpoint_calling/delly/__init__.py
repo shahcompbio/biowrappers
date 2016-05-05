@@ -24,7 +24,7 @@ def delly_pipeline(
     utils.symlink(normal_bam_file+'.bai', link_name='Normal.bam.bai', link_directory=raw_data_dir)
 
     sample_type = {'Normal': 'control'}
-    for lib_id, bam_filename in tumour_bam_files.iterkeys():
+    for lib_id in tumour_bam_files.iterkeys():
         sample_type[lib_id] = 'tumor'
 
     workflow = Workflow()
@@ -97,7 +97,7 @@ def delly_pipeline(
         func=tasks.convert_vcf,
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         args=(
-            mgd.TempInputFile('somatic.vcf'),
+            mgd.TempInputFile('somatic.bcf'),
             mgd.OutputFile(out_file),
         ),
     )
