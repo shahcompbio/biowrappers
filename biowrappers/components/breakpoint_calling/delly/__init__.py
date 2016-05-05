@@ -39,22 +39,23 @@ def delly_pipeline(
         value=('DEL', 'DUP', 'INV', 'TRA', 'INS'),
     )
 
-    delly_args = [
-        'delly', 'call',
-        '-t', mgd.Instance('sv_type'),
-        '-x', delly_excl_chrom,
-        '-g', ref_genome_fasta_file,
-        '-o', mgd.TempOutputFile('out.bcf', 'sv_type'),
+    run_delly_args = [
+        mgd.Instance('sv_type'),
+        delly_excl_chrom,
+        ref_genome_fasta_file,
     ]
 
     for bam in bams:
-        delly_args.append(mgd.InputFile(bam))
+        run_delly_args.append(mgd.InputFile(bam))
+
+    run_delly_args.append(mgd.TempOutputFile('out.bcf', 'sv_type'))
     
-    workflow.commandline(
+    workflow.transform(
         name='run_delly',
         axes=('sv_type',),
         ctx={'mem': 64, 'num_retry': 2, 'mem_retry_factor': 2},
-        args=tuple(delly_args),
+        func=tasks.run_delly_call,
+        args=tuple(run_delly_args),
     )
 
     workflow.transform(
