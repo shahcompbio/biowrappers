@@ -76,13 +76,11 @@ def convert_vcf(bcf_filename, store_filename):
 
         breakpoint_table.append((prediction_id, chrom_1, chrom_2, strand_1, strand_2, coord_1, coord_2, qual))
 
-        for call in row.samples:
-            library = call.sample
+        for sample, call in row.samples.iteritems():
+            num_spanning = call['DV']
+            num_split = call['RV']
 
-            num_spanning = call.data.DV
-            num_split = call.data.RV
-
-            breakpoint_library_table.append((prediction_id, library, num_spanning, num_split))
+            breakpoint_library_table.append((prediction_id, sample, num_spanning, num_split))
 
     breakpoint_table = pd.DataFrame(
         breakpoint_table,
