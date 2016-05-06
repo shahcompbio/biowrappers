@@ -76,6 +76,7 @@ def create_remixt_workflow(
         args=(
             pypeliner.managed.OutputFile('selected', 'sample_id', template=selected_files),
             pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
+            config,
         )
     )
 
