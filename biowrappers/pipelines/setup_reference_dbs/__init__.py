@@ -51,6 +51,17 @@ def create_setup_reference_dbs_workflow(config):
                 config['destruct']['ref_data_dir'],
             ),
         )
+
+    if 'remixt' in config:
+        import remixt.ref_data
+        workflow.transform(
+            name='remixt_create_ref_data',
+            func=remixt.ref_data.create_ref_data,
+            args=(
+                config['remixt']['config'],
+                config['remixt']['ref_data_dir'],
+            ),
+        )
         
     if 'mappability' in config:
         workflow.subworkflow(
