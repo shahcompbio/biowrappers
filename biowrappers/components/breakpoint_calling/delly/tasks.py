@@ -11,6 +11,17 @@ def write_samples_table(sample_types, sample_table_filename):
             f.write('{}\t{}\n'.format(sample_id, sample_type))
 
 
+def _rename_index(out_file):
+    if out_file.endswith('.tmp'):
+        out_index = out_file + '.csi'
+        renamed_out_index = out_file[:-4] + '.csi'
+        try:
+            os.remove(renamed_out_index)
+        except OSError:
+            pass
+        os.rename(out_index, renamed_out_index)
+
+
 def run_delly_call(sv_type, delly_excl_chrom, ref_genome_fasta_file, bam_files, out_file):
     delly_args = [
         'delly', 'call',
@@ -23,15 +34,22 @@ def run_delly_call(sv_type, delly_excl_chrom, ref_genome_fasta_file, bam_files, 
     delly_args += bam_files
     
     pypeliner.commandline.execute(*delly_args)
+    _rename_index(out_file)
 
-    if out_file.endswith('.tmp'):
-        out_index = out_file + '.csi'
-        renamed_out_index = out_file[:-4] + '.csi'
-        try:
-            os.remove(renamed_out_index)
-        except OSError:
-            pass
-        os.rename(out_index, renamed_out_index)
+
+def run_delly_filter(sv_type, sample_file, ref_genome_fasta_file, in_file, out_file):
+    delly_args = [
+        'delly', 'filter',
+        '-t', sv_type,
+        '-f', 'somatic',
+        '-o', out_file,
+        '-s', sample_file,
+        '-g', ref_genome_fasta_file,
+        in_file,
+    ]
+
+    pypeliner.commandline.execute(*delly_args)
+    _rename_index(out_file)
 
 
 def convert_vcf(vcf_filename, store_filename):

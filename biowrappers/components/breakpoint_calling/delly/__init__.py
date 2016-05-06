@@ -40,7 +40,7 @@ def delly_pipeline(
     )
 
     workflow.transform(
-        name='run_delly',
+        name='delly_call',
         axes=('sv_type',),
         ctx={'mem': 64, 'num_retry': 2, 'mem_retry_factor': 2},
         func=tasks.run_delly_call,
@@ -63,18 +63,17 @@ def delly_pipeline(
         ),
     )
 
-    workflow.commandline(
-        name='filter_somatic',
+    workflow.transform(
+        name='delly_filter_somatic',
         axes=('sv_type',),
         ctx={'mem': 4, 'num_retry': 2, 'mem_retry_factor': 2},
+        func=tasks.run_delly_filter,
         args=(
-            'delly', 'filter',
-            '-t', mgd.Instance('sv_type'),
-            '-f', 'somatic',
-            '-o', mgd.TempOutputFile('somatic.bcf', 'sv_type'),
-            '-s', mgd.TempInputFile('samples.tsv'),
-            '-g', ref_genome_fasta_file,
+            mgd.Instance('sv_type'),
+            mgd.TempInputFile('samples.tsv'),
+            ref_genome_fasta_file,
             mgd.TempInputFile('out.bcf', 'sv_type'),
+            mgd.TempOutputFile('somatic.bcf', 'sv_type'),
         ),
     )
 
