@@ -161,7 +161,7 @@ def concatenate_bcf(in_files, out_file):
     
     """
     
-    cmd = ['bcftools', '-O' 'b' '-o', out_file]
+    cmd = ['bcftools', 'concat', '-a', '-O', 'b', '-o', out_file]
     cmd += [in_files[x] for x in sorted(in_files.keys())]
     
     pypeliner.commandline.execute(*cmd)
