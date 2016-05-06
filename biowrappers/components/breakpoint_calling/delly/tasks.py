@@ -1,5 +1,5 @@
 import os
-from pysam import VariantFile
+import pysam
 import pandas as pd
 
 import pypeliner.commandline
@@ -52,24 +52,24 @@ def run_delly_filter(sv_type, sample_file, ref_genome_fasta_file, in_file, out_f
     _rename_index(out_file)
 
 
-def convert_vcf(vcf_filename, store_filename):
-    vcf_reader = vcf.Reader(filename=vcf_filename)
+def convert_vcf(bcf_filename, store_filename):
+    bcf_reader = pysam.VariantFile(bcf_filename, 'rb')
 
     breakpoint_table = list()
     breakpoint_library_table = list()
 
-    for row in vcf_reader:
-        prediction_id = row.ID
+    for row in bcf_reader:
+        prediction_id = row.id
 
-        chrom_1 = row.CHROM
-        chrom_2 = row.INFO['CHR2']
+        chrom_1 = row.chrom
+        chrom_2 = row.info['CHR2']
 
-        strand_1, strand_2 = [('-', '+')[a == '3'] for a in row.INFO['CT'].split('to')]
+        strand_1, strand_2 = [('-', '+')[a == '3'] for a in row.info['CT'].split('to')]
 
-        coord_1 = row.POS
-        coord_2 = row.sv_end
+        coord_1 = row.pos
+        coord_2 = row.info['END']
 
-        if 'LowQual' in row.FILTER:
+        if 'LowQual' in row.filter:
             qual = 0
         else:
             qual = 1
