@@ -125,10 +125,12 @@ def main(args):
             config,
             pypeliner.managed.InputFile(normal_bam_file),
             {'tumour': pypeliner.managed.InputFile(tumour_bam_file)},
-            pypeliner.managed.InputFile(somatic_breakpoints_file),
             copy_number_raw_data_dir,
             pypeliner.managed.OutputFile(breakpoint_results_file),
         ),
+        kwargs={
+            'somatic_breakpoint_file': pypeliner.managed.InputFile(somatic_breakpoints_file),
+        },
     )
 
     pyp.run(workflow)
