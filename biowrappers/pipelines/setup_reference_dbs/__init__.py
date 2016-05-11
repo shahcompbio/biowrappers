@@ -62,7 +62,17 @@ def create_setup_reference_dbs_workflow(config):
                 config['remixt']['ref_data_dir'],
             ),
         )
-        
+
+        import remixt.mappability.bwa.workflow
+        workflow.subworkflow(
+            name='remixt_create_bwa_mappability',
+            func=remixt.mappability.bwa.workflow.create_bwa_mappability_workflow,
+            args=(
+                config['remixt']['config'],
+                config['remixt']['ref_data_dir'],
+            ),
+        )
+
     if 'mappability' in config:
         workflow.subworkflow(
             name='mappability', 
