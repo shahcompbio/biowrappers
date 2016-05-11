@@ -23,6 +23,23 @@ databases:
     exclude_file: '{ref_db_dir}/delly/human.hg19.excl.tsv'
     ref_genome_fasta_file: '{ref_db_dir}/GRCh37-lite.fa'
 
+  chrom_info:
+    url: 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/chromInfo.txt.gz'
+    local_path: '{ref_db_dir}/titan/chromInfo.txt.gz'
+
+  remixt:
+    config:
+      _empty: '_empty'
+    ref_data_dir: '{ref_db_dir}/remixt'
+
+  titan:
+    config:
+      chrom_info_filename: '{ref_db_dir}/titan/chromInfo.txt.gz'
+      mappability_url: 'http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig'
+      mappability_wig: '{ref_db_dir}/titan/wgEncodeCrgMapabilityAlign100mer.wig'
+      gc_wig: '{ref_db_dir}/titan/GRCh37_gc.wig'
+      window_size: 1000
+
 realignment:
   # Minimum number of reads per BAM file during realignment process
   split_size: 10000000
@@ -64,10 +81,6 @@ remixt:
   config:
     _empty: '_empty'
   ref_data_dir: '{ref_db_dir}/remixt'
-
-chrom_info:
-  url: 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/chromInfo.txt.gz'
-  local_path: '{ref_db_dir}/titan/chromInfo.txt.gz'
 
 titan:
   config:
