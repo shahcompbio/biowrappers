@@ -30,7 +30,7 @@ def create_nuseq_classify_workflow(
     workflow.transform(
         name='run_classify',
         axes=('regions',),
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2, 'io' : 1},
         func=tasks.run_classify,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
