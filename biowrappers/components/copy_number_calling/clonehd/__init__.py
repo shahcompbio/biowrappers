@@ -120,3 +120,7 @@ def create_clonehd_workflow(
 
     return workflow
 
+
+def create_setup_clonehd_workflow(config, databases, **kwargs):
+    return Workflow()
+

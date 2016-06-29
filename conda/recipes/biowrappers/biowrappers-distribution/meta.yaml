@@ -5,29 +5,29 @@ package:
 requirements:
   run:
     # core
-    - biowrappers==0.1.0
+    - biowrappers ==0.1.0
     - pandas
-    - pypeliner==0.4.3
+    - pypeliner ==0.4.3
         
     # NGS tools
-    - bcftools==1.3
-    - biobambam==2.0.25
-    - htslib==1.3
-    - pysam==0.8.4
+    - bcftools ==1.3
+    - biobambam ==2.0.25
+    - htslib ==1.3
+    - pysam ==0.8.4
     - pyvcf
-    - sambamba==0.5.9
-    - samtools==1.3
+    - sambamba ==0.5.9
+    - samtools ==1.3
     
     # alignment
-    - bwa==0.7.12
+    - bwa ==0.7.12
     
     # variant calling
-    - bx-python==0.7.3
-    - nuseq==0.1.0
-    - snpeff==4.2
-    - strelka==1.0.14
-    - vardict==2016.02.19
-    - vardict-java==1.4.5
+    - bx-python ==0.7.3
+    - nuseq ==0.1.0
+    - snpeff ==4.2
+    - strelka ==1.0.14
+    - vardict ==2016.02.19
+    - vardict-java ==1.4.5
     
     # misc
     - pysftp

@@ -6,6 +6,8 @@ import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.utils as utils
 
 import remixt.workflow
+import remixt.ref_data
+import remixt.mappability.bwa.workflow
 
 import tasks
 
@@ -93,5 +95,29 @@ def create_remixt_workflow(
         },
     )
     
+    return workflow
+
+
+def create_setup_remixt_workflow(config, databases, **kwargs):
+    workflow = Workflow()
+
+    workflow.transform(
+        name='remixt_create_ref_data',
+        func=remixt.ref_data.create_ref_data,
+        args=(
+            config['config'],
+            kwargs['ref_data_dir'],
+        ),
+    )
+
+    workflow.subworkflow(
+        name='remixt_create_bwa_mappability',
+        func=remixt.mappability.bwa.workflow.create_bwa_mappability_workflow,
+        args=(
+            config['config'],
+            kwargs['ref_data_dir'],
+        ),
+    )
+
     return workflow
 

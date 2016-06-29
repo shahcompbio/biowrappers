@@ -4,6 +4,7 @@ from pypeliner.workflow import Workflow
 
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.utils as utils
+import biowrappers.components.io.download
 
 import tasks
 
@@ -105,7 +106,7 @@ def create_titan_workflow(
 
     workflow.transform(
         name='merge_results',
-        ctx={'mem': 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
         func=hdf5_tasks.merge_hdf5,
         args=(
             pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
@@ -114,6 +115,76 @@ def create_titan_workflow(
         kwargs={
             'table_names': '/sample_{}',
         },
+    )
+
+    return workflow
+
+
+def create_gc_wig_file(config, genome_file, out_file):
+    workflow = Workflow()
+
+    workflow.commandline(
+        name='create_gc',
+        ctx={'mem': 4},
+        args=(
+            'gcCounter',
+            '-w', config['window_size'],
+            pypeliner.managed.InputFile(genome_file),
+            '>',
+            pypeliner.managed.OutputFile(out_file),
+        ),
+    )
+
+    return workflow
+
+
+def create_mappability_wig_file(config, out_file):
+    workflow = Workflow()
+    
+    workflow.subworkflow(
+        name='download_mappability_bigwig',
+        func=biowrappers.components.io.download.create_download_workflow,
+        args=(
+            config['mappability_url'],
+            pypeliner.managed.TempOutputFile('mappability_bigwig'),
+        )
+    )
+
+    workflow.commandline(
+        name='convert_mappability_to_wig',
+        ctx={'mem': 4},
+        args=(
+            'mapCounter',
+            '-w', config['window_size'],
+            pypeliner.managed.TempInputFile('mappability_bigwig'),
+            '>',
+            pypeliner.managed.OutputFile(out_file),
+        ),
+    )
+
+    return workflow
+
+
+def create_setup_titan_workflow(config, databases, **kwargs):
+    workflow = Workflow()
+
+    workflow.subworkflow(
+        name='gc_wig',
+        func=create_gc_wig_file,
+        args=(
+            config,
+            pypeliner.managed.InputFile(databases['ref_genome']['local_path']),
+            pypeliner.managed.OutputFile(config['gc_wig']),
+        )
+    )
+
+    workflow.subworkflow(
+        name='mappability_wig',
+        func=create_mappability_wig_file,
+        args=(
+            config,
+            pypeliner.managed.OutputFile(config['mappability_wig']),
+        )
     )
 
     return workflow
