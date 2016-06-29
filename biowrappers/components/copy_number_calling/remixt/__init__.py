@@ -101,12 +101,15 @@ def create_remixt_workflow(
 def create_setup_remixt_workflow(config, databases, **kwargs):
     workflow = Workflow()
 
+    ref_data_sentinal = os.path.join(kwargs['ref_data_dir'], 'sentinal')
+
     workflow.transform(
         name='remixt_create_ref_data',
         func=remixt.ref_data.create_ref_data,
         args=(
-            config['config'],
+            config,
             kwargs['ref_data_dir'],
+            pypeliner.managed.OutputFile(ref_data_sentinal),
         ),
     )
 
@@ -114,9 +117,12 @@ def create_setup_remixt_workflow(config, databases, **kwargs):
         name='remixt_create_bwa_mappability',
         func=remixt.mappability.bwa.workflow.create_bwa_mappability_workflow,
         args=(
-            config['config'],
+            config,
             kwargs['ref_data_dir'],
         ),
+        kwargs={
+            'ref_data_sentinal': pypeliner.managed.InputFile(ref_data_sentinal),
+        },
     )
 
     return workflow
