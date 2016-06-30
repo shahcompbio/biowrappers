@@ -24,6 +24,7 @@ def destruct_pipeline(
     utils.make_directory(os.path.join(raw_data_dir, 'raw'))
     breakpoint_file = os.path.join(raw_data_dir, 'raw', 'breakpoint.tsv')
     breakpoint_library_file = os.path.join(raw_data_dir, 'raw', 'breakpoint_library.tsv')
+    breakpoint_read_file = os.path.join(raw_data_dir, 'raw', 'breakpoint_read.tsv')
 
     utils.make_directory(os.path.join(raw_data_dir, 'somatic'))
     somatic_breakpoint_file = os.path.join(raw_data_dir, 'somatic', 'breakpoint.tsv')
@@ -43,6 +44,7 @@ def destruct_pipeline(
             pypeliner.managed.InputFile('bam', 'sample_id', fnames=bam_files),
             pypeliner.managed.OutputFile(breakpoint_file),
             pypeliner.managed.OutputFile(breakpoint_library_file),
+            pypeliner.managed.OutputFile(breakpoint_read_file),
             config,
             ref_data_dir,
         ),
