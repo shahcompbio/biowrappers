@@ -1,5 +1,34 @@
 import pandas as pd
 
+import destruct.balanced
+
+
+def classify_rearrangement_type(entry):
+    break1 = entry['position_1']
+    break2 = entry['position_2']
+    size = abs(int(break1) - int(break2))
+    orientation_type = entry['type']
+    if entry['balanced']:
+        rearrangement_type = 'balanced'
+    elif size <= 1000000 and orientation_type == 'deletion':
+        rearrangement_type = 'deletion'
+    elif size <= 10000 and orientation_type == 'inversion':
+        rearrangement_type = 'foldback'
+    elif size <= 1000000 and orientation_type == 'inversion':
+        rearrangement_type = 'inversion'
+    elif size <= 1000000 and orientation_type == 'duplication':
+        rearrangement_type = 'duplication'
+    else:
+        rearrangement_type = 'unbalanced'
+    return rearrangement_type
+
+
+def annotate_rearrangement_type(df):
+    rearrangement_types = list()
+    for idx, row in df.iterrows():
+        rearrangement_types.append(classify_rearrangement_type(row))
+    df['rearrangement_type'] = rearrangement_types
+
 
 def filter_breakpoints(
     input_breakpoint_filename,
@@ -90,6 +119,18 @@ def filter_breakpoints(
                   (brk['chromosome_2'].isin(chromosomes))]
 
     brklib = brklib.merge(brk[['prediction_id']].drop_duplicates())
+
+    # Balanced rearrangement annotation
+
+    brk['balanced'] = False
+    balanced_rearrangements = destruct.balanced.detect_balanced_rearrangements(brk)
+    for rearrangement in balanced_rearrangements:
+        for prediction_id in rearrangement.prediction_ids:
+            brk.loc[brk['prediction_id'] == prediction_id, 'balanced'] = True
+
+    # Annotate rearrangement type
+
+    annotate_rearrangement_type(brk)
 
     # Output filtered breakpoint tables
 
