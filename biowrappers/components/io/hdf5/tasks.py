@@ -11,10 +11,10 @@ import pandas as pd
 from biowrappers.components.utils import flatten_input
 
 def concatenate_tables(
-    in_files, 
+    in_files,
     out_file,
     drop_duplicates=False,
-    in_memory=True, 
+    in_memory=True,
     non_numeric_as_category=True
 ):
     in_files = flatten_input(in_files)
@@ -22,23 +22,23 @@ def concatenate_tables(
     # Only support drop duplicatess in memory
     if drop_duplicates or in_memory:
         _concatenate_tables_in_memory(
-            in_files, 
-            out_file, 
-            drop_duplicates=drop_duplicates, 
+            in_files,
+            out_file,
+            drop_duplicates=drop_duplicates,
             non_numeric_as_category=non_numeric_as_category
         )
     
     else:
         _concatenate_tables_on_disk(
-            in_files, 
-            out_file, 
+            in_files,
+            out_file,
             non_numeric_as_category=non_numeric_as_category
         )
 
 def _concatenate_tables_in_memory(
-    in_files, 
+    in_files,
     out_file,
-    drop_duplicates=False, 
+    drop_duplicates=False,
     non_numeric_as_category=True
 ):
     
@@ -246,4 +246,4 @@ def merge_hdf5(in_files, out_file, table_names='{}'):
         for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
 
-            out_store[table_names.format(*file_key) + '/' + table_name] = df
+            out_store.append(table_names.format(*file_key) + '/' + table_name, df)
