@@ -50,12 +50,15 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     
     workflow.transform(
         name='merge_snv_allele_counts',
-        ctx={'mem' : 2, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 4},
         func=hdf5_tasks.concatenate_tables,
         args=(
             pypeliner.managed.TempInputFile('counts.h5', 'split'),
             pypeliner.managed.OutputFile(out_file)
-        )
+        ),
+        kwargs={
+            'in_memory' : False,
+        }
     )
     
     return workflow
