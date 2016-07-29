@@ -30,6 +30,9 @@ def destruct_pipeline(
     somatic_breakpoint_file = os.path.join(raw_data_dir, 'somatic', 'breakpoint.tsv')
     somatic_breakpoint_library_file = os.path.join(raw_data_dir, 'somatic', 'breakpoint_library.tsv')
 
+    raw_read_data_dir = os.path.join(raw_data_dir, 'read_data')
+    utils.make_directory(raw_read_data_dir)
+
     workflow = Workflow()
 
     workflow.setobj(
@@ -48,6 +51,9 @@ def destruct_pipeline(
             config,
             ref_data_dir,
         ),
+        kwargs={
+            'raw_data_dir': raw_read_data_dir,
+        },
     )
 
     workflow.transform(
