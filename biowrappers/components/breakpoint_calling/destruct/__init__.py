@@ -58,7 +58,7 @@ def destruct_pipeline(
 
     workflow.transform(
         name='filter_breakpoints',
-        ctx={'mem': 4},
+        ctx={'mem': 8},
         func=tasks.filter_breakpoints,
         args=(
             pypeliner.managed.InputFile(breakpoint_file),
