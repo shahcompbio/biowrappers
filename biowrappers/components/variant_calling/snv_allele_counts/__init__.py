@@ -7,6 +7,9 @@ import biowrappers.components.variant_calling.utils as utils
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import tasks
 
+sml_ctx = {'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2}
+med_ctx = {'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 4}
+
 def create_snv_allele_counts_for_vcf_targets_workflow(
     bam_file,
     vcf_file,
@@ -21,7 +24,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     
     workflow.transform(
         name='split_vcf',
-        ctx={'mem' : 2, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx=sml_ctx,
         func=vcf_tasks.split_vcf,
         args=(
             pypeliner.managed.InputFile(vcf_file),
@@ -33,7 +36,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow.transform(
         name='get_snv_allele_counts_for_vcf_targets',
         axes=('split',),
-        ctx={'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx=med_ctx,
         func=tasks.get_snv_allele_counts_for_vcf_targets,
         args=(
             pypeliner.managed.InputFile(bam_file),
@@ -50,7 +53,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     
     workflow.transform(
         name='merge_snv_allele_counts',
-        ctx={'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 4},
+        ctx=med_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
             pypeliner.managed.TempInputFile('counts.h5', 'split'),
@@ -85,7 +88,7 @@ def create_snv_allele_counts_workflow(
     workflow.transform(
         name='get_counts',
         axes=('regions',),
-        ctx={'mem' : 2, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx=sml_ctx,
         func=tasks.get_snv_allele_counts_for_region,
         args=(
             pypeliner.managed.InputFile(bam_file),
@@ -104,7 +107,7 @@ def create_snv_allele_counts_workflow(
     
     workflow.transform(
         name='concatenate_counts',
-        ctx={'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx=med_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
             pypeliner.managed.TempInputFile('counts.h5', 'regions'),
@@ -144,7 +147,7 @@ def create_snv_variant_position_counts_workflow(
     workflow.transform(
         name='get_counts',
         axes=('regions',),
-        ctx={'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 2},
+        ctx=med_ctx,
         func=tasks.get_variant_position_counts,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
@@ -165,13 +168,14 @@ def create_snv_variant_position_counts_workflow(
     )
     
     workflow.transform(
-        'concatenate_counts',
-        (),
-        {'mem' : 4, 'retry' : 3, 'mem_retry_increment' : 2},
-        hdf5_tasks.concatenate_tables,
-        None,
-        pypeliner.managed.TempInputFile('counts.h5', 'regions'),
-        pypeliner.managed.OutputFile(out_file)
+        name='concatenate_counts',
+        axes=(),
+        ctx=med_ctx,
+        func=hdf5_tasks.concatenate_tables,
+        args=(
+            pypeliner.managed.TempInputFile('counts.h5', 'regions'),
+            pypeliner.managed.OutputFile(out_file),
+        )
     )
     
     return workflow
