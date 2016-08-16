@@ -88,7 +88,7 @@ def create_snv_allele_counts_workflow(
     workflow.transform(
         name='get_counts',
         axes=('regions',),
-        ctx=sml_ctx,
+        ctx=med_ctx,
         func=tasks.get_snv_allele_counts_for_region,
         args=(
             pypeliner.managed.InputFile(bam_file),

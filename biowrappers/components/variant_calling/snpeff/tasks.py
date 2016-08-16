@@ -6,9 +6,12 @@ Created on Nov 2, 2015
 
 import pandas as pd
 import pypeliner
+import os
 import vcf
 
 def run_snpeff(db, in_vcf_file, out_file):
+    
+    os.environ['MALLOC_ARENA_MAX'] = '2'
     
     cmd = [
         'snpEff',
