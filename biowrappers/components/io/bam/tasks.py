@@ -189,3 +189,26 @@ def sort(in_file, out_file, max_mem='2G', name_sort=False, compression_level=9, 
 
     pypeliner.commandline.execute('samtools', 'index', out_file, _get_bam_index_filename(out_file))
 
+def picard_mark_duplicates(in_files, out_file, metrics_file, index_file=None):
+    
+    os.environ['MALLOC_ARENA_MAX'] = '4'
+    
+    cmd = [
+        'picard',
+        '-XX:ParallelGCThreads=1',
+        '-Xmx8g',
+        'MarkDuplicates',
+        'OUTPUT={0}'.format(out_file),
+        'METRICS_FILE={0}'.format(metrics_file),
+        'VALIDATION_STRINGENCY=LENIENT',
+    ]
+    
+    for file_name in flatten_input(in_files):
+        cmd.append('INPUT={0}'.format(file_name))
+    
+    pypeliner.commandline.execute(*cmd)
+    
+    if index_file is not None:
+        cmd = ['samtools', 'index', out_file, index_file]
+        
+        pypeliner.commandline.execute(*cmd)
