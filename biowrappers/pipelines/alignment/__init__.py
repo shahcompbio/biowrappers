@@ -2,11 +2,11 @@ from pypeliner.workflow import Workflow
 
 import pypeliner
 
-import biowrappers.components.io.bam.tasks as bam_tasks
-import biowrappers.components.io.fastq.tasks as fastq_tasks
-import biowrappers.components.alignment.bwa.tasks as bwa_tasks
+import biowrappers.components.io.bam.tasks
+import biowrappers.components.io.fastq.tasks
+import biowrappers.components.alignment.bwa.tasks
+import biowrappers.pipelines.realignment.tasks
 
-import tasks
 
 def alignment_pipeline(
     config,
@@ -30,7 +30,7 @@ def alignment_pipeline(
         workflow.transform(
             name='get_read_group_config', 
             ctx={'local' : True}, 
-            func=tasks.get_read_group_config,
+            func=biowrappers.pipelines.realignment.tasks.get_read_group_config,
             ret=pypeliner.managed.TempOutputObj('read_group_config'),
             args=(
                 pypeliner.managed.InputFile(in_file),
@@ -40,7 +40,7 @@ def alignment_pipeline(
     workflow.transform(
         name='split_fastq_1',
         ctx={'mem': 4},
-        func=fastq_tasks.split_fastq, 
+        func=biowrappers.components.io.fastq.tasks.split_fastq, 
         args=(
             pypeliner.managed.InputFile(fastq_1),
             pypeliner.managed.TempOutputFile('read_1', 'split'),
@@ -51,7 +51,7 @@ def alignment_pipeline(
     workflow.transform(
         name='split_fastq_2',
         ctx={'mem': 4},
-        func=fastq_tasks.split_fastq, 
+        func=biowrappers.components.io.fastq.tasks.split_fastq, 
         args=(
             pypeliner.managed.InputFile(fastq_2),
             pypeliner.managed.TempOutputFile('read_2', 'split'),
@@ -63,7 +63,7 @@ def alignment_pipeline(
         name='aln_read_1',
         axes=('split',),
         ctx={'mem': 6},
-        func=bwa_tasks.run_aln,
+        func=biowrappers.components.alignment.bwa.tasks.run_aln,
         args=(
             pypeliner.managed.TempInputFile('read_1', 'split'),
             ref_genome,
@@ -75,7 +75,7 @@ def alignment_pipeline(
         name='aln_read_2',
         axes=('split',),
         ctx={'mem': 6},
-        func=bwa_tasks.run_aln,
+        func=biowrappers.components.alignment.bwa.tasks.run_aln,
         args=(
             pypeliner.managed.TempInputFile('read_2', 'split'),
             ref_genome,
@@ -87,7 +87,7 @@ def alignment_pipeline(
         name='sampe', 
         axes=('split',),
         ctx={'mem': 6},
-        func=bwa_tasks.run_sampe, 
+        func=biowrappers.components.alignment.bwa.tasks.run_sampe, 
         args=(
             pypeliner.managed.TempInputFile('read_1', 'split'),
             pypeliner.managed.TempInputFile('read_2', 'split'),
@@ -105,7 +105,7 @@ def alignment_pipeline(
         name='sort',
         axes=('split',),
         ctx={'mem': 4},
-        func=bam_tasks.sort,
+        func=biowrappers.components.io.bam.tasks.sort,
         args=(
             pypeliner.managed.TempInputFile('aligned.bam', 'split'),
             pypeliner.managed.TempOutputFile('sorted.bam', 'split'),
@@ -115,7 +115,7 @@ def alignment_pipeline(
     workflow.transform(
         name='write_header_file',
         ctx={'local' : True},
-        func=tasks.write_header_file,
+        func=biowrappers.pipelines.realignment.tasks.write_header_file,
         args=(
             pypeliner.managed.TempInputFile('sorted.bam', 'split'),
             pypeliner.managed.TempOutputFile('header.sam'),
@@ -126,7 +126,7 @@ def alignment_pipeline(
     workflow.transform(
         name='merge',
         ctx={'mem': 4},
-        func=bam_tasks.merge, 
+        func=biowrappers.components.io.bam.tasks.merge, 
         args=(
             pypeliner.managed.TempInputFile('sorted.bam', 'split'),
             pypeliner.managed.OutputFile(out_file),
