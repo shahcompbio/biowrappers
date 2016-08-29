@@ -3,6 +3,7 @@ from pypeliner.workflow import Workflow
 import pypeliner
 
 import biowrappers.components.io.bam.tasks as bam_tasks
+import biowrappers.components.io.fastq.tasks as fastq_tasks
 import biowrappers.components.alignment.bwa.tasks as bwa_tasks
 
 import tasks
