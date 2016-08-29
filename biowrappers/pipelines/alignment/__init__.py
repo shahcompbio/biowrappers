@@ -1,5 +1,4 @@
-from pypeliner.workflow import Workflow
-
+import random
 import pypeliner
 
 import biowrappers.components.io.bam.tasks
@@ -16,26 +15,17 @@ def alignment_pipeline(
 
     ref_genome = pypeliner.managed.InputFile(config['ref_genome']['file'])
     
-    read_group_config = pypeliner.managed.TempObj('read_group_config')
+    read_group_config = config.get('read_group', {})
     
-    workflow = Workflow()
+    if 'ID' not in read_group_config:
+        read_group_config['ID'] = random.randint(0, int(1e6)-1)
     
-    if 'read_group' in config:
-        workflow.setobj(
-            obj=pypeliner.managed.TempOutputObj('read_group_config'), 
-            value=config['read_group']
-        )
+    workflow = pypeliner.workflow.Workflow()
     
-    else:
-        workflow.transform(
-            name='get_read_group_config', 
-            ctx={'local' : True}, 
-            func=biowrappers.pipelines.realignment.tasks.get_read_group_config,
-            ret=pypeliner.managed.TempOutputObj('read_group_config'),
-            args=(
-                pypeliner.managed.InputFile(in_file),
-            )
-        )
+    workflow.setobj(
+        obj=pypeliner.managed.TempOutputObj('read_group_config'), 
+        value=read_group_config,
+    )
 
     workflow.transform(
         name='split_fastq_1',
