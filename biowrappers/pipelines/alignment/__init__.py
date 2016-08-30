@@ -1,4 +1,3 @@
-import random
 import pypeliner
 
 import biowrappers.components.io.bam.tasks
@@ -18,7 +17,7 @@ def alignment_pipeline(
     read_group_config = config.get('read_group', {})
     
     if 'ID' not in read_group_config:
-        read_group_config['ID'] = random.randint(0, int(1e6)-1)
+        read_group_config['ID'] = hash(fastq_1 + fastq_2) % int(1e6)
     
     workflow = pypeliner.workflow.Workflow()
     
