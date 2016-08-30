@@ -184,6 +184,10 @@ def sort(in_file, out_file, max_mem='2G', name_sort=False, compression_level=9, 
         cmd.append('-n')
      
     cmd.append(in_file)
+
+    # Remove chunks from previous aborted attempt
+    for filename in glob.glob(out_file + '*'):
+        os.remove(filename)
      
     pypeliner.commandline.execute(*cmd)
 
