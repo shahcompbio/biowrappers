@@ -1,4 +1,5 @@
 import gzip
+import itertools
 
 
 def split_fastq(in_filename, out_filenames, num_reads_per_file):
