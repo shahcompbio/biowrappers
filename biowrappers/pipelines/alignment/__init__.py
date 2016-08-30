@@ -43,7 +43,7 @@ def alignment_pipeline(
         func=biowrappers.components.io.fastq.tasks.split_fastq, 
         args=(
             pypeliner.managed.InputFile(fastq_2),
-            pypeliner.managed.TempOutputFile('read_2', 'split'),
+            pypeliner.managed.TempOutputFile('read_2', 'split', axes_origin=[]),
             config['split_size'],
         ),
     )
