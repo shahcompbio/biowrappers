@@ -11,7 +11,7 @@ import tasks
 
 def create_theta_workflow(
     normal_seqdata_file,
-    tumour_seqdata_files,
+    tumour_seqdata_file,
     config,
     out_file,
     raw_data_dir,
@@ -28,64 +28,26 @@ def create_theta_workflow(
         value=tumour_seqdata_files.keys(),
     )
 
-    workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('chromosomes'),
-        value=config['chromosomes'],
-    )
+    if somatic_breakpoint_file is not None:
+        somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
 
     workflow.transform(
-        name='run_bicseq2_normal',
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
-        func=tasks.prepare_normal_data,
-        args=(
-            pypeliner.managed.InputFile(normal_seqdata_file),
-            pypeliner.managed.TempOutputFile('normal.wig'),
-            pypeliner.managed.TempOutputFile('het_positions.tsv'),
-            config,
-        ),
-    )
-
-    workflow.transform(
-        name='prepare_tumour_data',
-        axes=('sample_id',),
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
-        func=tasks.prepare_tumour_data,
-        args=(
-            pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
-            pypeliner.managed.TempInputFile('het_positions.tsv'),
-            pypeliner.managed.TempOutputFile('tumour.wig', 'sample_id'),
-            pypeliner.managed.TempOutputFile('tumour_alleles.tsv', 'sample_id'),
-            config,
-        ),
-    )
-
-    workflow.transform(
-        name='create_intialization_parameters',
-        axes=('sample_id',),
-        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=tasks.create_intialization_parameters,
-        ret=pypeliner.managed.TempOutputObj('init_params', 'sample_id', 'init_param_id'),
-        args=(config,),
-    )
-
-    workflow.transform(
-        name='run_titan',
+        name='run_theta',
         axes=('sample_id', 'init_param_id'),
         ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
         func=tasks.run_titan,
         args=(
-            pypeliner.managed.TempInputObj('init_params', 'sample_id', 'init_param_id'),
-            pypeliner.managed.TempInputFile('normal.wig'),
-            pypeliner.managed.TempInputFile('tumour.wig', 'sample_id'),
-            pypeliner.managed.TempInputFile('tumour_alleles.tsv', 'sample_id'),
-            pypeliner.managed.TempOutputFile('cn.tsv', 'sample_id', 'init_param_id'),
-            pypeliner.managed.TempOutputFile('params.tsv', 'sample_id', 'init_param_id'),
+            pypeliner.managed.TempOutputFile('cn.tsv'),
+            pypeliner.managed.TempOutputFile('mix.txt'),
+            pypeliner.managed.InputFile(normal_seqdata_file),
+            pypeliner.managed.InputFile(tumour_seqdata_file),
             config,
+            pypeliner.managed.TempSpace('work'),
         ),
+        kwargs={
+            'breakpoints_filename': somatic_breakpoint_file,
+        },
     )
-
-    if somatic_breakpoint_file is not None:
-        somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
 
     workflow.transform(
         name='select_solution',
@@ -125,72 +87,51 @@ def create_theta_workflow(
     return workflow
 
 
-def create_gc_wig_file(config, genome_file, out_file):
-    workflow = Workflow()
+def create_setup_theta_workflow(config, databases, **kwargs):
+    mappability_dir = os.path.realpath(os.path.join(os.path.dirname(config['mappability_template']), os.pardir))
+    map_extract_log = os.path.join(mappability_dir, 'mappability_extract.log')
+    chromosomes_dir = os.path.dirname(config['chromosome_template'])
 
-    workflow.commandline(
-        name='create_gc',
-        ctx={'mem': 4},
-        args=(
-            'gcCounter',
-            '-w', config['window_size'],
-            pypeliner.managed.InputFile(genome_file),
-            '>',
-            pypeliner.managed.OutputFile(out_file),
-        ),
-    )
-
-    return workflow
-
-
-def create_mappability_wig_file(config, out_file):
-    workflow = Workflow()
+    utils.make_directory(mappability_dir)
+    utils.make_directory(chromosomes_dir)
     
+    workflow = Workflow()
+
     workflow.subworkflow(
-        name='download_mappability_bigwig',
-        func=biowrappers.components.io.download.create_download_workflow,
+        name='download_mappability', 
+        func=biowrappers.components.io.download.create_download_workflow, 
         args=(
             config['mappability_url'],
-            pypeliner.managed.TempOutputFile('mappability_bigwig'),
+            pypeliner.managed.TempOutputFile('mappability.tar.gz'),
         )
     )
-
+    
     workflow.commandline(
-        name='convert_mappability_to_wig',
-        ctx={'mem': 4},
+        name='extract_mappability',
         args=(
-            'mapCounter',
-            '-w', config['window_size'],
-            pypeliner.managed.TempInputFile('mappability_bigwig'),
-            '>',
-            pypeliner.managed.OutputFile(out_file),
+            'tar', '-xzvf', pypeliner.managed.TempInputFile('mappability.tar.gz'),
+            '-C', mappability_dir,
+            '>', pypeliner.managed.OutputFile(map_extract_log),
         ),
     )
-
-    return workflow
-
-
-def create_setup_titan_workflow(config, databases, **kwargs):
-    workflow = Workflow()
-
-    workflow.subworkflow(
-        name='gc_wig',
-        func=create_gc_wig_file,
-        args=(
-            config,
-            pypeliner.managed.InputFile(databases['ref_genome']['local_path']),
-            pypeliner.managed.OutputFile(config['gc_wig']),
+    
+    for chromosome in config['chromosomes']:
+        workflow.subworkflow(
+            name='download_chromosome_{}'.format(chromosome),
+            func=biowrappers.components.io.download.create_download_workflow, 
+            args=(
+                config['chromosome_url_template'].format(chromosome),
+                pypeliner.managed.TempOutputFile('chromosome_{}.fa.gz'.format(chromosome)),
+            )
         )
-    )
-
-    workflow.subworkflow(
-        name='mappability_wig',
-        func=create_mappability_wig_file,
-        args=(
-            config,
-            pypeliner.managed.OutputFile(config['mappability_wig']),
+        
+        workflow.commandline(
+            name='extract_chromosome_{}'.format(chromosome),
+            args=(
+                'gunzip', '-c', pypeliner.managed.TempInputFile('chromosome_{}.fa.gz'.format(chromosome)),
+                '>', pypeliner.managed.OutputFile(config['chromosome_template'].format(chromosome)),
+            ),
         )
-    )
 
     return workflow
 

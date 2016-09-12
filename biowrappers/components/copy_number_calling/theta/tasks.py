@@ -1,26 +1,10 @@
 import os
+import numpy as np
 import pandas as pd
 
 import pypeliner.commandline
 import remixt.seqdataio
 import remixt.analysis.haplotype
-
-# wget http://compbio.med.harvard.edu/BIC-seq/hg19.CRG.75bp.tar.gz
-# wget ftp://ftp.ensembl.org/pub/release-70/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.70.dna.chromosome.20.fa.gz
-# wget ftp://ftp.ensembl.org/pub/release-70/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.70.dna.chromosome.21.fa.gz
-
-config = {}
-config['chromosomes'] = ['20', '21']
-config['chromosome_fasta'] = {
-    '20': '/genesis/shahlab/amcpherson/theta_test/Homo_sapiens.GRCh37.70.dna.chromosome.20.fa',
-    '21': '/genesis/shahlab/amcpherson/theta_test/Homo_sapiens.GRCh37.70.dna.chromosome.21.fa',
-}
-config['mappability_file'] = {
-    '20': '/genesis/shahlab/amcpherson/theta_test/hg19.CRG.75bp/hg19.CRC.75mer.chr20.txt',
-    '21': '/genesis/shahlab/amcpherson/theta_test/hg19.CRG.75bp/hg19.CRC.75mer.chr21.txt',
-}
-
-seg_output_filename = os.path.join(tmp_directory, 'seg.output')
 
 
 def calculate_allele_counts(seqdata_filename, chromosomes=None):
@@ -28,7 +12,7 @@ def calculate_allele_counts(seqdata_filename, chromosomes=None):
 
     if chromosomes is None:
         chromosomes = remixt.seqdataio.read_chromosomes(seqdata_filename)
-    
+
     for chrom in chromosomes:
         chrom_allele_counts = remixt.analysis.haplotype.read_snp_counts(seqdata_filename, chrom)
         chrom_allele_counts['chromosome'] = chrom
@@ -46,20 +30,34 @@ def write_theta_format_alleles(allele_filename, allele_count):
         'ref_count',
         'alt_count',
     ]]
+    
+    allele_count['ref_count'] = allele_count['ref_count'].astype(int)
+    allele_count['alt_count'] = allele_count['alt_count'].astype(int)
 
     allele_count.to_csv(allele_filename, sep='\t', index=False, header=False)
 
-## prefix for filenames TODO
-def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory, read_length, fragment_length):
-    reads_filenames = {}
-    norm_filenames = {}
-    for chromosome in config['chromosomes']:
-        reads_filenames[chromosome] = os.path.join(tmp_directory, 'chr{}.seq'.format(chromosome))
-        norm_filenames[chromosome] = os.path.join(tmp_directory, 'chr{}.norm.bin'.format(chromosome))
 
+bicseq2_reads = 'chr{}.seq'
+bicseq2_normed = 'chr{}.norm.bin'
+
+
+def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory):
+    read_length = config['read_length']
+
+    fragment_means = []
+    counts = []
     for chromosome in config['chromosomes']:
         chrom_reads = remixt.seqdataio.read_filtered_fragment_data(seqdata_filename, chromosome=chromosome)
-        chrom_reads[['start']].to_csv(reads_template.format(chromosome), index=False, header=False)
+
+        fragment_means.append((chrom_reads['end'] - chrom_reads['start']).mean())
+        counts.append(len(chrom_reads.index))
+
+        chrom_reads[['start']].to_csv(prefix + bicseq2_reads.format(chromosome), index=False, header=False)
+
+    fragment_means = np.array(fragment_means)
+    counts = np.array(counts)
+
+    fragment_length = int(np.sum(fragment_means * counts) / counts.sum())
 
     norm_config_filename = os.path.join(tmp_directory, 'norm.config')
 
@@ -67,10 +65,12 @@ def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory, read_lengt
         f.write('chromName\tfaFile\tMapFile\treadPosFile\tbinFileNorm\n')
         for chromosome in config['chromosomes']:
             f.write('{}\t'.format(chromosome))
-            f.write('{}\t'.format(config['chromosome_fasta'][chromosome]))
-            f.write('{}\t'.format(config['mappability_file'][chromosome]))
-            f.write('{}\t'.format(reads_template.format(chromosome)))
-            f.write('{}\n'.format(norm_filenames[chromosome]))
+            f.write('{}\t'.format(config['chromosome_template'].format(chromosome)))
+            f.write('{}\t'.format(config['mappability_template'].format(chromosome)))
+            f.write('{}\t'.format(prefix + bicseq2_reads.format(chromosome)))
+            f.write('{}\n'.format(prefix + bicseq2_normed.format(chromosome)))
+
+    norm_output_filename = prefix + 'norm.output'
 
     pypeliner.commandline.execute(
         'bicseq2-norm',
@@ -83,26 +83,21 @@ def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory, read_lengt
     )
 
 
-def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, config, tmp_directory, read_length, fragment_length):
-    normal_norm_filename = os.path.join(tmp_directory, 'normal.norm.output')
-    tumour_norm_filename = os.path.join(tmp_directory, 'tumour.norm.output')
+def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, config, tmp_directory):
+    normal_prefix = os.path.join(tmp_directory, 'tumour.')
+    tumour_prefix = os.path.join(tmp_directory, 'tumour.')
 
-    normal_reads_template = os.path.join(tmp_directory, 'normal.chr{}.seq'.format(chromosome))
-    normal_norm_template = os.path.join(tmp_directory, 'normal.chr{}.norm.bin'.format(chromosome))
-
-    tumour_reads_template = os.path.join(tmp_directory, 'tumour.chr{}.seq'.format(chromosome))
-    tumour_norm_template = os.path.join(tmp_directory, 'tumour.chr{}.norm.bin'.format(chromosome))
-
-    run_bicseq2_norm(normal_norm_filename, normal_filename, config, tmp_directory, read_length, fragment_length)
-    run_bicseq2_norm(tumour_norm_filename, tumour_filename, config, tmp_directory, read_length, fragment_length)
+    run_bicseq2_norm(normal_prefix, normal_filename, config, tmp_directory)
+    run_bicseq2_norm(tumour_prefix, tumour_filename, config, tmp_directory)
 
     seg_config_filename = os.path.join(tmp_directory, 'seg.config')
 
     with open(seg_config_filename, 'w') as f:
-        f.write('chromName\binFileNorm.Case\tbinFileNorm.Control\n')
+        f.write('chromName\tbinFileNorm.Case\tbinFileNorm.Control\n')
         for chromosome in config['chromosomes']:
             f.write('{}\t'.format(chromosome))
-            f.write('{}\n'.format(tumour_norm_filenames[chromosome]))
+            f.write('{}\t'.format(tumour_prefix + bicseq2_normed.format(chromosome)))
+            f.write('{}\n'.format(normal_prefix + bicseq2_normed.format(chromosome)))
 
     pypeliner.commandline.execute(
         'bicseq2-seg',
@@ -113,33 +108,70 @@ def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, confi
     )
 
 
-def run_theta(normal_filename, tumour_filename, config, tmp_directory, read_length, fragment_length):
+def report(theta_prefix, output_cn_filename, output_mix_filename):
+    theta2_results_filename = theta_prefix + '.BEST.results'
+    theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL':'NLL'})
+
+    best_idx = theta2_results['NLL'].argmin()
+
+    best_frac = theta2_results.loc[best_idx, 'mu']
+    best_frac = best_frac.split(',')
+
+    with open(output_mix_filename, 'w') as output_mix_file:
+        output_mix_file.write('\t'.join(best_frac) + '\n')
+
+    best_cn = theta2_results.loc[best_idx, 'C']
+    best_cn = [a.split(',') for a in best_cn.split(':')]
+    best_cn = np.array(best_cn).astype(int).T
+
+    theta2_seg_filename = theta_prefix + '.n2.withBounds'
+    cn_data = pd.read_csv(theta2_seg_filename, sep='\t')
+    cn_data.rename(columns={'chrm': 'chromosome'}, inplace=True)
+
+    for m in range(best_cn.shape[0]):
+        cn_data['total_{}'.format(m + 1)] = best_cn[m]
+
+    cn_data.to_csv(output_cn_filename, sep='\t', index=False, header=True)
+
+
+def run_theta(output_cn_filename, output_mix_filename, normal_filename, tumour_filename, config, tmp_directory, **kwargs):
     normal_allele_filename = os.path.join(tmp_directory, 'normal_alleles.tsv')
     tumour_allele_filename = os.path.join(tmp_directory, 'tumour_alleles.tsv')
 
-    normal_allele_count = calculate_allele_counts(normal_filename, chromosomes=config['chromosomes'])
-    tumour_allele_count = calculate_allele_counts(tumour_filename, chromosomes=config['chromosomes'])
+    # normal_allele_count = calculate_allele_counts(normal_filename, chromosomes=config['chromosomes'])
+    # tumour_allele_count = calculate_allele_counts(tumour_filename, chromosomes=config['chromosomes'])
+    # 
+    # positions = pd.merge(
+    #     normal_allele_count[['chromosome', 'position']].drop_duplicates(),
+    #     tumour_allele_count[['chromosome', 'position']].drop_duplicates(),
+    #     how='inner')
+    # 
+    # normal_allele_count = normal_allele_count.merge(positions, how='inner')
+    # tumour_allele_count = tumour_allele_count.merge(positions, how='inner')
+    # 
+    # write_theta_format_alleles(normal_allele_filename, normal_allele_count)
+    # write_theta_format_alleles(tumour_allele_filename, tumour_allele_count)
+    # 
+    # bicseq2_seg_filename = os.path.join(tmp_directory, 'bicseq2.seg')
+    # run_bicseq2_seg(bicseq2_seg_filename, normal_filename, tumour_filename, config, tmp_directory)
+    # 
+    theta_seg_filename = os.path.join(tmp_directory, 'theta_input.seg')
+    # pypeliner.commandline.execute(
+    #     'BICSeqToTHetA',
+    #     bicseq2_seg_filename,
+    #     '-OUTPUT_PREFIX', theta_seg_filename,
+    # )
 
-    write_theta_format_alleles(normal_allele_filename, normal_allele_count)
-    write_theta_format_alleles(tumour_allele_filename, tumour_allele_count)
-
-    bicseq2_seg_filename = os.path.join(tmp_directory, 'bicseq2.seg')
-    run_bicseq2_seg(bicseq2_seg_filename, normal_filename, tumour_filename, config, tmp_directory, read_length, fragment_length)
-
-    theta_seg_filename = os.path.join(tmp_directory, 'theta.seg')
-    pypeliner.commandline.execute(
-        'BICSeqToTHetA',
-        bicseq2_seg_filename,
-        '-OUTPUT_PREFIX', theta_seg_filename,
-    )
-
-    theta_results_filename = os.path.join(tmp_directory, 'theta.txt')
+    theta_prefix = os.path.join(tmp_directory, 'theta_results')
     pypeliner.commandline.execute(
         'RunTHetA', '--FORCE',
-        os.path.abspath(theta_seg_filename),
+        os.path.abspath(theta_seg_filename + '.all_processed'),
         '--TUMOR_FILE', os.path.abspath(normal_allele_filename),
         '--NORMAL_FILE', os.path.abspath(tumour_allele_filename),
-        '--RESULTS', os.path.abspath(theta_results_filename),
+        '--DIR', os.path.abspath(tmp_directory),
+        '--OUTPUT_PREFIX', 'theta_results',
     )
+
+    report(theta_prefix, output_cn_filename, output_mix_filename)
 
 
