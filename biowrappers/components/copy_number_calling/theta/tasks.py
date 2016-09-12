@@ -138,29 +138,29 @@ def run_theta(output_cn_filename, output_mix_filename, normal_filename, tumour_f
     normal_allele_filename = os.path.join(tmp_directory, 'normal_alleles.tsv')
     tumour_allele_filename = os.path.join(tmp_directory, 'tumour_alleles.tsv')
 
-    # normal_allele_count = calculate_allele_counts(normal_filename, chromosomes=config['chromosomes'])
-    # tumour_allele_count = calculate_allele_counts(tumour_filename, chromosomes=config['chromosomes'])
-    # 
-    # positions = pd.merge(
-    #     normal_allele_count[['chromosome', 'position']].drop_duplicates(),
-    #     tumour_allele_count[['chromosome', 'position']].drop_duplicates(),
-    #     how='inner')
-    # 
-    # normal_allele_count = normal_allele_count.merge(positions, how='inner')
-    # tumour_allele_count = tumour_allele_count.merge(positions, how='inner')
-    # 
-    # write_theta_format_alleles(normal_allele_filename, normal_allele_count)
-    # write_theta_format_alleles(tumour_allele_filename, tumour_allele_count)
-    # 
-    # bicseq2_seg_filename = os.path.join(tmp_directory, 'bicseq2.seg')
-    # run_bicseq2_seg(bicseq2_seg_filename, normal_filename, tumour_filename, config, tmp_directory)
-    # 
+    normal_allele_count = calculate_allele_counts(normal_filename, chromosomes=config['chromosomes'])
+    tumour_allele_count = calculate_allele_counts(tumour_filename, chromosomes=config['chromosomes'])
+
+    positions = pd.merge(
+        normal_allele_count[['chromosome', 'position']].drop_duplicates(),
+        tumour_allele_count[['chromosome', 'position']].drop_duplicates(),
+        how='inner')
+
+    normal_allele_count = normal_allele_count.merge(positions, how='inner')
+    tumour_allele_count = tumour_allele_count.merge(positions, how='inner')
+
+    write_theta_format_alleles(normal_allele_filename, normal_allele_count)
+    write_theta_format_alleles(tumour_allele_filename, tumour_allele_count)
+
+    bicseq2_seg_filename = os.path.join(tmp_directory, 'bicseq2.seg')
+    run_bicseq2_seg(bicseq2_seg_filename, normal_filename, tumour_filename, config, tmp_directory)
+
     theta_seg_filename = os.path.join(tmp_directory, 'theta_input.seg')
-    # pypeliner.commandline.execute(
-    #     'BICSeqToTHetA',
-    #     bicseq2_seg_filename,
-    #     '-OUTPUT_PREFIX', theta_seg_filename,
-    # )
+    pypeliner.commandline.execute(
+        'BICSeqToTHetA',
+        bicseq2_seg_filename,
+        '-OUTPUT_PREFIX', theta_seg_filename,
+    )
 
     theta_prefix = os.path.join(tmp_directory, 'theta_results')
     pypeliner.commandline.execute(
