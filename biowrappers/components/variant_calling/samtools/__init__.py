@@ -16,7 +16,7 @@ def create_samtools_variant_calling_workflow(
         split_size=int(1e7)
     ):
     
-    workflow = Workflow()
+    workflow = pypeliner.workflow.Workflow()
     
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
@@ -65,19 +65,19 @@ def create_samtools_variant_calling_workflow(
     )
     
     workflow.subworkflow(
-        name='finalize_snvs',
+        name='finalize_indels',
         func=vcf_tasks.finalise_vcf,
         args=(
-            pypeliner.managed.TempOutputFile('snvs.vcf'),
-            pypeliner.managed.OutputFile(snv_vcf_file),
+            pypeliner.managed.TempInputFile('indels.vcf'),
+            pypeliner.managed.OutputFile(indel_vcf_file),
         )
     )
     
     workflow.subworkflow(
-        name='finalize_indels',
+        name='finalize_snvs',
         func=vcf_tasks.finalise_vcf,
         args=(
-            pypeliner.managed.TempOutputFile('indels.vcf'),
+            pypeliner.managed.TempInputFile('snvs.vcf'),
             pypeliner.managed.OutputFile(snv_vcf_file),
         )
     )
