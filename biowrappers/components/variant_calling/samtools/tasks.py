@@ -28,17 +28,10 @@ def run_samtools_variant_calling(
     if region is not None:
         mpileup_cmd.extend(['-r', region])
     
-    bcf_cmd_1 = [
+    bcf_cmd = [
         'bcftools',
         'view',
-        '-bvcg',
-        '-'  
-    ]
-    
-    bcf_cmd_2 = [
-        'bcftools',
-        'view',
-        '-'
+        '-',
     ]
     
     vcf_cmd = [
@@ -52,9 +45,7 @@ def run_samtools_variant_calling(
     
     cmd.extend(mpileup_cmd)
     cmd.append('|')
-    cmd.extend(bcf_cmd_1)
-    cmd.append('|')
-    cmd.extend(bcf_cmd_2)
+    cmd.extend(bcf_cmd)
     cmd.append('|')
     cmd.extend(vcf_cmd)
     cmd.extend(['>', out_file])
