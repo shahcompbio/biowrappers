@@ -13,8 +13,6 @@ def create_tree_search_workflow(
     nodes_file,
     search_file,
     tree_file,
-    grid_search=False,
-    grid_size=101,
     max_probability_of_loss=0.5,
     min_probability_of_loss=0.0):
 
@@ -32,33 +30,6 @@ def create_tree_search_workflow(
         ),
     )
     
-    if grid_search:
-        workflow.setobj(
-            obj=pypeliner.managed.TempOutputObj('grid', 'trees', 'loss_prob'), 
-            value=dict(
-                zip(
-                    range(grid_size), 
-                    np.linspace(0, 1, grid_size),
-                )
-            ),
-            axes=('trees',)
-        ) 
-
-        workflow.transform(
-            name='compute_tree_log_likelihoods',
-            axes=('trees', 'loss_prob'),
-            ctx=default_ctx,
-            func=tasks.compute_tree_log_likelihoods,
-            args=(
-                pypeliner.managed.InputFile(in_file),
-                pypeliner.managed.TempInputFile('tree.pickle.gz', 'trees'),
-                pypeliner.managed.TempOutputFile('log_likelhood.tsv.gz', 'trees', 'loss_prob'),
-            ),
-            kwargs={
-                'probability_of_loss' : pypeliner.managed.TempInputObj('grid', 'trees', 'loss_prob'),
-            }
-        )
-     
     workflow.transform(
         name='compute_optimal_tree_log_likelihoods',
         axes=('trees',),
@@ -67,7 +38,7 @@ def create_tree_search_workflow(
         args=(
             pypeliner.managed.InputFile(in_file),
             pypeliner.managed.TempInputFile('tree.pickle.gz', 'trees'),
-            pypeliner.managed.TempOutputFile('optimal_log_likelhood.tsv.gz', 'trees'),
+            pypeliner.managed.TempOutputFile('solution.pickle.gz', 'trees'),
         ),
         kwargs={
             'max_probability_of_loss' : max_probability_of_loss,
@@ -75,48 +46,17 @@ def create_tree_search_workflow(
         }
     )
   
-    if grid_search:
-        grid_search_files = pypeliner.managed.TempInputFile('log_likelhood.tsv.gz', 'trees', 'loss_prob')
-      
-    else:
-        grid_search_files = None
-          
     workflow.transform(
-        name='build_results_file', 
-        axes=(), 
-        ctx=default_ctx, 
-        func=tasks.build_results_file, 
-        args=(
-            pypeliner.managed.TempInputFile('optimal_log_likelhood.tsv.gz', 'trees'),
-            pypeliner.managed.OutputFile(search_file),
-        ), 
-        kwargs={
-            'grid_search_files' : grid_search_files,
-        }
-    )
-      
-    workflow.transform(
-        name='find_ml_tree',
+        name='select_ml_tree',
         axes=(),
         ctx=default_ctx,
-        func=tasks.find_ml_tree,
+        func=tasks.select_ml_tree,
         args=(
-            pypeliner.managed.InputFile(search_file),
-            pypeliner.managed.TempInputFile('tree.pickle.gz', 'trees'),
-            pypeliner.managed.OutputFile(tree_file)
+            pypeliner.managed.TempInputFile('solution.pickle.gz', 'trees'),
+            pypeliner.managed.TempOutputFile('ml_solution.pickle.gz'),
         )
     )
 
-    workflow.transform(
-        name='get_ml_loss_prob', 
-        ctx={'local' : True}, 
-        func=get_loss_prob, 
-        ret=pypeliner.managed.TempOutputObj('ml_loss_prob'),
-        args=(
-            pypeliner.managed.InputFile(search_file),
-        )
-    )
-    
     workflow.commandline(
         name='annotate_posterirors',
         axes=(),
@@ -125,9 +65,8 @@ def create_tree_search_workflow(
             'PyDollo',
             'annotate_posteriors',
             '--log_likelihoods_file', pypeliner.managed.InputFile(in_file),
-            '--tree_file', pypeliner.managed.InputFile(tree_file),
+            '--solution_file', pypeliner.managed.TempInputFile('ml_solution.pickle.gz'),
             '--out_file', pypeliner.managed.OutputFile(nodes_file),
-            '--probability_of_loss', pypeliner.managed.TempInputObj('ml_loss_prob'),
         ),
     )
     
