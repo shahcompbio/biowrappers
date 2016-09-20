@@ -19,26 +19,24 @@ def create_tree_search_workflow(
     workflow = Workflow()
     
     workflow.transform(
-        name='create_trees', 
-        axes=(), 
+        name='create_tree_groups', 
         ctx=default_ctx, 
-        func=tasks.create_trees, 
+        func=tasks.create_tree_groups, 
         args=(
             pypeliner.managed.InputFile(in_file),
-            pypeliner.managed.TempOutputFile('tree.pickle.gz', 'trees'),
-            pypeliner.managed.TempSpace('trees_tmp'),
+            pypeliner.managed.TempOutputFile('trees.pickle.gz', 'tree_groups'),
         ),
     )
     
     workflow.transform(
         name='compute_optimal_tree_log_likelihoods',
-        axes=('trees',),
+        axes=('tree_groups',),
         ctx=default_ctx,
         func=tasks.compute_tree_log_likelihoods,
         args=(
             pypeliner.managed.InputFile(in_file),
-            pypeliner.managed.TempInputFile('tree.pickle.gz', 'trees'),
-            pypeliner.managed.TempOutputFile('solution.pickle.gz', 'trees'),
+            pypeliner.managed.TempInputFile('trees.pickle.gz', 'tree_groups'),
+            pypeliner.managed.TempOutputFile('results.pickle.gz', 'tree_groups'),
         ),
         kwargs={
             'max_probability_of_loss' : max_probability_of_loss,
@@ -48,32 +46,25 @@ def create_tree_search_workflow(
   
     workflow.transform(
         name='select_ml_tree',
-        axes=(),
         ctx=default_ctx,
         func=tasks.select_ml_tree,
         args=(
-            pypeliner.managed.TempInputFile('solution.pickle.gz', 'trees'),
-            pypeliner.managed.TempOutputFile('ml_solution.pickle.gz'),
+            pypeliner.managed.TempInputFile('results.pickle.gz', 'tree_groups'),
+            pypeliner.managed.OutputFile(tree_file),
+            pypeliner.managed.OutputFile(search_file),
         )
     )
 
-    workflow.commandline(
-        name='annotate_posterirors',
-        axes=(),
+    workflow.transform(
+        name='annotate_posteriors',
         ctx=default_ctx,
+        func=tasks.annotate_posteriors,
         args=(
-            'PyDollo',
-            'annotate_posteriors',
-            '--log_likelihoods_file', pypeliner.managed.InputFile(in_file),
-            '--solution_file', pypeliner.managed.TempInputFile('ml_solution.pickle.gz'),
-            '--out_file', pypeliner.managed.OutputFile(nodes_file),
+            pypeliner.managed.InputFile(in_file),
+            pypeliner.managed.InputFile(tree_file),
+            pypeliner.managed.OutputFile(nodes_file),
         ),
     )
     
     return workflow
 
-def get_loss_prob(file_name):
-    
-    df = pd.read_csv(file_name, compression='gzip', sep='\t')
-    
-    return df.iloc[0]['probability_of_loss']
