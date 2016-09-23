@@ -53,6 +53,9 @@ def filter_annotate_breakpoints(
     
     """
     
+    if patient_libraries is None:
+        patient_libraries = {'null': list(brk['library'].unique())}
+    
     brk = pd.read_csv(input_breakpoint_filename, sep='\t',
                       converters={'chromosome_1': str, 'chromosome_2': str})
 
@@ -61,20 +64,32 @@ def filter_annotate_breakpoints(
     # Add is_normal column
     brklib['is_normal'] = brklib['library'].isin(control_ids)
     
+    # Add patient_id column
+    brklib['patient_id'] = ''
+    for patient_id, library_ids in patient_libraries.iteritems():
+        for library_id in library_ids:
+            brklib.loc[brklib['library'] == library_id, 'patient_id'] = patient_id
+            
+    num_patients = (
+        brklib[['prediction_id', 'patient_id']]
+        .drop_duplicates()
+        .groupby('prediction_id')
+        .size()
+        .rename('num_patients')
+    )
+    
     # Mark as germline any prediction with nonzero normal reads
-
     is_germline = brklib[brklib['num_reads'] > 0].groupby('prediction_id')['is_normal'].any()
 
     brk.set_index('prediction_id', inplace=True)
     brk['is_germline'] = is_germline
+    brk['num_patients'] = num_patients
     brk.reset_index(inplace=True)
 
     # Mark as a filtered any breakpoint that is common or germline
-
-    brk['is_filtered'] = brk['is_germline']
+    brk['is_filtered'] = brk['is_germline'] | (brk['num_patients'] > 1)
 
     # Get a list of breakends and their filtered status
-
     def get_brkend(brk, side, data_cols):
         cols = ['chromosome', 'strand', 'position']
         side_cols = [a+'_'+side for a in cols]
@@ -87,7 +102,6 @@ def filter_annotate_breakpoints(
                         get_brkend(brk, '2', ['is_filtered'])], ignore_index=True)
 
     # Calculate the minimum distance to the nearest filtered breakend for all breakpoints
-
     def calculate_dist_filtered(data):
 
         data = data.sort('position')
@@ -124,7 +138,6 @@ def filter_annotate_breakpoints(
                    'X', 'Y']
 
     # Filter breakpoints
-
     brk = brk.loc[(~brk['is_filtered']) &
                   (brk['dist_filtered'] > 50) &
                   (brk['num_reads'] >= 2) &
@@ -138,9 +151,6 @@ def filter_annotate_breakpoints(
 
     # Balanced rearrangement annotation
     balanced_prediction_ids = []
-    
-    if patient_libraries is None:
-        patient_libraries = {'null': list(brk['library'].unique())}
     
     for patient_id, library_ids in patient_libraries.iteritems():
         patient_prediction_ids = brklib.loc[brklib['library'].isin(library_ids), ['prediction_id']].drop_duplicates()
