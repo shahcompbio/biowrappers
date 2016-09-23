@@ -143,7 +143,8 @@ def filter_annotate_breakpoints(
         patient_libraries = {'null': list(brk['library'].unique())}
     
     for patient_id, library_ids in patient_libraries.iteritems():
-        patient_brks = brk[brk['library'].isin(library_ids)]
+        patient_prediction_ids = brklib.loc[brklib['library'].isin(library_ids), ['prediction_id']].drop_duplicates()
+        patient_brks = brk.merge(patient_prediction_ids)
         balanced_rearrangements = destruct.balanced.detect_balanced_rearrangements(patient_brks)
         for rearrangement in balanced_rearrangements:
             balanced_prediction_ids.extend(rearrangement.prediction_ids)
