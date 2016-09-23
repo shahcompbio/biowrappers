@@ -57,13 +57,13 @@ def destruct_pipeline(
     )
 
     workflow.transform(
-        name='filter_breakpoints',
+        name='filter_annotate_breakpoints',
         ctx={'mem': 8},
-        func=tasks.filter_breakpoints,
+        func=tasks.filter_annotate_breakpoints,
         args=(
             pypeliner.managed.InputFile(breakpoint_file),
             pypeliner.managed.InputFile(breakpoint_library_file),
-            normal_sample_id,
+            [normal_sample_id],
             pypeliner.managed.OutputFile(somatic_breakpoint_file),
             pypeliner.managed.OutputFile(somatic_breakpoint_library_file),
         ),

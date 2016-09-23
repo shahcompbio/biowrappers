@@ -30,21 +30,37 @@ def annotate_rearrangement_type(df):
     df['rearrangement_type'] = rearrangement_types
 
 
-def filter_breakpoints(
+def filter_annotate_breakpoints(
     input_breakpoint_filename,
     input_breakpoint_library_filename,
-    control_id,
+    control_ids,
     output_breakpoint_filename,
     output_breakpoint_library_filename,
-):
+    patient_libraries=None):
+    """ Filter and annotate breakpoints.
+    
+    Args:
+        input_breakpoint_filename (str): filename of breakpoint table
+        input_breakpoint_library_filename (str): filename of breakpoint library table
+        control_ids (list): control id or ids
+        output_breakpoint_filename (str): output filename of breakpoint table
+        output_breakpoint_library_filename (str): output filename of breakpoint library table
+    
+    KwArgs:
+        patient_libraries (dict of list): library ids for each patient
+        
+    If patient_libraries is not specified, assumed one patient for all libraries.
+    
+    """
+    
     brk = pd.read_csv(input_breakpoint_filename, sep='\t',
                       converters={'chromosome_1': str, 'chromosome_2': str})
 
     brklib = pd.read_csv(input_breakpoint_library_filename, sep='\t')
 
     # Add is_normal column
-    brklib['is_normal'] = brklib['library'] == control_id
-
+    brklib['is_normal'] = brklib['library'].isin(control_ids)
+    
     # Mark as germline any prediction with nonzero normal reads
 
     is_germline = brklib[brklib['num_reads'] > 0].groupby('prediction_id')['is_normal'].any()
@@ -121,19 +137,24 @@ def filter_breakpoints(
     brklib = brklib.merge(brk[['prediction_id']].drop_duplicates())
 
     # Balanced rearrangement annotation
+    balanced_prediction_ids = []
+    
+    if patient_libraries is None:
+        patient_libraries = {'null': list(brk['library'].unique())}
+    
+    for patient_id, library_ids in patient_libraries.iteritems():
+        patient_brks = brk[brk['library'].isin(library_ids)]
+        balanced_rearrangements = destruct.balanced.detect_balanced_rearrangements(patient_brks)
+        for rearrangement in balanced_rearrangements:
+            balanced_prediction_ids.extend(rearrangement.prediction_ids)
 
     brk['balanced'] = False
-    balanced_rearrangements = destruct.balanced.detect_balanced_rearrangements(brk)
-    for rearrangement in balanced_rearrangements:
-        for prediction_id in rearrangement.prediction_ids:
-            brk.loc[brk['prediction_id'] == prediction_id, 'balanced'] = True
+    brk.loc[brk['prediction_id'].isin(balanced_prediction_ids), 'balanced'] = True    
 
     # Annotate rearrangement type
-
     annotate_rearrangement_type(brk)
 
     # Output filtered breakpoint tables
-
     brk.to_csv(output_breakpoint_filename, sep='\t', header=True, index=False)
     brklib.to_csv(output_breakpoint_library_filename, sep='\t', header=True, index=False)
 
