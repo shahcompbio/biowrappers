@@ -70,9 +70,9 @@ def call_and_annotate_pipeline(
 
         remixt_config = config['remixt']['config']
         if ploidy_config is not None:
-            if 'fit_model' not in remixt_config:
-                remixt_config['fit_model'] = {}
-            remixt_config['fit_model'].update(ploidy_config)
+            if 'sample_specific' not in remixt_config:
+                remixt_config['sample_specific'] = {}
+            remixt_config['sample_specific'].update(ploidy_config)
 
         workflow.subworkflow(
             name='remixt',
