@@ -104,6 +104,25 @@ def create_titan_workflow(
         },
     )
 
+    workflow.setobj(
+        obj=pypeliner.managed.OutputChunks('sample_id', 'chromosome'),
+        value=[str(a) for a in xrange(1, 23)] + ['X', 'Y'],
+        axis=('sample_id',)
+    )
+
+    workflow.transform(
+        name='plot_chromosome',
+        axes=('sample_id', 'chromosome'),
+        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        args=(
+            'plot_titan_chromosome.R',
+            pypeliner.managed.Instance('chromosome'),
+            pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
+            pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_params.tsv'), 'sample_id'),
+            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_chr_{chromosome}.png'), 'sample_id', 'chromosome'),
+        ),
+    )
+
     workflow.transform(
         name='merge_results',
         ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
