@@ -5,6 +5,7 @@ Created on Oct 31, 2015
 '''
 from pypeliner.workflow import Workflow
 
+import os
 import itertools
 import pandas as pd
 import pypeliner
@@ -55,10 +56,10 @@ def index_bcf(in_file):
 
     """
     
-    commandline.execute('bcftools', 'index', in_file)
+    pypeliner.commandline.execute('bcftools', 'index', in_file)
     
     if in_file.endswith('.tmp'):
-        index_file = in_file[:-4]
+        index_file = in_file[:-4] + '.csi'
         
         try:
             os.remove(index_file)
@@ -78,13 +79,10 @@ def finalise_vcf(in_file, compressed_file):
     """
     
     uncompressed_file = compressed_file + '.uncompressed'
-    commandline.execute('vcf-sort', in_file, '>', uncompressed_file)
-    
-    commandline.execute('bgzip', uncompressed_file, '-c', '>', compressed_file)
+    pypeliner.commandline.execute('vcf-sort', in_file, '>', uncompressed_file)
+    pypeliner.commandline.execute('bgzip', uncompressed_file, '-c', '>', compressed_file)
     os.remove(uncompressed_file)
         
-    commandline.execute('bcftools', 'index', compressed_file)
-    
     index_bcf(compressed_file)
 
 def index_vcf(vcf_file, index_file):
@@ -119,6 +117,8 @@ def concatenate_vcf(in_files, out_file):
     
     pypeliner.commandline.execute(*cmd)
 
+    index_bcf(compressed_file)
+
 def concatenate_bcf(in_files, out_file):
     """ Fast concatenation of BCF file using `bcftools`.
     
@@ -132,6 +132,8 @@ def concatenate_bcf(in_files, out_file):
     cmd += [in_files[x] for x in sorted(in_files.keys())]
     
     pypeliner.commandline.execute(*cmd)
+
+    index_bcf(compressed_file)
                 
 def split_vcf(in_file, out_file_callback, lines_per_file):
     """ Split a VCF file into smaller files.
