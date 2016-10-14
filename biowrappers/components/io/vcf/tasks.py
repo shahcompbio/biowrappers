@@ -47,14 +47,30 @@ def filter_vcf(in_file, out_file):
                 writer.write_record(record)
         
         writer.close()
+        
+def index_bcf(in_file):
+    """ Index a VCF or BCF file with bcftools.
+    
+    :param in_file: Path of file to index.
+
+    """
+    
+    commandline.execute('bcftools', 'index', in_file)
+    
+    if in_file.endswith('.tmp'):
+        index_file = in_file[:-4]
+        
+        try:
+            os.remove(index_file)
+        except:
+            pass
+        
+        os.rename(in_file + '.csi', index_file)
+
 
 def finalise_vcf(in_file, compressed_file):
     """ Compress a VCF using bgzip and create index.
-    
-    :param workflow: pypeliner Scheduler.
-    
-    :param job_suffix: Suffix to add to job name. Ensures job is unique in pypeliner pipeline.
-    
+        
     :param in_file: Path of file to compressed and index.
     
     :param out_file: Path where compressed file will be written. Index file will written to `out_file` + `.tbi`.
@@ -69,15 +85,7 @@ def finalise_vcf(in_file, compressed_file):
         
     commandline.execute('bcftools', 'index', compressed_file)
     
-    if compressed_file.endswith('.tmp'):
-        index_file = compressed_file[:-4]
-        
-        try:
-            os.remove(index_file)
-        except:
-            pass
-        
-        os.rename(compressed_file + '.csi', index_file)
+    index_bcf(compressed_file)
 
 def index_vcf(vcf_file, index_file):
     """ Create a tabix index for a VCF file

@@ -3,6 +3,7 @@ Created on Nov 2, 2015
 
 @author: Andrew Roth
 '''
+from biowrappers.components.io.vcf.tasks import index_bcf
 import pypeliner
 
 def run_samtools_variant_calling(
@@ -41,3 +42,5 @@ def run_samtools_variant_calling(
     cmd.extend(bcf_cmd)
     
     pypeliner.commandline.execute(*cmd)
+    
+    index_bcf(out_file)
