@@ -116,7 +116,7 @@ def concatenate_vcf(in_files, out_file):
     
     pypeliner.commandline.execute(*cmd)
 
-    index_bcf(compressed_file)
+    index_bcf(out_file)
 
 def concatenate_bcf(in_files, out_file):
     """ Fast concatenation of BCF file using `bcftools`.
@@ -132,7 +132,7 @@ def concatenate_bcf(in_files, out_file):
     
     pypeliner.commandline.execute(*cmd)
 
-    index_bcf(compressed_file)
+    index_bcf(out_file)
 
 def extract_variant_type(in_file, out_file, variant_type):
     """ Extract a specific type of variant from a vcf file.
