@@ -61,29 +61,23 @@ def finalise_vcf(in_file, compressed_file):
     
     """
     
-    workflow = Workflow()
+    uncompressed_file = compressed_file + '.uncompressed'
+    commandline.execute('vcf-sort', in_file, '>', uncompressed_file)
     
-    workflow.transform(
-        name='compress_vcf',
-        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=compress_vcf,
-        args=(
-            pypeliner.managed.InputFile(in_file),
-            pypeliner.managed.OutputFile(compressed_file)
-        )
-    )
+    commandline.execute('bgzip', uncompressed_file, '-c', '>', compressed_file)
+    os.remove(uncompressed_file)
+        
+    commandline.execute('bcftools', 'index', compressed_file)
     
-    workflow.transform(
-        name='index_vcf',
-        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=index_vcf,
-        args=(
-            pypeliner.managed.InputFile(compressed_file),
-            pypeliner.managed.OutputFile(compressed_file.replace('.tmp', '') + '.tbi')
-        )
-    )
-    
-    return workflow
+    if compressed_file.endswith('.tmp'):
+        index_file = compressed_file[:-4]
+        
+        try:
+            os.remove(index_file)
+        except:
+            pass
+        
+        os.rename(compressed_file + '.csi', index_file)
 
 def index_vcf(vcf_file, index_file):
     """ Create a tabix index for a VCF file
@@ -103,44 +97,8 @@ def index_vcf(vcf_file, index_file):
     
     time.sleep(1)
 
-def concatenate_vcf(in_files, out_file, variant_filter='all'):
-    """ Concatenate a list of VCF files into a single file
-    
-    :param in_files: A dictionary of where the values are paths of VCF files to be concatenated. Files will be sorted by
-                     dictionary key.
-                     
-    :param out_file: Path where concatenated will be written.
-    
-    :param variant_filter: Type of variant to include in output. Options are: `all` - all variants, `snv` - only snvs,
-                           `indel` - only indels.
-                           
-    """
-
-    in_files = flatten_input(in_files)
-    
-    reader = vcf.Reader(filename=in_files[0])
-    
-    with open(out_file, 'w') as out_fh:
-        writer = vcf.Writer(out_fh, reader)
-    
-        for file_name in in_files:
-            reader = vcf.Reader(filename=file_name)
-            
-            for record in reader:
-                if variant_filter == 'all':
-                    writer.write_record(record)
-                
-                elif variant_filter == 'indel' and record.is_indel:
-                    writer.write_record(record)
-                
-                elif variant_filter == 'snv' and record.is_snp:
-                    writer.write_record(record)
-                
-                else:
-                    continue
-
-def concatenate_vcf_fast(in_files, out_file):
-    """ Fast concatenation of VCF file using `vcftools`.
+def concatenate_vcf(in_files, out_file):
+    """ Fast concatenation of VCF file using `bcftools`.
     
     :param in_files: dict with values being files to be concatenated. Files will be concatenated based on sorted order of keys.
     
@@ -148,7 +106,8 @@ def concatenate_vcf_fast(in_files, out_file):
     
     """
     
-    cmd = ['vcf-concat', ] + [in_files[x] for x in sorted(in_files.keys())] + ['>', out_file]
+    cmd = ['bcftools', 'concat', '-a', '-O', 'z', '-o', out_file]
+    cmd += [in_files[x] for x in sorted(in_files.keys())]
     
     pypeliner.commandline.execute(*cmd)
 

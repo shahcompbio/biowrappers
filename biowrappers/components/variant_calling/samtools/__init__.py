@@ -31,7 +31,7 @@ def create_samtools_variant_calling_workflow(
         args=(
             pypeliner.managed.InputFile(bam_file),
             pypeliner.managed.InputFile(ref_genome_fasta_file),
-            pypeliner.managed.TempOutputFile('variants.vcf', 'regions'),
+            pypeliner.managed.TempOutputFile('variants.vcf.gz', 'regions'),
         ),
         kwargs={
             'region': pypeliner.managed.TempInputObj('regions_obj', 'regions'),
@@ -39,36 +39,46 @@ def create_samtools_variant_calling_workflow(
     )
     
     workflow.transform(
-        name='merge_indels',
+        name='concatenate_variants',
         ctx={'mem' : 2},
         func=vcf_tasks.concatenate_vcf,
         args=(
-            pypeliner.managed.TempInputFile('variants.vcf', 'regions'),
-            pypeliner.managed.TempOutputFile('indels.vcf'),
+            pypeliner.managed.TempInputFile('variants.vcf.gz', 'regions'),
+            pypeliner.managed.TempOutputFile('variants.vcf.gz'),
         ),
-        kwargs={
-            'variant_filter': 'indel',
-        },
     )
     
-    workflow.transform(
-        name='merge_snvs',
+    workflow.commandline(
+        name='extract_indels',
         ctx={'mem' : 2},
-        func=vcf_tasks.concatenate_vcf,
         args=(
-            pypeliner.managed.TempInputFile('variants.vcf', 'regions'),
-            pypeliner.managed.TempOutputFile('snvs.vcf'),
+            'bcf_tools',
+            'view',
+            '-v', 'indels',
+            '-O', 'z',
+            '-o', pypeliner.managed.TempOutputFile('indels.vcf.gz'),
+            pypeliner.managed.TempInputFile('variants.vcf.gz'),
         ),
-        kwargs={
-            'variant_filter': 'snv',
-        },
+    )
+    
+    workflow.commandline(
+        name='extract_snps',
+        ctx={'mem' : 2},
+        args=(
+            'bcf_tools',
+            'view',
+            '-v', 'snps',
+            '-O', 'z',
+            '-o', pypeliner.managed.TempOutputFile('snps.vcf.gz'),
+            pypeliner.managed.TempInputFile('variants.vcf.gz'),
+        ),
     )
     
     workflow.subworkflow(
         name='finalize_indels',
         func=vcf_tasks.finalise_vcf,
         args=(
-            pypeliner.managed.TempInputFile('indels.vcf'),
+            pypeliner.managed.TempInputFile('indels.vcf.gz'),
             pypeliner.managed.OutputFile(indel_vcf_file),
         )
     )
@@ -77,7 +87,7 @@ def create_samtools_variant_calling_workflow(
         name='finalize_snvs',
         func=vcf_tasks.finalise_vcf,
         args=(
-            pypeliner.managed.TempInputFile('snvs.vcf'),
+            pypeliner.managed.TempInputFile('snvs.vcf.gz'),
             pypeliner.managed.OutputFile(snv_vcf_file),
         )
     )
