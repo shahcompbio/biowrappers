@@ -54,7 +54,7 @@ def create_samtools_variant_calling_workflow(
         func=vcf_tasks.extract_variant_type,
         args=(
             pypeliner.managed.TempInputFile('variants.vcf.gz'),
-            pypeliner.managed.TempOutputFile(indel_vcf_file),
+            pypeliner.managed.OutputFile(indel_vcf_file),
             'indels',
         ),
     )
@@ -65,7 +65,7 @@ def create_samtools_variant_calling_workflow(
         func=vcf_tasks.extract_variant_type,
         args=(
             pypeliner.managed.TempInputFile('variants.vcf.gz'),
-            pypeliner.managed.TempOutputFile(snv_vcf_file),
+            pypeliner.managed.OutputFile(snv_vcf_file),
             'snps',
         ),
     )
