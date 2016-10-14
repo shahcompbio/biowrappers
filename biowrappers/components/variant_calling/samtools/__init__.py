@@ -62,14 +62,14 @@ def create_samtools_variant_calling_workflow(
     )
     
     workflow.commandline(
-        name='extract_snps',
+        name='extract_snvs',
         ctx={'mem' : 2},
         args=(
             'bcf_tools',
             'view',
             '-v', 'snps',
             '-O', 'z',
-            '-o', pypeliner.managed.TempOutputFile('snps.vcf.gz'),
+            '-o', pypeliner.managed.TempOutputFile('snvs.vcf.gz'),
             pypeliner.managed.TempInputFile('variants.vcf.gz'),
         ),
     )
