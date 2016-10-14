@@ -48,48 +48,26 @@ def create_samtools_variant_calling_workflow(
         ),
     )
     
-    workflow.commandline(
+    workflow.transform(
         name='extract_indels',
         ctx={'mem' : 2},
+        func=vcf_tasks.extract_variant_type,
         args=(
-            'bcf_tools',
-            'view',
-            '-v', 'indels',
-            '-O', 'z',
-            '-o', pypeliner.managed.TempOutputFile('indels.vcf.gz'),
             pypeliner.managed.TempInputFile('variants.vcf.gz'),
+            pypeliner.managed.TempOutputFile(indel_vcf_file),
+            'indels',
         ),
     )
     
-    workflow.commandline(
+    workflow.transform(
         name='extract_snvs',
         ctx={'mem' : 2},
+        func=vcf_tasks.extract_variant_type,
         args=(
-            'bcf_tools',
-            'view',
-            '-v', 'snps',
-            '-O', 'z',
-            '-o', pypeliner.managed.TempOutputFile('snvs.vcf.gz'),
             pypeliner.managed.TempInputFile('variants.vcf.gz'),
+            pypeliner.managed.TempOutputFile(snv_vcf_file),
+            'snps',
         ),
-    )
-    
-    workflow.subworkflow(
-        name='finalize_indels',
-        func=vcf_tasks.finalise_vcf,
-        args=(
-            pypeliner.managed.TempInputFile('indels.vcf.gz'),
-            pypeliner.managed.OutputFile(indel_vcf_file),
-        )
-    )
-    
-    workflow.subworkflow(
-        name='finalize_snvs',
-        func=vcf_tasks.finalise_vcf,
-        args=(
-            pypeliner.managed.TempInputFile('snvs.vcf.gz'),
-            pypeliner.managed.OutputFile(snv_vcf_file),
-        )
     )
     
     return workflow

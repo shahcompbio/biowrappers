@@ -68,7 +68,6 @@ def index_bcf(in_file):
         
         os.rename(in_file + '.csi', index_file)
 
-
 def finalise_vcf(in_file, compressed_file):
     """ Compress a VCF using bgzip and create index.
         
@@ -134,7 +133,20 @@ def concatenate_bcf(in_files, out_file):
     pypeliner.commandline.execute(*cmd)
 
     index_bcf(compressed_file)
-                
+
+def extract_variant_type(in_file, out_file, variant_type):
+    """ Extract a specific type of variant from a vcf file.
+    
+    :param in_file: input vcf file
+    :param out_file: output filtered vcf file
+    :param variant_type: one of snps or indels
+
+    """
+    
+    pypeliner.commandline.execute('bcftools', 'view', '-v', variant_type, '-O', 'z', '-o', out_file, in_file)
+
+    index_bcf(out_file)
+
 def split_vcf(in_file, out_file_callback, lines_per_file):
     """ Split a VCF file into smaller files.
     
