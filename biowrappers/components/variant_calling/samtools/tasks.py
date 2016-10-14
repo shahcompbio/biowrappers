@@ -18,27 +18,20 @@ def run_samtools_variant_calling(
     mpileup_cmd = [
         'samtools',
         'mpileup',
-        '-u',
-        '-f', ref_genome_fasta_file,
+        '-ugf', ref_genome_fasta_file,
         '-Q', min_bqual,
         '-q', min_mqual,
         bam_file
-    ] 
+    ]
     
     if region is not None:
         mpileup_cmd.extend(['-r', region])
     
     bcf_cmd = [
         'bcftools',
-        'view',
-        '-',
-    ]
-    
-    vcf_cmd = [
-        'vcfutils.pl',
-        'varFilter',
-        '-d', min_depth,
-        '-D', max_depth
+        'call',
+        '-vmO', 'z',
+        '-o', out_file,
     ]
     
     cmd = []
@@ -46,8 +39,5 @@ def run_samtools_variant_calling(
     cmd.extend(mpileup_cmd)
     cmd.append('|')
     cmd.extend(bcf_cmd)
-    cmd.append('|')
-    cmd.extend(vcf_cmd)
-    cmd.extend(['>', out_file])
     
     pypeliner.commandline.execute(*cmd)
