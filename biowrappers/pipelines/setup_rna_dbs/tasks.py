@@ -22,7 +22,7 @@ def unzip(in_file, out_file):
     if ext == 'gz':
         in_file_opener = gzip.GzipFile
     elif ext == 'zip':
-        member = os.path.basename(out_file)
+        member = os.path.basename(out_file).replace('.tmp', '')
         in_file_opener = lambda x: zipfile.ZipFile(x).open(member)
     with in_file_opener(in_file) as in_fh, open(out_file, 'w') as out_fh:
         for line in in_fh:
