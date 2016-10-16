@@ -11,10 +11,12 @@ import biowrappers.components.rna.tophat.workflow
 
 
 def download_external_files(config):
+    download_keys = [x for x in config if 'url' in config[x]]
     urls = dict(zip(
-        config.keys(),
-        [config[x]['url'] for x in config if 'url' in config[x]]
+        download_keys,
+        [config[x]['url'] for x in download_keys],
     ))
+    print urls
     downloaded_files = dict(zip(
         urls.keys(),
         [config[x]['local_path'] for x in urls.keys()],
