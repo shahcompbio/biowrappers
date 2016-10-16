@@ -9,6 +9,8 @@ import biowrappers.components.rna.salmon.tasks
 import biowrappers.components.rna.star.tasks
 import biowrappers.components.rna.tophat.workflow
 
+import tasks
+
 
 def download_external_files(config):
     download_keys = [x for x in config if 'url' in config[x]]
@@ -35,15 +37,13 @@ def download_external_files(config):
             mgd.TempOutputFile('download.gz', 'files'),
         ),
     )
-    workflow.commandline(
+    workflow.transform(
         name='unzip',
         axes=('files',),
+        func=tasks.unzip,
         args=(
-            'gzip',
-            '-cd',
             mgd.TempInputFile('download.gz', 'files'),
-            '>',
-            mgd.OutputFile('unzipped', 'files', fnames=downloaded_files)
+            mgd.OutputFile('unzipped', 'files', fnames=downloaded_files),
         ),
     )
     return workflow
