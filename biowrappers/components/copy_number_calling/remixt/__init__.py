@@ -13,13 +13,13 @@ import tasks
 
 
 def create_remixt_workflow(
-    normal_seqdata_file,
-    tumour_seqdata_files,
+    seqdata_files,
     config,
     out_file,
     raw_data_dir,
     ref_data_dir=None,
     somatic_breakpoint_file=None,
+    normal_id=None,
 ):
     if somatic_breakpoint_file is None:
         raise ValueError('somatic breakpoints required')
@@ -27,8 +27,14 @@ def create_remixt_workflow(
     if ref_data_dir is None:
         raise ValueError('ref data directory required')
 
-    results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
-    selected_files = os.path.join(raw_data_dir, 'selected', 'sample_{sample_id}.h5')
+    sample_ids = seqdata_files.keys()
+    
+    tumour_ids = seqdata_files.keys()
+    if normal_id is not None:
+        tumour_ids.remove(normal_id)
+
+    results_files = os.path.join(raw_data_dir, 'results', 'sample_{tumour_id}.h5')
+    selected_files = os.path.join(raw_data_dir, 'selected', 'sample_{tumour_id}.h5')
     utils.make_parent_directory(results_files)
     utils.make_parent_directory(selected_files)
 
@@ -38,7 +44,12 @@ def create_remixt_workflow(
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sample_id'),
-        value=tumour_seqdata_files.keys(),
+        value=sample_ids,
+    )
+
+    workflow.setobj(
+        obj=pypeliner.managed.OutputChunks('tumour_id'),
+        value=tumour_ids,
     )
 
     workflow.transform(
@@ -61,23 +72,26 @@ def create_remixt_workflow(
         args=(
             pypeliner.managed.InputFile(segment_filename),
             pypeliner.managed.InputFile(somatic_breakpoint_file),
-            pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
+            pypeliner.managed.InputFile('seqdata', 'sample_id', fnames=seqdata_files),
             pypeliner.managed.InputFile(normal_seqdata_file),
-            pypeliner.managed.OutputFile('results', 'sample_id', template=results_files, axes_origin=[]),
+            pypeliner.managed.OutputFile('results', 'tumour_id', template=results_files, axes_origin=[]),
             raw_data_dir,
             config,
             ref_data_dir,
         ),
+        kwargs={
+            'normal_id': normal_id,
+        }
     )
 
     workflow.transform(
         name='select_solution',
         ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.select_solution,
-        axes=('sample_id',),
+        axes=('tumour_id',),
         args=(
-            pypeliner.managed.OutputFile('selected', 'sample_id', template=selected_files),
-            pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
+            pypeliner.managed.OutputFile('selected', 'tumour_id', template=selected_files),
+            pypeliner.managed.InputFile('results', 'tumour_id', template=results_files),
             config,
         )
     )
@@ -87,7 +101,7 @@ def create_remixt_workflow(
         ctx={'mem': 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=hdf5_tasks.merge_hdf5,
         args=(
-            pypeliner.managed.InputFile('selected', 'sample_id', template=selected_files),
+            pypeliner.managed.InputFile('selected', 'tumour_id', template=selected_files),
             pypeliner.managed.OutputFile(out_file),
         ),
         kwargs={

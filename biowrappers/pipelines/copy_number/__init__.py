@@ -15,47 +15,43 @@ import remixt.workflow
 
 def call_and_annotate_pipeline(
     config,
-    normal_bam_file,
-    tumour_bam_files,
+    bam_files,
     raw_data_dir,
     results_file,
-    normal_id='normal',
+    normal_id=None,
     somatic_breakpoint_file=None,
     ploidy_config=None,
 ):
-    sample_ids = tumour_bam_files.keys()
+    sample_ids = seqdata_files.keys()
+    
+    tumour_ids = seqdata_files.keys()
+    if normal_id is not None:
+        tumour_ids.remove(normal_id)
 
     workflow = Workflow()
     
     workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('tumour_id'),
+        obj=pypeliner.managed.OutputChunks('sample_id'),
         value=sample_ids,
     )
 
-    tumour_seq_data_template = os.path.join(raw_data_dir, 'seqdata', 'sample_{tumour_id}.h5')
-    normal_seq_data_filename = os.path.join(raw_data_dir, 'seqdata', 'sample_{}.h5'.format(normal_id))
+    workflow.setobj(
+        obj=pypeliner.managed.OutputChunks('tumour_id'),
+        value=tumour_ids,
+    )
+
+    seq_data_template = os.path.join(raw_data_dir, 'seqdata', 'sample_{sample_id}.h5')
 
     if somatic_breakpoint_file is not None:
         somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
 
     workflow.subworkflow(
-        name='extract_seqdata_workflow_normal',
+        name='extract_seqdata_workflow',
+        axes=('sample_id',),
         func=remixt.workflow.create_extract_seqdata_workflow,
         args=(
-            pypeliner.managed.InputFile(normal_bam_file),
-            pypeliner.managed.OutputFile(normal_seq_data_filename),
-            config['remixt'].get('extract_seqdata', {}),
-            config['remixt']['ref_data_dir'],
-        ),
-    )
-
-    workflow.subworkflow(
-        name='extract_seqdata_workflow_tumour',
-        axes=('tumour_id',),
-        func=remixt.workflow.create_extract_seqdata_workflow,
-        args=(
-            pypeliner.managed.InputFile('bam', 'tumour_id', fnames=tumour_bam_files),
-            pypeliner.managed.OutputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
+            pypeliner.managed.InputFile('bam', 'sample_id', fnames=bam_files),
+            pypeliner.managed.OutputFile('seqdata', 'sample_id', template=seq_data_template),
             config['remixt'].get('extract_seqdata', {}),
             config['remixt']['ref_data_dir'],
         ),
@@ -78,8 +74,7 @@ def call_and_annotate_pipeline(
             name='remixt',
             func=biowrappers.components.copy_number_calling.remixt.create_remixt_workflow,
             args=(
-                pypeliner.managed.InputFile(normal_seq_data_filename),
-                pypeliner.managed.InputFile('seqdata', 'tumour_id', template=tumour_seq_data_template),
+                pypeliner.managed.InputFile('seqdata', 'sample_id', template=seq_data_template),
                 remixt_config,
                 pypeliner.managed.OutputFile(remixt_results_filename),
                 remixt_raw_data,
@@ -87,6 +82,7 @@ def call_and_annotate_pipeline(
             kwargs={
                 'somatic_breakpoint_file': somatic_breakpoint_file,
                 'ref_data_dir': config['remixt']['ref_data_dir'],
+                'normal_id': normal_id,
             },
         )
 
