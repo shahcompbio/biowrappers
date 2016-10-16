@@ -34,7 +34,7 @@ def download_external_files(config):
         axes=('files',),
         args=(
             mgd.TempInputObj('url', 'files'),
-            mgd.TempOutputFile('download.gz', 'files'),
+            mgd.TempOutputFile('download', 'files'),
         ),
     )
     workflow.transform(
@@ -42,7 +42,7 @@ def download_external_files(config):
         axes=('files',),
         func=tasks.unzip,
         args=(
-            mgd.TempInputFile('download.gz', 'files'),
+            mgd.TempInputFile('download', 'files'),
             mgd.OutputFile('unzipped', 'files', fnames=downloaded_files),
         ),
     )
