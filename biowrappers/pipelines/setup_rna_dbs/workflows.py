@@ -13,7 +13,7 @@ import biowrappers.components.rna.tophat.workflow
 def download_external_files(config):
     urls = dict(zip(
         config.keys(),
-        [config[x]['url'] for x in config if 'url' in config['x']]
+        [config[x]['url'] for x in config if 'url' in config[x]]
     ))
     downloaded_files = dict(zip(
         urls.keys(),
