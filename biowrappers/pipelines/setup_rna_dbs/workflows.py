@@ -16,7 +16,6 @@ def download_external_files(config):
         download_keys,
         [config[x]['url'] for x in download_keys],
     ))
-    print urls
     downloaded_files = dict(zip(
         urls.keys(),
         [config[x]['local_path'] for x in urls.keys()],
