@@ -1,0 +1,28 @@
+gene_annotation_gtf_file:
+  url: 'ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_mouse/release_M10/gencode.vM10.annotation.gtf.gz'
+  local_path: '{external_data_dir}/gencode.vM10.annotation.gtf'
+
+ref_genome_fasta_file:
+  url: 'ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_mouse/release_M10/GRCm38.primary_assembly.genome.fa.gz'
+  local_path: '{external_data_dir}/GRCm38.primary_assembly.genome.fa'
+
+transcriptome_fasta_file:
+  url: 'ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_mouse/release_M10/gencode.vM10.transcripts.fa.gz'
+  local_path: '{external_data_dir}/gencode.vM10.transcripts.fa'
+
+kallisto:
+  index: {external_data_dir}/kallisto/gencode.vM10.transcripts
+  kmer_length: 31
+
+salmon:
+  index: {external_data_dir}/salmon/gencode.vM10.transcripts
+  kmer_length: 31
+  gencode: True
+
+star:
+  index: {external_data_dir}/star/gencode.vM10.transcripts
+  overhang: 124
+
+tophat:
+  ref_genome_index: {external_data_dir}/bowtie2/gencode.vM10.transcripts
+  transcriptome_index: {external_data_dir}/tophat/gencode.vM10.transcripts
