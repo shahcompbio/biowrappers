@@ -73,7 +73,6 @@ def create_remixt_workflow(
             pypeliner.managed.InputFile(segment_filename),
             pypeliner.managed.InputFile(somatic_breakpoint_file),
             pypeliner.managed.InputFile('seqdata', 'sample_id', fnames=seqdata_files),
-            pypeliner.managed.InputFile(normal_seqdata_file),
             pypeliner.managed.OutputFile('results', 'tumour_id', template=results_files, axes_origin=[]),
             raw_data_dir,
             config,
