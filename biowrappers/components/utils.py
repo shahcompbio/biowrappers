@@ -67,7 +67,7 @@ def flatten_input(files):
     if type(files) == dict:
         parsed_files = [files[x] for x in sorted(files)]
     elif type(files) == str:
-        parsed_files = files
+        parsed_files = [files, ]
     else:
         parsed_files = []
         for x in files:
