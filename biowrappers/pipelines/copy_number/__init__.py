@@ -22,9 +22,9 @@ def call_and_annotate_pipeline(
     somatic_breakpoint_file=None,
     ploidy_config=None,
 ):
-    sample_ids = seqdata_files.keys()
+    sample_ids = bam_files.keys()
     
-    tumour_ids = seqdata_files.keys()
+    tumour_ids = bam_files.keys()
     if normal_id is not None:
         tumour_ids.remove(normal_id)
 
