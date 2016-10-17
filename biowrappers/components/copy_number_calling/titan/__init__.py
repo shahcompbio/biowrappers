@@ -106,11 +106,11 @@ def create_titan_workflow(
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sample_id', 'chromosome'),
-        value=[str(a) for a in xrange(1, 23)] + ['X', 'Y'],
-        axis=('sample_id',)
+        value=[str(a) for a in xrange(1, 23)] + ['X'],
+        axes=('sample_id',)
     )
 
-    workflow.transform(
+    workflow.commandline(
         name='plot_chromosome',
         axes=('sample_id', 'chromosome'),
         ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
