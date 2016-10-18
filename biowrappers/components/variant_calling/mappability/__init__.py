@@ -2,6 +2,8 @@ from pypeliner.workflow import Workflow
 
 import pypeliner
 
+from biowrappers.components.variant_calling.utils import default_chromosomes
+
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.variant_calling.utils as utils
@@ -11,6 +13,7 @@ def create_vcf_mappability_annotation_workflow(
     mappability_file,
     vcf_file,
     out_file,
+    chromosomes=default_chromosomes,
     split_size=int(1e7),
     table_name='mappability'):
 
