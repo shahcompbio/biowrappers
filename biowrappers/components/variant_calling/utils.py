@@ -9,7 +9,7 @@ import pysam
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
-def get_regions(bam_file, split_size, chromosomes=None):
+def get_bam_regions(bam_file, split_size, chromosomes=None):
         
     regions = {}
     

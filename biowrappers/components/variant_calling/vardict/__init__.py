@@ -22,7 +22,7 @@ def create_vardict_workflow(
     
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('config', 'regions'),
-        value=utils.get_regions(tumour_bam_file, split_size, chromosomes=chromosomes)
+        value=utils.get_bam_regions(tumour_bam_file, split_size, chromosomes=chromosomes)
     )
     
     workflow.transform(

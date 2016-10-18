@@ -20,7 +20,7 @@ def create_samtools_variant_calling_workflow(
     
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
-        value=utils.get_regions(bam_file, split_size, chromosomes=chromosomes)
+        value=utils.get_bam_regions(bam_file, split_size, chromosomes=chromosomes)
     )
     
     workflow.transform(
