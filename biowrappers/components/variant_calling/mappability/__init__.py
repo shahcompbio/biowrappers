@@ -11,7 +11,7 @@ def create_vcf_mappability_annotation_workflow(
     mappability_file,
     vcf_file,
     out_file,
-    split_size=int(1e7)
+    split_size=int(1e7),
     table_name='mappability'):
 
     workflow = Workflow()
