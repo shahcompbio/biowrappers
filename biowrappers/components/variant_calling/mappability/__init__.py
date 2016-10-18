@@ -4,6 +4,7 @@ import pypeliner
 
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.io.vcf.tasks as vcf_tasks
+import biowrappers.components.variant_calling.utils as utils
 import tasks
 
 def create_vcf_mappability_annotation_workflow(
