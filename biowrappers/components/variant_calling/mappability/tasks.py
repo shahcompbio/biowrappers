@@ -13,11 +13,15 @@ def get_mappability(
     vcf_file,
     out_file,
     table_name,
+    region=None,
     append_chr=True):
     
     map_reader = BigWigFile(open(mappability_file))
     
     vcf_reader = vcf.Reader(filename=vcf_file)
+    
+    if region is not None:
+        vcf_reader = vcf_reader.fetch(region[0], start=region[1], end=region[2])
     
     data = []
     

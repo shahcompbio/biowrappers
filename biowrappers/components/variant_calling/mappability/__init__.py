@@ -10,20 +10,14 @@ def create_vcf_mappability_annotation_workflow(
     mappability_file,
     vcf_file,
     out_file,
-    split_size=int(1e4),
+    split_size=int(1e7)
     table_name='mappability'):
 
     workflow = Workflow()
     
-    workflow.transform(
-        name='split_vcf',
-        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=vcf_tasks.split_vcf,
-        args=(
-            pypeliner.managed.InputFile(vcf_file),
-            pypeliner.managed.TempOutputFile('split.vcf', 'split')
-        ),
-        kwargs={'lines_per_file' : split_size}
+    workflow.setobj(
+        obj=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
+        value=utils.get_vcf_regions(vcf_file, split_size, chromosomes=chromosomes, zero_based=True, half_open=True)
     )
     
     workflow.transform(
@@ -37,6 +31,9 @@ def create_vcf_mappability_annotation_workflow(
             pypeliner.managed.TempOutputFile('mappability.h5', 'split'),
             table_name
         ),
+        kwargs={
+            'region': pypeliner.managed.TempInputObj('regions_obj', 'regions'),
+        },
     )
     
     workflow.transform(
