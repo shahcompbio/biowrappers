@@ -21,7 +21,7 @@ def create_vcf_mappability_annotation_workflow(
     
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
-        value=utils.get_vcf_regions(vcf_file, split_size, chromosomes=chromosomes, zero_based=True, half_open=True)
+        value=utils.get_vcf_regions(vcf_file, split_size, chromosomes=chromosomes)
     )
     
     workflow.transform(

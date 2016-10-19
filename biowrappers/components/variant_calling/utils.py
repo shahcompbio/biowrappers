@@ -10,41 +10,13 @@ import pysam
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
-def get_bam_regions(bam_file, split_size, chromosomes=None):
-    regions = {}
-    
-    region_index = 0
-    
-    chromosome_lengths = load_bam_chromosome_lengths(bam_file, chromosomes=chromosomes)
-        
+
+def get_regions(chromosome_lengths, split_size):
     if split_size is None:
-        for chrom in chromosome_lengths:
-            regions[region_index] = chrom
-            region_index += 1
+        return dict(enumerate(chromosome_lengths.keys()))
     
-    else:
-        step = split_size
-
-        for chrom, length in chromosome_lengths.iteritems():
-            lside_interval = range(1, length + 1, step)
-            rside_interval = range(step, length + step, step)
-            
-            for beg, end in zip(lside_interval, rside_interval):
-                region = '{chrom}:{beg}-{end}'.format(chrom=chrom, beg=max(beg, 0), end=min(end, length))
-                regions[region_index] = region
-                region_index += 1
-    
-    return regions
-
-
-def get_vcf_regions(vcf_file, split_size, chromosomes=None, zero_based=True, half_open=True):
     regions = {}
     region_index = 0
-    
-    chromosome_lengths = load_vcf_chromosome_lengths(vcf_file, chromosomes=chromosomes)
-    
-    if split_size is None:
-        split_size = max(chromosome_lengths.values()) + 1
     
     for chrom, length in chromosome_lengths.iteritems():
         lside_interval = range(1, length + 1, split_size)
@@ -53,17 +25,20 @@ def get_vcf_regions(vcf_file, split_size, chromosomes=None, zero_based=True, hal
         for beg, end in zip(lside_interval, rside_interval):
             end = min(end, length)
             
-            if zero_based:
-                beg -= 1
-                end -= 1
-            
-            if half_open:
-                end += 1
-            
             regions[region_index] = (chrom, beg, end)
             region_index += 1
 
     return regions
+
+
+def get_vcf_regions(vcf_file, split_size, chromosomes=None):
+    chromosome_lengths = load_vcf_chromosome_lengths(vcf_file, chromosomes=chromosomes)
+    return get_regions(chromosome_lengths, split_size)
+
+
+def get_bam_regions(bam_file, split_size, chromosomes=None):
+    chromosome_lengths = load_bam_chromosome_lengths(vcf_file, chromosomes=chromosomes)
+    return get_regions(chromosome_lengths, split_size)
 
 
 def load_vcf_chromosome_lengths(file_name, chromosomes=None):

@@ -20,8 +20,10 @@ def get_mappability(
     
     vcf_reader = vcf.Reader(filename=vcf_file)
     
+    chrom, beg, end = _parse_region(region)
+    
     if region is not None:
-        vcf_reader = vcf_reader.fetch(region[0], start=region[1], end=region[2])
+        vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
     
     data = []
     
@@ -29,7 +31,7 @@ def get_mappability(
         if append_chr:
             chrom = 'chr{0}'.format(record.CHROM)
             
-        else:    
+        else:
             chrom = record.CHROM
         
         coord = record.POS
@@ -55,3 +57,20 @@ def get_mappability(
     hdf_store[table_name] = pd.DataFrame(data, columns=['chrom', 'coord', 'mappability'])
     
     hdf_store.close()
+
+
+def _parse_region(region):
+    if ':' not in region:
+        return region, None, None
+
+    chrom, coords = region.split(':')
+
+    if '-' not in coords:
+        return chrom, int(coords) - 1, None
+
+    beg, end = coords.split('-')
+
+    beg = int(beg) - 1
+    end = int(end)
+
+    return chrom, beg, end
