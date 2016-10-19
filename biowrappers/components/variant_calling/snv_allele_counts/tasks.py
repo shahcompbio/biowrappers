@@ -8,6 +8,8 @@ import pandas as pd
 import pysam
 import vcf
 
+import biowrappers.components.variant_calling.utils as utils
+
 nucleotides = ('A', 'C', 'G', 'T')
 
 #=======================================================================================================================
@@ -20,11 +22,17 @@ def get_snv_allele_counts_for_vcf_targets(
     table_name,
     count_duplicates=False,
     min_bqual=0,
-    min_mqual=0):
+    min_mqual=0,
+    region=None,
+):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
     vcf_reader = vcf.Reader(filename=vcf_file)
+    
+    if region is not None:
+        chrom, beg, end = utils.parse_region_for_vcf(region)
+        vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
 
     data = []
 

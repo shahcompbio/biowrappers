@@ -17,37 +17,37 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     count_duplicates=False,
     min_bqual=0,
     min_mqual=0,
-    split_size=1000,
+    split_size=int(1e7),
     table_name='snv_allele_counts'):
     
     workflow = Workflow()
     
     workflow.transform(
-        name='split_vcf',
-        ctx=sml_ctx,
-        func=vcf_tasks.split_vcf,
+        name='get_regions',
+        ret=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
+        func=utils.get_vcf_regions,
         args=(
             pypeliner.managed.InputFile(vcf_file),
-            pypeliner.managed.TempOutputFile('split.vcf', 'split')
+            split_size,
         ),
-        kwargs={'lines_per_file' : split_size}
     )
     
     workflow.transform(
         name='get_snv_allele_counts_for_vcf_targets',
-        axes=('split',),
+        axes=('regions',),
         ctx=med_ctx,
         func=tasks.get_snv_allele_counts_for_vcf_targets,
         args=(
             pypeliner.managed.InputFile(bam_file),
-            pypeliner.managed.TempInputFile('split.vcf', 'split'),
-            pypeliner.managed.TempOutputFile('counts.h5', 'split'),
+            pypeliner.managed.InputFile(vcf_file),
+            pypeliner.managed.TempOutputFile('counts.h5', 'regions'),
             table_name
         ),
         kwargs={
             'count_duplicates' : count_duplicates,
             'min_bqual' : min_bqual,
-            'min_mqual' : min_mqual
+            'min_mqual' : min_mqual,
+            'region': pypeliner.managed.TempInputObj('regions_obj', 'regions'),
         }
     )
     
@@ -56,7 +56,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         ctx=med_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
-            pypeliner.managed.TempInputFile('counts.h5', 'split'),
+            pypeliner.managed.TempInputFile('counts.h5', 'regions'),
             pypeliner.managed.OutputFile(out_file)
         ),
         kwargs={

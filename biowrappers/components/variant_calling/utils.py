@@ -81,3 +81,20 @@ def load_bam_chromosome_lengths(file_name, chromosomes=None):
         chromosome_lengths[chrom] = int(length)
     
     return chromosome_lengths
+
+
+def parse_region_for_vcf(region):
+    if ':' not in region:
+        return region, None, None
+
+    chrom, coords = region.split(':')
+
+    if '-' not in coords:
+        return chrom, int(coords) - 1, None
+
+    beg, end = coords.split('-')
+
+    beg = int(beg) - 1
+    end = int(end)
+
+    return chrom, beg, end
