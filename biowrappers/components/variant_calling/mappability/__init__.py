@@ -26,13 +26,13 @@ def create_vcf_mappability_annotation_workflow(
     
     workflow.transform(
         name='annotate_db_status',
-        axes=('split',),
+        axes=('regions',),
         ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=tasks.get_mappability,
         args=(
             pypeliner.managed.InputFile(mappability_file),
-            pypeliner.managed.TempInputFile('split.vcf', 'split'),
-            pypeliner.managed.TempOutputFile('mappability.h5', 'split'),
+            pypeliner.managed.InputFile(vcf_file),
+            pypeliner.managed.TempOutputFile('mappability.h5', 'regions'),
             table_name
         ),
         kwargs={
@@ -45,7 +45,7 @@ def create_vcf_mappability_annotation_workflow(
         ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=hdf5_tasks.concatenate_tables,
         args=(
-            pypeliner.managed.TempInputFile('mappability.h5', 'split'),
+            pypeliner.managed.TempInputFile('mappability.h5', 'regions'),
             pypeliner.managed.OutputFile(out_file)
         )
     )
