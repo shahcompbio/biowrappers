@@ -2,6 +2,8 @@ from pypeliner.workflow import Workflow
 
 import pypeliner
 
+from biowrappers.components.variant_calling.utils import default_chromosomes
+
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 import biowrappers.components.variant_calling.utils as utils
 import biowrappers.components.io.vcf.tasks as vcf_tasks
@@ -14,6 +16,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     bam_file,
     vcf_file,
     out_file,
+    chromosomes=default_chromosomes,
     count_duplicates=False,
     min_bqual=0,
     min_mqual=0,
@@ -30,6 +33,9 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             pypeliner.managed.InputFile(vcf_file),
             split_size,
         ),
+        kwargs={
+            'chromosomes': chromosomes,
+        },
     )
     
     workflow.transform(
