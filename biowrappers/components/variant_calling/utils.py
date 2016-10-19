@@ -6,6 +6,7 @@ Created on Oct 31, 2015
 from collections import OrderedDict
 
 import pysam
+import vcf
 
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
@@ -44,7 +45,7 @@ def get_bam_regions(bam_file, split_size, chromosomes=None):
 def load_vcf_chromosome_lengths(file_name, chromosomes=None):
     chromosome_lengths = OrderedDict()
 
-    vcf_reader = vcf.Reader(filename=vcf_file, compressed=True)
+    vcf_reader = vcf.Reader(filename=file_name)
 
     if chromosomes is None:
         chromosomes = vcf_reader.contigs.keys()
