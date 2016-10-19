@@ -10,8 +10,7 @@ import tasks
 def create_samtools_variant_calling_workflow(
         bam_file,
         ref_genome_fasta_file,
-        indel_vcf_file,
-        snv_vcf_file,
+        vcf_file,
         chromosomes=default_chromosomes,
         split_size=int(1e7)
     ):
@@ -44,29 +43,7 @@ def create_samtools_variant_calling_workflow(
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('variants.vcf.gz', 'regions'),
-            pypeliner.managed.TempOutputFile('variants.vcf.gz'),
-        ),
-    )
-    
-    workflow.transform(
-        name='extract_indels',
-        ctx={'mem' : 2},
-        func=vcf_tasks.extract_variant_type,
-        args=(
-            pypeliner.managed.TempInputFile('variants.vcf.gz'),
-            pypeliner.managed.OutputFile(indel_vcf_file),
-            'indels',
-        ),
-    )
-    
-    workflow.transform(
-        name='extract_snvs',
-        ctx={'mem' : 2},
-        func=vcf_tasks.extract_variant_type,
-        args=(
-            pypeliner.managed.TempInputFile('variants.vcf.gz'),
-            pypeliner.managed.OutputFile(snv_vcf_file),
-            'snps',
+            pypeliner.managed.OutputFile(vcf_file),
         ),
     )
     
