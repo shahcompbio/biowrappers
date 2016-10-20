@@ -38,7 +38,7 @@ def get_vcf_regions(vcf_file, split_size, chromosomes=None):
 
 
 def get_bam_regions(bam_file, split_size, chromosomes=None):
-    chromosome_lengths = load_bam_chromosome_lengths(vcf_file, chromosomes=chromosomes)
+    chromosome_lengths = load_bam_chromosome_lengths(bam_file, chromosomes=chromosomes)
     return get_regions(chromosome_lengths, split_size)
 
 
