@@ -44,6 +44,8 @@ def align(
     tmp_out_file = tmp_prefix + 'Aligned.sortedByCoord.out.bam'
     shutil.move(tmp_out_file, out_file)
     if log_dir is not None:
+        if os.path.exists(log_dir):
+            shutil.rmtree(log_dir)
         shutil.copytree(tmp_dir, log_dir)
 
 

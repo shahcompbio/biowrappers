@@ -38,6 +38,8 @@ def trim(
     tmp_fastq_file_2 = get_tmp_file(in_fastq_file_2, 2, tmp_dir)
     shutil.move(tmp_fastq_file_2, out_fastq_file_2)
     if out_dir is not None:
+        if os.path.exists(out_dir):
+            shutil.rmtree(out_dir)
         shutil.copytree(tmp_dir, out_dir)
 
 

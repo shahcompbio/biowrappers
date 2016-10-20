@@ -111,7 +111,7 @@ def index_vcf(vcf_file, index_file=None):
     else:
         shutil.move(vcf_file + '.tbi', index_file)
 
-def concatenate_vcf(in_files, out_file):
+def concatenate_vcf(in_files, out_file, allow_overlap=False):
     """ Fast concatenation of VCF file using `bcftools`.
     
     :param in_files: dict with values being files to be concatenated. Files will be concatenated based on sorted order of keys.
@@ -119,8 +119,11 @@ def concatenate_vcf(in_files, out_file):
     :param out_file: path where output file will be written in VCF format.
     
     """
+    if allow_overlap:
+        cmd = ['bcftools', 'concat', '-a', '-O', 'z', '-o', out_file]
+    else:
+        cmd = ['bcftools', 'concat', '-O', 'z', '-o', out_file]
     
-    cmd = ['bcftools', 'concat', '-a', '-O', 'z', '-o', out_file]
     cmd += [in_files[x] for x in sorted(in_files.keys())]
     
     pypeliner.commandline.execute(*cmd)

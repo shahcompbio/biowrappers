@@ -118,7 +118,7 @@ def create_strelka_workflow(
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
-            pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf')
+            pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz')
         )
     )    
     
@@ -128,7 +128,7 @@ def create_strelka_workflow(
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf')
+            pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz')
         )
     )
     
@@ -137,7 +137,7 @@ def create_strelka_workflow(
         ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.filter_vcf,
         args=(
-            pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf'),
+            pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf.gz'),
             pypeliner.managed.TempOutputFile('somatic.indels.passed.vcf')
         )
     )
@@ -147,12 +147,12 @@ def create_strelka_workflow(
         ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
         func=vcf_tasks.filter_vcf,
         args=(
-            pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf'),
+            pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf.gz'),
             pypeliner.managed.TempOutputFile('somatic.snvs.passed.vcf')
         )
     )
     
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_indels',
         func=vcf_tasks.finalise_vcf,
         args=(
@@ -161,7 +161,7 @@ def create_strelka_workflow(
         )
     )
     
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_snvs',
         func=vcf_tasks.finalise_vcf,
         args=(
