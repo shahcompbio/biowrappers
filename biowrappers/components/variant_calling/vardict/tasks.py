@@ -20,7 +20,7 @@ def run_single_sample_vardict(
         '-b', bam_file,
         '-f', min_allele_frequency,
         '-G', ref_genome_fasta_file,
-        '-R', region,
+        '-R', '{0}:{1}-{2}'.format(*region),
         '-th', 1,
     ]
     if sample_name is not None:
