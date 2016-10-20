@@ -29,17 +29,16 @@ def create_vardict_single_sample_workflow(
         name='run_vardict',
         axes=('regions',),
         ctx={'mem': 12, 'num_retry': 4, 'mem_retry_increment': 2},
-        func=tasks.run_vardict,
+        func=tasks.run_single_sample_vardict,
         args=(
             pypeliner.managed.InputFile(bam_file),
             pypeliner.managed.InputFile(ref_genome_fasta_file),
             pypeliner.managed.TempInputObj('config', 'regions'),
-            # pypeliner.managed.TempOutputFile('raw.tsv', 'regions')
             pypeliner.managed.TempOutputFile('result.vcf', 'regions'),
         ),
         kwargs={
             'min_allele_frequency': min_allele_frequency,
-        }
+        },
     )
 
     workflow.transform(
@@ -52,7 +51,7 @@ def create_vardict_single_sample_workflow(
         )
     )
 
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_all_variants',
         func=vcf_tasks.finalise_vcf,
         args=(
@@ -72,7 +71,7 @@ def create_vardict_single_sample_workflow(
         )
     )
 
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_indels',
         func=vcf_tasks.finalise_vcf,
         args=(
@@ -92,7 +91,7 @@ def create_vardict_single_sample_workflow(
         )
     )
 
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_snvs',
         func=vcf_tasks.finalise_vcf,
         args=(
