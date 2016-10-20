@@ -23,9 +23,10 @@ def run_single_sample_vardict(
         '-R', '{0}:{1}-{2}'.format(*region),
         '-th', 1,
     ]
+    cmd.extend(['|', 'teststrandbias.R', '|', 'var2vcf_valid.pl'])
     if sample_name is not None:
         cmd.extend(['-N', sample_name])
-    cmd.extend(['|', 'teststrandbias.R', '|', 'var2vcf_valid.pl', '>', out_file])
+    cmd.extend(['>', out_file])    
     pypeliner.commandline.execute(*cmd)
 
 

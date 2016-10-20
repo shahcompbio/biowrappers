@@ -16,6 +16,7 @@ def create_vardict_single_sample_workflow(
         snv_vcf_file,
         chromosomes=default_chromosomes,
         min_allele_frequency=0.01,
+        sample_name=None,
         split_size=int(1e7)):
 
     workflow = Workflow()
@@ -38,6 +39,7 @@ def create_vardict_single_sample_workflow(
         ),
         kwargs={
             'min_allele_frequency': min_allele_frequency,
+            'sample_name': sample_name,
         },
     )
 
