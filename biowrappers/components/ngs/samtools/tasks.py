@@ -17,7 +17,7 @@ def depth(in_file, out_file):
 def depth_to_bed(in_file, out_file, min_depth=1):
     """ Convert the output of `samtools depth` to a bed format file. Output will be gzip compressed BED file.
     """
-    df = pd.read_csv(in_file, compression=compression, header=None, names=['chrom', 'coord', 'depth'], sep='\t')
+    df = pd.read_csv(in_file, compression='gzip', header=None, names=['chrom', 'coord', 'depth'], sep='\t')
     df['beg'] = df['coord'] - 1
     df['end'] = df['coord']
     df = df[df['depth'] >= min_depth]
