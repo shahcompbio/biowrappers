@@ -4,6 +4,7 @@ from pypeliner.workflow import Workflow
 import os
 import pypeliner.managed as mgd
 
+import biowrappers.components.ngs.samtools.tasks
 import biowrappers.components.rna.kallisto.tasks
 import biowrappers.components.rna.salmon.tasks
 import biowrappers.components.rna.star.tasks
@@ -51,6 +52,24 @@ def download_external_files(config):
 
 def build_indexes(config):
     workflow = Workflow()
+    if 'ref_genome_fasta_file' in config:
+        workflow.transform(
+            name='index_ref_genome',
+            func=biowrappers.components.ngs.samtools.tasks.faidx,
+            args=(
+                mgd.InputFile(config['ref_genome_fasta_file']['local_path']),
+                mgd.OutputFile(config['ref_genome_fasta_file']['local_path'] + '.fai'),
+            ),
+        )
+    if 'transcriptome_fasta_file' in config:
+        workflow.transform(
+            name='index_transcriptome',
+            func=biowrappers.components.ngs.samtools.tasks.faidx,
+            args=(
+                mgd.InputFile(config['transcriptome_fasta_file']['local_path']),
+                mgd.OutputFile(config['transcriptome_fasta_file']['local_path'] + '.fai'),
+            ),
+        )
     if 'kallisto' in config:
         workflow.transform(
             name='build_kallisto_index',

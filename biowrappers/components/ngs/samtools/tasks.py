@@ -1,6 +1,7 @@
 import gzip
 import pandas as pd
 import pypeliner
+import shutil
 
 
 def depth(in_file, out_file):
@@ -24,3 +25,13 @@ def depth_to_bed(in_file, out_file, min_depth=1):
     df = df[['chrom', 'beg', 'end', 'depth']]
     with gzip.GzipFile(out_file, 'w') as out_fh:
         df.to_csv(out_fh, header=False, index=False, sep='\t')
+
+
+def faidx(in_file, out_file):
+    cmd = [
+        'samtools',
+        'faidx',
+        in_file,
+    ]
+    pypeliner.commandline.execute(*cmd)
+    shutil.move(in_file + '.fai', out_file)
