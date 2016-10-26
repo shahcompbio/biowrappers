@@ -17,7 +17,7 @@ def align(
         out_file,
         tmp_dir,
         log_dir=None,
-        num_threads=1
+        num_threads=1,
         read_group_info=None,
         unaligned_read_fastq_1=None,
         unaligned_read_fastq_2=None):
