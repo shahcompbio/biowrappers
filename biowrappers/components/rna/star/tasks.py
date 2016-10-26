@@ -17,8 +17,10 @@ def align(
         out_file,
         tmp_dir,
         log_dir=None,
+        num_threads=1
         read_group_info=None,
-        num_threads=1):
+        unaligned_read_fastq_1=None,
+        unaligned_read_fastq_2=None):
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
     os.makedirs(tmp_dir)
@@ -40,9 +42,17 @@ def align(
             read_group_str.append(':'.join((key, value)))
         read_group_str = '\t'.join(read_group_str)
         cmd.extend(['--outSAMattrRGline', read_group_str])
+    if unaligned_read_fastq_1 is not None:
+        cmd.extend(['--outReadsUnmapped', 'Fastx'])
     pypeliner.commandline.execute(*cmd)
     tmp_out_file = tmp_prefix + 'Aligned.sortedByCoord.out.bam'
     shutil.move(tmp_out_file, out_file)
+    if unaligned_read_fastq_1 is not None:
+        tmp_out_file = tmp_prefix + 'Unmapped.out.mate1'
+        shutil.move(tmp_out_file, unaligned_read_fastq_1)
+    if unaligned_read_fastq_2 is not None:
+        tmp_out_file = tmp_prefix + 'Unmapped.out.mate2'
+        shutil.move(tmp_out_file, unaligned_read_fastq_2)
     if log_dir is not None:
         if os.path.exists(log_dir):
             shutil.rmtree(log_dir)
