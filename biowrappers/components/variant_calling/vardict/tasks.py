@@ -70,7 +70,7 @@ def run_paired_sample_vardict(
         cmd.append('-t')
     cmd.extend(['|', 'testsomatic.R', '|', 'var2vcf_paired.pl', '-f', min_allele_frequency])
     if sample_names is not None:
-        cmd.extend(['-N', '{tumour}|{normal}'.foramt(**sample_names)])
+        cmd.extend(['-N', '{tumour}|{normal}'.format(**sample_names)])
     cmd.extend(['>', out_file])
     pypeliner.commandline.execute(*cmd)
 

@@ -87,7 +87,7 @@ def create_vardict_paired_sample_workflow(
     workflow = Workflow()
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('config', 'regions'),
-        value=utils.get_bam_regions(bam_file, split_size, chromosomes=chromosomes)
+        value=utils.get_bam_regions(normal_bam_file, split_size, chromosomes=chromosomes)
     )
     workflow.transform(
         name='run_vardict',
