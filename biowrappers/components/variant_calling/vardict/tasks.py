@@ -15,6 +15,7 @@ def run_single_sample_vardict(
         out_file,
         java=False,
         min_allele_frequency=0.01,
+        remove_duplicate_reads=False,
         sample_name=None):
 
     if java:
@@ -29,6 +30,8 @@ def run_single_sample_vardict(
         '-R', '{0}:{1}-{2}'.format(*region),
         '-th', 1,
     ]
+    if remove_duplicate_reads:
+        cmd.append('-t')
     cmd.extend(['|', 'teststrandbias.R', '|', 'var2vcf_valid.pl'])
     if sample_name is not None:
         cmd.extend(['-N', sample_name])
@@ -44,6 +47,7 @@ def run_paired_sample_vardict(
         out_file,
         java=False,
         min_allele_frequency=0.01,
+        remove_duplicate_reads=False,
         sample_names=None):
     """ Run VarDict in paired mode
 
@@ -62,6 +66,8 @@ def run_paired_sample_vardict(
         '-R', '{0}:{1}-{2}'.format(*region),
         '-th', 1,
     ]
+    if remove_duplicate_reads:
+        cmd.append('-t')
     cmd.extend(['|', 'testsomatic.R', '|', 'var2vcf_paired.pl', '-f', min_allele_frequency])
     if sample_names is not None:
         cmd.extend(['-N', '{tumour}|{normal}'.foramt(**sample_names)])

@@ -16,6 +16,7 @@ def create_vardict_single_sample_workflow(
         chromosomes=default_chromosomes,
         java=False,
         min_allele_frequency=0.01,
+        remove_duplicate_reads=False,
         sample_name=None,
         split_size=int(1e7)):
 
@@ -38,6 +39,7 @@ def create_vardict_single_sample_workflow(
         kwargs={
             'java': java,
             'min_allele_frequency': min_allele_frequency,
+            'remove_duplicate_reads': remove_duplicate_reads,
             'sample_name': sample_name,
         },
     )
@@ -78,6 +80,7 @@ def create_vardict_paired_sample_workflow(
         chromosomes=default_chromosomes,
         java=False,
         min_allele_frequency=0.01,
+        remove_duplicate_reads=False,
         sample_names=None,
         split_size=int(1e7)):
 
@@ -101,6 +104,7 @@ def create_vardict_paired_sample_workflow(
         kwargs={
             'java': java,
             'min_allele_frequency': min_allele_frequency,
+            'remove_duplicate_reads': remove_duplicate_reads,
             'sample_names': sample_names,
         },
     )
