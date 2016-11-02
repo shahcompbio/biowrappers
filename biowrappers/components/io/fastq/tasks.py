@@ -1,5 +1,8 @@
 import gzip
 import itertools
+import pipes
+import pypeliner
+import shutil
 
 from biowrappers.components.utils import flatten_input
 
@@ -11,6 +14,35 @@ def concatenate(in_files, out_file):
         for in_file in flatten_input(in_files):
             with gzip.GzipFile(in_file, 'r') as in_fh:
                 out_fh.write(in_fh.read())
+
+
+def is_sanger(file_name, num_reads=10000):
+    quals = set()
+    with pysam.FastxFile(file_name) as reader:
+        for i, record in enumerate(reader):
+            if i >= num_reads:
+                break
+            quals.update(set([ord(x) for x in record.quality]))
+    return min(quals) < 64
+
+
+def convert_qualities_to_sanger(in_file, out_file):
+    if is_sanger(in_file):
+        shutil.copyfile(in_file, out_file)
+    else:
+        cmd = [
+            'gzip', '-cd', in_file,
+            '|',
+            'sed', '-e',
+            pipes.quote(
+                '''4~4y/@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghi/!"#$%&'\''()*+,-.\/0123456789:;<=>?@ABCDEFGHIJ/'''
+            ),
+            '|',
+            'gzip', '-c',
+            '>',
+            out_file
+        ]
+        pypeliner.commandline.execute(*cmd)
 
 
 def split_fastq(in_filename, out_filenames, num_reads_per_file):

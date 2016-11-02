@@ -31,6 +31,7 @@ def align(
         '--genomeDir', ref_genome_dir,
         '--readFilesIn', fastq_file_1, fastq_file_2,
         '--outSAMtype', 'BAM', 'SortedByCoordinate',
+        '--outSAMattributes', 'NH HI NM MD AS nM',
         '--readFilesCommand', 'zcat',
         '--outFileNamePrefix', tmp_prefix,
     ]
