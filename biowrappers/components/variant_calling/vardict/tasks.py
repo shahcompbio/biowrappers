@@ -28,8 +28,9 @@ def run_single_sample_vardict(
         '-f', min_allele_frequency,
         '-G', ref_genome_fasta_file,
         '-R', '{0}:{1}-{2}'.format(*region),
-        '-th', 1,
     ]
+    if java:
+        cmd.extend(['-th', 1])
     if remove_duplicate_reads:
         cmd.append('-t')
     cmd.extend(['|', 'teststrandbias.R', '|', 'var2vcf_valid.pl'])
@@ -60,17 +61,18 @@ def run_paired_sample_vardict(
         prog = 'vardict'
     cmd = [
         prog,
-        '-b', '{0}|{1}'.format(tumour_bam_file, normal_bam_file),
+        '-b', '"{0}|{1}"'.format(tumour_bam_file, normal_bam_file),
         '-f', min_allele_frequency,
         '-G', ref_genome_fasta_file,
         '-R', '{0}:{1}-{2}'.format(*region),
-        '-th', 1,
     ]
+    if java:
+        cmd.extend(['-th', 1])
     if remove_duplicate_reads:
         cmd.append('-t')
     cmd.extend(['|', 'testsomatic.R', '|', 'var2vcf_paired.pl', '-f', min_allele_frequency])
     if sample_names is not None:
-        cmd.extend(['-N', '{tumour}|{normal}'.format(**sample_names)])
+        cmd.extend(['-N', '"{tumour}|{normal}"'.format(**sample_names)])
     cmd.extend(['>', out_file])
     pypeliner.commandline.execute(*cmd)
 
