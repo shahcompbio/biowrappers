@@ -4,7 +4,9 @@ Created on Nov 1, 2015
 @author: Andrew Roth
 '''
 
+import pipes
 import pypeliner
+import subprocess
 import vcf
 
 
@@ -61,7 +63,7 @@ def run_paired_sample_vardict(
         prog = 'vardict'
     cmd = [
         prog,
-        '-b', '"{0}|{1}"'.format(tumour_bam_file, normal_bam_file),
+        '-b', pipes.quote('{0}|{1}'.format(tumour_bam_file, normal_bam_file)),
         '-f', min_allele_frequency,
         '-G', ref_genome_fasta_file,
         '-R', '{0}:{1}-{2}'.format(*region),
@@ -72,9 +74,10 @@ def run_paired_sample_vardict(
         cmd.append('-t')
     cmd.extend(['|', 'testsomatic.R', '|', 'var2vcf_paired.pl', '-f', min_allele_frequency])
     if sample_names is not None:
-        cmd.extend(['-N', '"{tumour}|{normal}"'.format(**sample_names)])
+        cmd.extend(['-N', pipes.quote('{tumour}|{normal}'.format(**sample_names))])
     cmd.extend(['>', out_file])
-    pypeliner.commandline.execute(*cmd)
+    cmd_str = ' '.join([str(x) for x in cmd])
+    subprocess.check_call(cmd_str, shell=True)
 
 
 def filter_vcf(in_file, out_file, variant_type):
