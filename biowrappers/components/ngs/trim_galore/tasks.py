@@ -23,8 +23,6 @@ def trim(
         os.makedirs(tmp_dir)
     cmd = [
         'trim_galore',
-        '--clip_R1', 1,
-        '--trim1',
         '--paired',
         '-o', tmp_dir,
         '--length', min_length,
