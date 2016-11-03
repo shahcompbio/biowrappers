@@ -1,8 +1,11 @@
 import gzip
 import itertools
+import os
 import pipes
 import pypeliner
+import pysam
 import shutil
+import subprocess
 
 from biowrappers.components.utils import flatten_input
 
@@ -28,22 +31,21 @@ def is_sanger(file_name, num_reads=10000):
 
 def convert_qualities_to_sanger(in_file, out_file):
     if is_sanger(in_file):
-        shutil.copyfile(in_file, out_file)
+        os.link(in_file, out_file)
+        #shutil.copyfile(in_file, out_file)
     else:
         cmd = [
             'gzip', '-cd', in_file,
             '|',
             'sed', '-e',
-            pipes.quote(
-                '''4~4y/@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghi/!"#$%&'\''()*+,-.\/0123456789:;<=>?@ABCDEFGHIJ/'''
-            ),
+            "'4~4y/@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghi/!\"#$%&'\\''()*+,-.\\/0123456789:;<=>?@ABCDEFGHIJ/'",
             '|',
-            'gzip', '-c',
+            'gzip', '-cf',
             '>',
             out_file
         ]
-        pypeliner.commandline.execute(*cmd)
-
+        #pypeliner.commandline.execute(*cmd)
+        subprocess.check_call(' '.join(cmd), shell=True)
 
 def split_fastq(in_filename, out_filenames, num_reads_per_file):
     """ Split a fastq file.
