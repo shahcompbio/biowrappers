@@ -1,4 +1,5 @@
 import gzip
+import os
 import pandas as pd
 import pypeliner
 import shutil
@@ -14,23 +15,26 @@ def depth(in_file, out_file):
     ]
 
     pypeliner.commandline.execute(*cmd)
+    if not os.path.exists(out_file):
+        raise Exception('samtools depth failed. {} missing.'.format(out_file))
 
 
 def depth_to_bed(in_file, out_file, min_depth=1):
     """ Convert the output of `samtools depth` to a bed format file. Output will be gzip compressed BED file.
     """
-    df = pd.read_csv(in_file, compression='gzip', header=None, names=['chrom', 'coord', 'depth'], sep='\t')
-
-    df['beg'] = df['coord'] - 1
-
-    df['end'] = df['coord']
-
-    df = df[df['depth'] >= min_depth]
-
-    df = df[['chrom', 'beg', 'end', 'depth']]
+    df_iter= pd.read_csv(in_file, chunksize=int(1e4), compression='gzip', header=None, iterator=True, names=['chrom', 'coord', 'depth'], sep='\t')
 
     with gzip.GzipFile(out_file, 'w') as out_fh:
-        df.to_csv(out_fh, header=False, index=False, sep='\t')
+        for df in df_iter:
+            df = df[df['depth'] >= min_depth]
+            
+            df['beg'] = df['coord'] - 1
+            
+            df['end'] = df['coord']
+            
+            df = df[['chrom', 'beg', 'end', 'depth']]
+            
+            df.to_csv(out_fh, header=False, index=False, sep='\t')
 
 
 def faidx(in_file, out_file):
