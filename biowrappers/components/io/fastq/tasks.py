@@ -1,11 +1,9 @@
 import gzip
 import itertools
 import os
-import pipes
 import pypeliner
 import pysam
 import shutil
-import subprocess
 
 from biowrappers.components.utils import flatten_input
 
@@ -19,7 +17,7 @@ def concatenate(in_files, out_file):
                 out_fh.write(in_fh.read())
 
 
-def is_sanger(file_name, num_reads=10000):
+def is_phred33(file_name, num_reads=10000):
     quals = set()
     with pysam.FastxFile(file_name) as reader:
         for i, record in enumerate(reader):
@@ -29,23 +27,24 @@ def is_sanger(file_name, num_reads=10000):
     return min(quals) < 64
 
 
-def convert_qualities_to_sanger(in_file, out_file):
-    if is_sanger(in_file):
-        os.link(in_file, out_file)
-        #shutil.copyfile(in_file, out_file)
+def convert_qualities_to_phred33(in_file, out_file, link_file=True):
+    if is_phred33(in_file):
+        if os.path.exists(out_file):
+            os.unlink(out_file)
+        if link_file:
+            os.link(in_file, out_file)
+        else:
+            shutil.copyfile(in_file, out_file)
     else:
         cmd = [
-            'gzip', '-cd', in_file,
-            '|',
-            'sed', '-e',
-            "'4~4y/@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghi/!\"#$%&'\\''()*+,-.\\/0123456789:;<=>?@ABCDEFGHIJ/'",
+            'seqtk', 'seq', '-Q', 64, '-V', in_file,
             '|',
             'gzip', '-cf',
             '>',
             out_file
         ]
-        #pypeliner.commandline.execute(*cmd)
-        subprocess.check_call(' '.join(cmd), shell=True)
+        pypeliner.commandline.execute(*cmd)
+
 
 def split_fastq(in_filename, out_filenames, num_reads_per_file):
     """ Split a fastq file.
