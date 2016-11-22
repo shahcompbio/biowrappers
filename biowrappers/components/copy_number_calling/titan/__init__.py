@@ -10,14 +10,21 @@ import tasks
 
 
 def create_titan_workflow(
-    normal_seqdata_file,
-    tumour_seqdata_files,
+    seqdata_files,
     config,
     out_file,
     raw_data_dir,
     somatic_breakpoint_file=None,
+    normal_id=None,
     **kwargs
 ):
+    if normal_id is None:
+        raise ValueError('Titan requires normal sample')
+
+    normal_seqdata_file = seqdata_files[normal_id]
+    tumour_seqdata_files = seqdata_files.copy()
+    del tumour_seqdata_files[normal_id]
+
     results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
     utils.make_parent_directory(results_files)
 
