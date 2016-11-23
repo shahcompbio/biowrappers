@@ -44,34 +44,11 @@ def create_theta_workflow(
         ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
         func=tasks.run_theta,
         args=(
-            pypeliner.managed.TempOutputFile('cn.tsv'),
-            pypeliner.managed.TempOutputFile('mix.txt'),
+            pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
             pypeliner.managed.InputFile(normal_seqdata_file),
             pypeliner.managed.InputFile(tumour_seqdata_file),
             config,
             pypeliner.managed.TempSpace('work'),
-        ),
-        kwargs={
-            'breakpoints_filename': somatic_breakpoint_file,
-        },
-    )
-
-    workflow.transform(
-        name='select_solution',
-        axes=('sample_id',),
-        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=tasks.select_solution,
-        args=(
-            pypeliner.managed.TempInputObj('init_params', 'sample_id', 'init_param_id'),
-            pypeliner.managed.TempInputFile('cn.tsv', 'sample_id', 'init_param_id'),
-            pypeliner.managed.TempInputFile('params.tsv', 'sample_id', 'init_param_id'),
-            pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_segments.tsv'), 'sample_id'),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_igv.tsv'), 'sample_id'),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_params.tsv'), 'sample_id'),
-            config,
-            pypeliner.managed.Template('{sample_id}', 'sample_id'),
         ),
         kwargs={
             'breakpoints_filename': somatic_breakpoint_file,

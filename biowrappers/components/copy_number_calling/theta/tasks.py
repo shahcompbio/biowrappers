@@ -6,6 +6,8 @@ import pypeliner.commandline
 import remixt.seqdataio
 import remixt.analysis.haplotype
 
+from biowrappers.components.copy_number_calling.common.tasks import calculate_breakpoint_copy_number
+
 
 def calculate_allele_counts(seqdata_filename, chromosomes=None):
     allele_counts = list()
@@ -108,17 +110,20 @@ def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, confi
     )
 
 
-def report(theta_prefix, output_cn_filename, output_mix_filename):
+def write_results(theta_prefix, output_filename, breakpoints_filename=None):
+    store = pd.HDFStore(results_filename, 'w')
+
     theta2_results_filename = theta_prefix + '.BEST.results'
     theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL':'NLL'})
+
+    store['full'] = theta2_results
 
     best_idx = theta2_results['NLL'].argmin()
 
     best_frac = theta2_results.loc[best_idx, 'mu']
     best_frac = best_frac.split(',')
 
-    with open(output_mix_filename, 'w') as output_mix_file:
-        output_mix_file.write('\t'.join(best_frac) + '\n')
+    store['mix'] = pd.Series(np.array(mix))
 
     best_cn = theta2_results.loc[best_idx, 'C']
     best_cn = [a.split(',') for a in best_cn.split(':')]
@@ -131,10 +136,13 @@ def report(theta_prefix, output_cn_filename, output_mix_filename):
     for m in range(best_cn.shape[0]):
         cn_data['total_{}'.format(m + 1)] = best_cn[m]
 
-    cn_data.to_csv(output_cn_filename, sep='\t', index=False, header=True)
+    store['cn'] = cn_data
+
+    if breakpoints_filename is not None:
+        store['brk_cn'] = calculate_breakpoint_copy_number(breakpoints_filename, cn_data)
 
 
-def run_theta(output_cn_filename, output_mix_filename, normal_filename, tumour_filename, config, tmp_directory, **kwargs):
+def run_theta(output_filename, normal_filename, tumour_filename, config, tmp_directory, **kwargs):
     normal_allele_filename = os.path.join(tmp_directory, 'normal_alleles.tsv')
     tumour_allele_filename = os.path.join(tmp_directory, 'tumour_alleles.tsv')
 
@@ -172,6 +180,4 @@ def run_theta(output_cn_filename, output_mix_filename, normal_filename, tumour_f
         '--OUTPUT_PREFIX', 'theta_results',
     )
 
-    report(theta_prefix, output_cn_filename, output_mix_filename)
-
-
+    write_results(theta_prefix, output_filename, breakpoints_filename=kwargs.get('breakpoints_filename', None))
