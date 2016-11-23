@@ -40,13 +40,13 @@ def create_theta_workflow(
 
     workflow.transform(
         name='run_theta',
-        axes=('sample_id', 'init_param_id'),
+        axes=('sample_id',),
         ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
         func=tasks.run_theta,
         args=(
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
             pypeliner.managed.InputFile(normal_seqdata_file),
-            pypeliner.managed.InputFile(tumour_seqdata_file),
+            pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
             config,
             pypeliner.managed.TempSpace('work'),
         ),
