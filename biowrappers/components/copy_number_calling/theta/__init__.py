@@ -42,7 +42,7 @@ def create_theta_workflow(
         name='run_theta',
         axes=('sample_id', 'init_param_id'),
         ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
-        func=tasks.run_titan,
+        func=tasks.run_theta,
         args=(
             pypeliner.managed.TempOutputFile('cn.tsv'),
             pypeliner.managed.TempOutputFile('mix.txt'),
