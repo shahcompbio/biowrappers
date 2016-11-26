@@ -7,6 +7,7 @@ import remixt.seqdataio
 import remixt.analysis.haplotype
 
 from biowrappers.components.copy_number_calling.common.tasks import calculate_breakpoint_copy_number
+import biowrappers.components.utils as utils
 
 
 def calculate_allele_counts(seqdata_filename, chromosomes=None):
@@ -111,7 +112,7 @@ def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, confi
 
 
 def write_results(theta_prefix, output_filename, breakpoints_filename=None):
-    store = pd.HDFStore(results_filename, 'w')
+    store = pd.HDFStore(output_filename, 'w')
 
     theta2_results_filename = theta_prefix + '.BEST.results'
     theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL':'NLL'})
@@ -123,7 +124,7 @@ def write_results(theta_prefix, output_filename, breakpoints_filename=None):
     best_frac = theta2_results.loc[best_idx, 'mu']
     best_frac = best_frac.split(',')
 
-    store['mix'] = pd.Series(np.array(mix))
+    store['mix'] = pd.Series(np.array(best_frac))
 
     best_cn = theta2_results.loc[best_idx, 'C']
     best_cn = [a.split(',') for a in best_cn.split(':')]
@@ -143,6 +144,8 @@ def write_results(theta_prefix, output_filename, breakpoints_filename=None):
 
 
 def run_theta(output_filename, normal_filename, tumour_filename, config, tmp_directory, **kwargs):
+    utils.make_directory(tmp_directory)
+
     normal_allele_filename = os.path.join(tmp_directory, 'normal_alleles.tsv')
     tumour_allele_filename = os.path.join(tmp_directory, 'tumour_alleles.tsv')
 

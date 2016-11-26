@@ -260,7 +260,7 @@ def report(
     cna_subclone_filenames,
     baf_subclone_filenames,
     results_filename,
-    breakpoints_filename=None,
+    somatic_breakpoint_file=None,
 ):
     """ Report optimal copy number and mixture
 
@@ -352,8 +352,8 @@ def report(
             cn_table.drop(['idx_1', 'idx_2'], axis=1, inplace=True)
 
     # Post-hoc breakpoint copy number
-    if breakpoints_filename is not None:
-        brk_cn = calculate_breakpoint_copy_number(breakpoints_filename, cn_table)
+    if somatic_breakpoint_file is not None:
+        brk_cn = calculate_breakpoint_copy_number(somatic_breakpoint_file, cn_table)
     else:
         brk_cn = None
 
