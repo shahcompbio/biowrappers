@@ -246,4 +246,10 @@ def merge_hdf5(in_files, out_file, table_names='{}'):
         for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
 
-            out_store.append(table_names.format(*file_key) + '/' + table_name, df)
+            # Workaround: currently cannot store empty dataframe in table format
+            format = 'table'
+            if len(df.index) == 0:
+                format = None
+
+            out_store.put(table_names.format(*file_key) + '/' + table_name, df, format=format)
+
