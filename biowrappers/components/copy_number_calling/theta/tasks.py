@@ -133,6 +133,7 @@ def write_results(theta_prefix, output_filename, breakpoints_filename=None):
     theta2_seg_filename = theta_prefix + '.n2.withBounds'
     cn_data = pd.read_csv(theta2_seg_filename, sep='\t')
     cn_data.rename(columns={'chrm': 'chromosome'}, inplace=True)
+    cn_data['chromosome'] = cn_data['chromosome'].astype(str)
 
     for m in range(best_cn.shape[0]):
         cn_data['total_{}'.format(m + 1)] = best_cn[m]
