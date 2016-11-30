@@ -21,13 +21,24 @@ def calculate_breakpoint_copy_number(breakpoints_filename, cn_table, max_brk_dis
     """
 
     N = len(cn_table.index)
-    cn = [np.ones((N, 2), dtype=int)]
-    for m in itertools.count(1):
-        try:
-            cn.append(cn_table[['major_{}'.format(m), 'minor_{}'.format(m)]].values)
-        except KeyError:
-            break
-    cn = np.array(cn).swapaxes(0, 1)
+
+    if 'major_1' in cn_table:
+        cn = [np.ones((N, 2), dtype=int)]
+        for m in itertools.count(1):
+            try:
+                cn.append(cn_table[['major_{}'.format(m), 'minor_{}'.format(m)]].values)
+            except KeyError:
+                break
+        cn = np.array(cn).swapaxes(0, 1)
+
+    else:
+        cn = [np.ones((N, 1), dtype=int) * 2]
+        for m in itertools.count(1):
+            try:
+                cn.append(cn_table[['total_{}'.format(m)]].values)
+            except KeyError:
+                break
+        cn = np.array(cn).swapaxes(0, 1)
 
     adjacencies = remixt.analysis.experiment.get_wild_type_adjacencies(cn_table, max_seg_gap)
     breakpoint_data = pd.read_csv(breakpoints_filename, sep='\t', converters={'chromosome_1': str, 'chromosome_2': str})
