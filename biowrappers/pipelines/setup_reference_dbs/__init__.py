@@ -42,17 +42,6 @@ def create_setup_reference_dbs_workflow(config):
             )
         )
 
-    if 'destruct' in config:
-        import destruct.create_ref_data
-        workflow.transform(
-            name='destruct_create_ref_data',
-            func=destruct.create_ref_data.create_ref_data,
-            args=(
-                config['destruct']['config'],
-                config['destruct']['ref_data_dir'],
-            ),
-        )
-
     if 'mappability' in config:
         workflow.subworkflow(
             name='mappability', 
@@ -99,6 +88,17 @@ def create_setup_reference_dbs_workflow(config):
 def create_setup_tools_workflow(databases, config):
     
     workflow = Workflow()
+
+    if 'destruct' in config:
+        import destruct.create_ref_data
+        workflow.transform(
+            name='destruct_create_ref_data',
+            func=destruct.create_ref_data.create_ref_data,
+            args=(
+                config['destruct']['config'],
+                config['destruct']['ref_data_dir'],
+            ),
+        )
 
     if 'remixt' in config:
         workflow.subworkflow(
