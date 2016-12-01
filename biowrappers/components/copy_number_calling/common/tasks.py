@@ -46,7 +46,7 @@ def calculate_breakpoint_copy_number(breakpoints_filename, cn_table, max_brk_dis
     breakpoints = remixt.analysis.experiment.convert_breakpoints_to_dict(breakpoint_segment_data)
 
     brk_cn = remixt.cn_model.decode_breakpoints_naive(cn, adjacencies, breakpoints)
-    brk_cn_table = remixt.analysis.experiment.create_brk_cn_table(brk_cn, breakpoint_segment_data)
+    brk_cn_table = remixt.analysis.experiment.create_brk_cn_table(brk_cn)
 
     return brk_cn_table
 
