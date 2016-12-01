@@ -4,7 +4,10 @@ from pypeliner.workflow import Workflow
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.io.download as download
 import biowrappers.components.io.download.tasks as download_tasks
-import biowrappers.components.copy_nmber_calling.remixt
+import biowrappers.components.copy_number_calling.remixt
+import biowrappers.components.copy_number_calling.theta
+import biowrappers.components.copy_number_calling.titan
+import biowrappers.components.copy_number_calling.clonehd
 
 import pypeliner
 
@@ -103,7 +106,7 @@ def create_setup_tools_workflow(databases, config):
     if 'remixt' in config:
         workflow.subworkflow(
             name='create_setup_remixt_workflow',
-            func=biowrappers.components.copy_nmber_calling.remixt.create_setup_remixt_workflow,
+            func=biowrappers.components.copy_number_calling.remixt.create_setup_remixt_workflow,
             args=(
                 config['remixt']['config'],
                 databases,
@@ -116,7 +119,7 @@ def create_setup_tools_workflow(databases, config):
     if 'titan' in config:
         workflow.subworkflow(
             name='create_setup_titan_workflow',
-            func=biowrappers.components.copy_nmber_calling.remixt.create_setup_titan_workflow,
+            func=biowrappers.components.copy_number_calling.titan.create_setup_titan_workflow,
             args=(
                 config['titan']['config'],
                 databases,
@@ -126,7 +129,7 @@ def create_setup_tools_workflow(databases, config):
     if 'theta' in config:
         workflow.subworkflow(
             name='create_setup_theta_workflow',
-            func=biowrappers.components.copy_nmber_calling.remixt.create_setup_theta_workflow,
+            func=biowrappers.components.copy_number_calling.theta.create_setup_theta_workflow,
             args=(
                 config['theta']['config'],
                 databases,
@@ -136,7 +139,7 @@ def create_setup_tools_workflow(databases, config):
     if 'clonehd' in config:
         workflow.subworkflow(
             name='create_setup_clonehd_workflow',
-            func=biowrappers.components.copy_nmber_calling.remixt.create_setup_clonehd_workflow,
+            func=biowrappers.components.copy_number_calling.clonehd.create_setup_clonehd_workflow,
             args=(
                 config['clonehd']['config'],
                 databases,
