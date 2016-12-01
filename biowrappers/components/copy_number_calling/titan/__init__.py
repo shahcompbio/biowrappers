@@ -9,6 +9,9 @@ import biowrappers.components.io.download
 import tasks
 
 
+default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X']
+
+
 def create_titan_workflow(
     seqdata_files,
     config,
@@ -113,7 +116,7 @@ def create_titan_workflow(
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sample_id', 'chromosome'),
-        value=[str(a) for a in xrange(1, 23)] + ['X'],
+        value=config.get('chromosomes', default_chromosomes),
         axes=('sample_id',)
     )
 
