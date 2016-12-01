@@ -175,7 +175,7 @@ def create_mappability_wig_file(config, out_file):
         func=biowrappers.components.io.download.create_download_workflow,
         args=(
             config['mappability_url'],
-            pypeliner.managed.TempOutputFile('mappability_bigwig'),
+            pypeliner.managed.OutputFile(out_file + '.bigwig'),
         )
     )
 
@@ -185,7 +185,7 @@ def create_mappability_wig_file(config, out_file):
         args=(
             'mapCounter',
             '-w', config['window_size'],
-            pypeliner.managed.TempInputFile('mappability_bigwig'),
+            pypeliner.managed.InputFile(out_file + '.bigwig'),
             '>',
             pypeliner.managed.OutputFile(out_file),
         ),
