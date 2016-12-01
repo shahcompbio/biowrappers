@@ -38,8 +38,6 @@ def create_remixt_workflow(
     utils.make_parent_directory(results_files)
     utils.make_parent_directory(selected_files)
 
-    segment_filename = os.path.join(raw_data_dir, 'segment.tsv')
-
     workflow = Workflow()
 
     workflow.setobj(
@@ -52,25 +50,10 @@ def create_remixt_workflow(
         value=tumour_ids,
     )
 
-    workflow.transform(
-        name='create_segments',
-        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=remixt.analysis.segment.create_segments,
-        args=(
-            pypeliner.managed.OutputFile(segment_filename),
-            config,
-            ref_data_dir,
-        ),
-        kwargs={
-            'breakpoint_filename': pypeliner.managed.InputFile(somatic_breakpoint_file),
-        },
-    )
-
     workflow.subworkflow(
         name='remixt',
         func=remixt.workflow.create_remixt_seqdata_workflow,
         args=(
-            pypeliner.managed.InputFile(segment_filename),
             pypeliner.managed.InputFile(somatic_breakpoint_file),
             pypeliner.managed.InputFile('seqdata', 'sample_id', fnames=seqdata_files),
             pypeliner.managed.OutputFile('results', 'tumour_id', template=results_files, axes_origin=[]),
