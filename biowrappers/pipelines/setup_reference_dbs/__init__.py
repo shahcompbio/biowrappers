@@ -86,6 +86,7 @@ def create_setup_tools_workflow(databases, config):
         import destruct.create_ref_data
         workflow.transform(
             name='destruct_create_ref_data',
+            ctx={'mem': 16},
             func=destruct.create_ref_data.create_ref_data,
             args=(
                 config['destruct']['config'],
