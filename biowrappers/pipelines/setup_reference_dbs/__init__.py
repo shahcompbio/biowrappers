@@ -35,16 +35,6 @@ def create_setup_reference_dbs_workflow(config):
             )
         )
     
-    if 'delly' in config:
-        workflow.subworkflow(
-            name='delly_exclude',
-            func=download.create_download_workflow,
-            args=(
-                config['delly']['exclude_url'],
-                pypeliner.managed.OutputFile(config['delly']['exclude_file']),
-            )
-        )
-
     if 'mappability' in config:
         workflow.subworkflow(
             name='mappability', 
@@ -101,6 +91,16 @@ def create_setup_tools_workflow(databases, config):
                 config['destruct']['config'],
                 config['destruct']['ref_data_dir'],
             ),
+        )
+
+    if 'delly' in config:
+        workflow.subworkflow(
+            name='delly_exclude',
+            func=download.create_download_workflow,
+            args=(
+                config['delly']['exclude_url'],
+                pypeliner.managed.OutputFile(config['delly']['exclude_file']),
+            )
         )
 
     if 'remixt' in config:
