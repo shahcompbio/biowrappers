@@ -20,7 +20,7 @@ def create_clonehd_single_workflow(
 
     workflow.transform(
         name='prepare_data',
-        ctx={'mem': 16},
+        ctx={'mem': 20},
         func=tasks.prepare_data,
         args=(
             pypeliner.managed.InputFile(normal_seqdata_file),

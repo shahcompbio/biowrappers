@@ -41,7 +41,7 @@ def create_theta_workflow(
     workflow.transform(
         name='run_theta',
         axes=('sample_id',),
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
+        ctx={'mem': 20},
         func=tasks.run_theta,
         args=(
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
@@ -57,7 +57,7 @@ def create_theta_workflow(
 
     workflow.transform(
         name='merge_results',
-        ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 8},
         func=hdf5_tasks.merge_hdf5,
         args=(
             pypeliner.managed.InputFile('results', 'sample_id', template=results_files),

@@ -53,7 +53,7 @@ def create_titan_workflow(
     workflow.transform(
         name='prepare_tumour_data',
         axes=('sample_id',),
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
+        ctx={'mem': 20},
         func=tasks.prepare_tumour_data,
         args=(
             pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
