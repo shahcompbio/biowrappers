@@ -48,7 +48,7 @@ def create_theta_workflow(
             pypeliner.managed.InputFile(normal_seqdata_file),
             pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
             config,
-            pypeliner.managed.TempSpace('work'),
+            pypeliner.managed.TempSpace('work', cleanup=None),
         ),
         kwargs={
             'breakpoints_filename': somatic_breakpoint_file,
