@@ -87,7 +87,7 @@ def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory):
 
 
 def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, config, tmp_directory):
-    normal_prefix = os.path.join(tmp_directory, 'tumour.')
+    normal_prefix = os.path.join(tmp_directory, 'normal.')
     tumour_prefix = os.path.join(tmp_directory, 'tumour.')
 
     run_bicseq2_norm(normal_prefix, normal_filename, config, tmp_directory)
