@@ -241,7 +241,7 @@ def run_clonehd(
         '--trials', '2',
         '--nmax', str(num_clones),
         '--force', str(num_clones),
-        '--max-tcn', '4',
+        '--max-tcn', '6',
         '--cna-jumps', os.path.join(raw_data_dir, 'tumour.cna.bias.jumps.txt'),
         '--baf-jumps', os.path.join(raw_data_dir, 'tumour.baf.jumps.txt'),
         '--min-jump', '0.01',
