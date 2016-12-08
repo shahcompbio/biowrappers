@@ -26,7 +26,7 @@ def get_regions(chromosome_lengths, split_size):
         for beg, end in zip(lside_interval, rside_interval):
             end = min(end, length)
             
-            regions[region_index] = (chrom, beg, end)
+            regions[region_index] = '{}:{}-{}'.format(chrom, beg, end)
             region_index += 1
 
     return regions
@@ -59,7 +59,7 @@ def load_vcf_chromosome_lengths(file_name, chromosomes=None):
         if chrom not in chromosomes:
             continue
 
-        chromosome_lengths[chrom] = int(contig.length)
+        chromosome_lengths[str(chrom)] = int(contig.length)
 
     return chromosome_lengths
 
@@ -79,7 +79,7 @@ def load_bam_chromosome_lengths(file_name, chromosomes=None):
         if chrom not in chromosomes:
             continue
         
-        chromosome_lengths[chrom] = int(length)
+        chromosome_lengths[str(chrom)] = int(length)
     
     return chromosome_lengths
 
