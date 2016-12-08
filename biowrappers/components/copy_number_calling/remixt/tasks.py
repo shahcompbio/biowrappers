@@ -6,12 +6,13 @@ def select_solution(selected_file, results_file, config):
         stats = results_store['stats']
         if (stats['proportion_divergent'] < config['max_prop_diverge']).any():
             stats = stats[stats['proportion_divergent'] < config['max_prop_diverge']].copy()
+
         stats.sort_values('elbo', ascending=False, inplace=True)
         solution_idx = stats.loc[stats.index[0], 'init_id']
+        solution_table_prefix = '/solutions/solution_{}/'.format(solution_idx)
 
         for table_name in results_store.keys():
             if table_name.startswith('/solutions/solution_'):
-                solution_table_prefix = '/solutions/solution_{}'.format(solution_idx)
 
                 if table_name.startswith(solution_table_prefix):
                     sub_table_name = table_name[len(solution_table_prefix):]
