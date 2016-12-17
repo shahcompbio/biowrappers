@@ -25,8 +25,10 @@ def create_theta_workflow(
     tumour_seqdata_files = seqdata_files.copy()
     del tumour_seqdata_files[normal_id]
 
-    results_files = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
-    utils.make_parent_directory(results_files)
+    results_template = os.path.join(raw_data_dir, 'results', 'sample_{sample_id}.h5')
+    bicseq2_seg_template = os.path.join(raw_data_dir, 'bicseq2', 'bicseq2_{sample_id}.seg')
+    utils.make_parent_directory(results_template)
+    utils.make_parent_directory(bicseq2_seg_template)
 
     workflow = Workflow()
 
@@ -39,16 +41,31 @@ def create_theta_workflow(
         somatic_breakpoint_file = pypeliner.managed.InputFile(somatic_breakpoint_file)
 
     workflow.transform(
+        name='run_bicseq2',
+        axes=('sample_id',),
+        ctx={'mem': 16},
+        func=tasks.run_bicseq2_seg,
+        args=(
+            pypeliner.managed.OutputFile('bicseq2_seg', 'sample_id', template=bicseq2_seg_template),
+            pypeliner.managed.InputFile('normal_seqdata', template=normal_seqdata_file),
+            pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
+            config,
+            pypeliner.managed.TempSpace('bicseq2_work'),
+        ),
+    )
+
+    workflow.transform(
         name='run_theta',
         axes=('sample_id',),
         ctx={'mem': 20},
         func=tasks.run_theta,
         args=(
-            pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
-            pypeliner.managed.InputFile(normal_seqdata_file),
+            pypeliner.managed.OutputFile('results', 'sample_id', template=results_template),
+            pypeliner.managed.InputFile('normal_seqdata', template=normal_seqdata_file),
             pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
+            pypeliner.managed.InputFile('bicseq2_seg', 'sample_id', template=bicseq2_seg_template),
             config,
-            pypeliner.managed.TempSpace('work', cleanup=None),
+            pypeliner.managed.TempSpace('theta_work', cleanup=None),
         ),
         kwargs={
             'breakpoints_filename': somatic_breakpoint_file,
@@ -60,7 +77,7 @@ def create_theta_workflow(
         ctx={'mem': 8},
         func=hdf5_tasks.merge_hdf5,
         args=(
-            pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
+            pypeliner.managed.InputFile('results', 'sample_id', template=results_template),
             pypeliner.managed.OutputFile(out_file),
         ),
         kwargs={

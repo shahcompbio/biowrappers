@@ -144,7 +144,7 @@ def write_results(theta_prefix, output_filename, breakpoints_filename=None):
         store['brk_cn'] = calculate_breakpoint_copy_number(breakpoints_filename, cn_data)
 
 
-def run_theta(output_filename, normal_filename, tumour_filename, config, tmp_directory, **kwargs):
+def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_filename, config, tmp_directory, **kwargs):
     utils.make_directory(tmp_directory)
 
     normal_allele_filename = os.path.join(tmp_directory, 'normal_alleles.tsv')
@@ -163,9 +163,6 @@ def run_theta(output_filename, normal_filename, tumour_filename, config, tmp_dir
 
     write_theta_format_alleles(normal_allele_filename, normal_allele_count)
     write_theta_format_alleles(tumour_allele_filename, tumour_allele_count)
-
-    bicseq2_seg_filename = os.path.join(tmp_directory, 'bicseq2.seg')
-    run_bicseq2_seg(bicseq2_seg_filename, normal_filename, tumour_filename, config, tmp_directory)
 
     theta_seg_filename = os.path.join(tmp_directory, 'theta_input.seg')
     pypeliner.commandline.execute(
