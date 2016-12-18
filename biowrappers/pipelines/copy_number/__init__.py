@@ -20,7 +20,7 @@ def call_and_annotate_pipeline(
     results_file,
     normal_id=None,
     somatic_breakpoint_file=None,
-    ploidy_config=None,
+    sample_config=None,
 ):
     sample_ids = bam_files.keys()
     
@@ -65,10 +65,10 @@ def call_and_annotate_pipeline(
         make_parent_directory(remixt_results_filename)
 
         remixt_config = config['remixt']['config']
-        if ploidy_config is not None:
+        if sample_config is not None:
             if 'sample_specific' not in remixt_config:
                 remixt_config['sample_specific'] = {}
-            remixt_config['sample_specific'].update(ploidy_config)
+            remixt_config['sample_specific'].update(sample_config)
 
         workflow.subworkflow(
             name='remixt',
