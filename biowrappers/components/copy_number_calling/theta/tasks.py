@@ -87,6 +87,8 @@ def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory):
 
 
 def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, config, tmp_directory):
+    utils.make_directory(tmp_directory)
+
     normal_prefix = os.path.join(tmp_directory, 'normal.')
     tumour_prefix = os.path.join(tmp_directory, 'tumour.')
 
@@ -111,10 +113,17 @@ def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, confi
     )
 
 
-def write_results(theta_prefix, output_filename, breakpoints_filename=None):
+def write_results(theta_prefix, output_filename, **kwargs):
+    breakpoints_filename = kwargs.get('breakpoints_filename', None)
+    num_clones = kwargs.get('num_clones', None)
+
     store = pd.HDFStore(output_filename, 'w')
 
-    theta2_results_filename = theta_prefix + '.BEST.results'
+    solution_name = 'BEST'
+    if num_clones is not None:
+        solution_name = 'n{}'.format(num_clones)
+
+    theta2_results_filename = '.'.join([theta_prefix, solution_name, 'results'])
     theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL':'NLL'})
 
     store['full'] = theta2_results
@@ -181,4 +190,5 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
         '--OUTPUT_PREFIX', 'theta_results',
     )
 
-    write_results(theta_prefix, output_filename, breakpoints_filename=kwargs.get('breakpoints_filename', None))
+    write_results(theta_prefix, output_filename, **kwargs)
+
