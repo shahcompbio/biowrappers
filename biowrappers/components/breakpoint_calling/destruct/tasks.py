@@ -53,14 +53,14 @@ def filter_annotate_breakpoints(
     
     """
     
-    if patient_libraries is None:
-        patient_libraries = {'null': list(brk['library'].unique())}
-    
     brk = pd.read_csv(input_breakpoint_filename, sep='\t',
                       converters={'chromosome_1': str, 'chromosome_2': str})
 
     brklib = pd.read_csv(input_breakpoint_library_filename, sep='\t')
 
+    if patient_libraries is None:
+        patient_libraries = {'null': list(brklib['library'].unique())}
+    
     # Add is_normal column
     brklib['is_normal'] = brklib['library'].isin(control_ids)
     
