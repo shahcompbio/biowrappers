@@ -9,16 +9,19 @@ import biowrappers.components.copy_number_calling.theta
 import biowrappers.components.copy_number_calling.titan
 import biowrappers.components.copy_number_calling.clonehd
 
+import tasks
+
 import pypeliner
+
 
 def create_setup_reference_dbs_workflow(config):
     
     workflow = Workflow()
     
     if 'cosmic' in config:
-        workflow.subworkflow(
+        workflow.transform(
             name='cosmic',
-            func=create_cosmic_download_workflow,
+            func=tasks.download_cosmic,
             args=(
                 config['cosmic'],
                 pypeliner.managed.OutputFile(config['cosmic']['local_path']),
@@ -149,78 +152,6 @@ def create_setup_tools_workflow(databases, config):
 
     return workflow
 
-
-def create_cosmic_download_workflow(config, out_file):
-    
-    workflow = Workflow()
-    
-    workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('remote_path', 'files'),
-        value={
-            'coding' : config['remote_paths']['coding'],
-            'non_coding' : config['remote_paths']['non_coding']
-        },
-    )
-    
-    workflow.transform(
-        name='download_files',
-        axes=('files',),
-        ctx={'local' : True},
-        func=download_tasks.download_from_sftp,
-        args=(
-            pypeliner.managed.TempOutputFile('download.vcf', 'files'),
-            config['host'],
-            pypeliner.managed.TempInputObj('remote_path', 'files'),
-            config['user_name'],
-            config['password']
-        ),
-        kwargs={
-            'post': biowrappers.components.io.compression.tasks.gunzip,
-        },
-    )
-
-    workflow.transform(
-        name='finalise_vcf',
-        axes=('files',),
-        func=vcf_tasks.finalise_vcf,
-        args=(
-            pypeliner.managed.TempInputFile('download.vcf', 'files'),
-            pypeliner.managed.TempOutputFile('download.vcf.gz', 'files'),
-        ),
-    )
-    
-    workflow.transform(
-        name='merge',
-        axes=(),
-        ctx={'mem' : 4},
-        func=vcf_tasks.concatenate_vcf_fast,
-        args=(
-            pypeliner.managed.TempInputFile('download.vcf.gz', 'files'),
-            pypeliner.managed.TempOutputFile('merged.vcf'),
-        ),
-    )
-    
-    workflow.transform(
-        name='sort',
-        axes=(),
-        ctx={'mem' : 4},
-        func=vcf_tasks.sort_vcf,
-        args=(
-            pypeliner.managed.TempInputFile('merged.vcf'),
-            pypeliner.managed.TempOutputFile('sorted.vcf')
-        )
-    )
-    
-    workflow.subworkflow(
-        name='finalise',
-        func=vcf_tasks.finalise_vcf,
-        args=(
-            pypeliner.managed.TempInputFile('sorted.vcf'),
-            pypeliner.managed.OutputFile(out_file)
-        ),
-    )
-        
-    return workflow
 
 def create_dbsnp_download_workflow(config, out_file):
     
