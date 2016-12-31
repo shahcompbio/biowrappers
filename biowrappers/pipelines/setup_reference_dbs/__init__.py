@@ -25,6 +25,7 @@ def create_setup_reference_dbs_workflow(config):
             args=(
                 config['cosmic'],
                 pypeliner.managed.OutputFile(config['cosmic']['local_path']),
+                pypeliner.managed.TempSpace('cosmic_work', cleanup=None)
             )
         )
     
