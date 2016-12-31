@@ -168,12 +168,25 @@ def create_cosmic_download_workflow(config, out_file):
         ctx={'local' : True},
         func=download_tasks.download_from_sftp,
         args=(
-            pypeliner.managed.TempOutputFile('download.vcf.gz', 'files'),
+            pypeliner.managed.TempOutputFile('download.vcf', 'files'),
             config['host'],
             pypeliner.managed.TempInputObj('remote_path', 'files'),
             config['user_name'],
             config['password']
-        )
+        ),
+        kwargs={
+            'post': biowrappers.components.io.compression.tasks.gunzip,
+        },
+    )
+
+    workflow.transform(
+        name='finalise_vcf',
+        axes=('files',),
+        func=vcf_tasks.finalise_vcf,
+        args=(
+            pypeliner.managed.TempInputFile('download.vcf', 'files'),
+            pypeliner.managed.TempOutputFile('download.vcf.gz', 'files'),
+        ),
     )
     
     workflow.transform(
