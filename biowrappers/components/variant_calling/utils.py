@@ -7,6 +7,7 @@ from collections import OrderedDict
 
 import pysam
 import vcf
+import pandas as pd
 
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
@@ -42,10 +43,32 @@ def get_bam_regions(bam_file, split_size, chromosomes=None):
     return get_regions(chromosome_lengths, split_size)
 
 
+def calculate_vcf_chromosome_lengths(file_name, chromosomes=None):
+    if file_name.endswith('gz'):
+        compression = 'gzip'
+    else:
+        compression = None
+
+    tsv_reader = pd.read_csv(
+        file_name, sep='\t', comment='#', chunksize=int(1e6),
+        names=['chrom', 'coord'], usecols=[0, 1], index_col=0,
+        converters={'chrom': str}, compression=compression)
+
+    max_coord = [chunk.groupby(level=0).max() for chunk in tsv_reader]
+    max_coord = pd.concat(max_coord).groupby(level=0).max()
+
+    chromosome_lengths = max_coord + 1000
+
+    return chromosome_lengths['coord'].to_dict()
+
+
 def load_vcf_chromosome_lengths(file_name, chromosomes=None):
     chromosome_lengths = OrderedDict()
 
     vcf_reader = vcf.Reader(filename=file_name)
+
+    if len(vcf_reader.contigs) == 0:
+        return calculate_vcf_chromosome_lengths(file_name, chromosomes=chromosomes)
 
     if chromosomes is None:
         chromosomes = vcf_reader.contigs.keys()
