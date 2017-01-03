@@ -84,6 +84,9 @@ def load_vcf_chromosome_lengths(file_name, chromosomes=None):
 
         chromosome_lengths[str(chrom)] = int(contig.length)
 
+    if len(chromosome_lengths) == 0:
+        raise Exception('no chromosomes found in vcf header')
+
     return chromosome_lengths
 
 
