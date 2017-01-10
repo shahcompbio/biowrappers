@@ -1,3 +1,4 @@
+import os
 import shutil
 import errno
 import pypeliner.commandline
@@ -22,3 +23,4 @@ def run_optitype(reads_1_fastq, reads_2_fastq, hla_type_file, temp_space):
 
     results_file = os.path.join(temp_space, date_time_subdir, date_time_subdir + '_result.tsv')
     os.rename(results_file, hla_type_file)
+
