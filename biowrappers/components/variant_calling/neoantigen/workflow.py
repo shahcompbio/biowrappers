@@ -22,7 +22,7 @@ def create_hla_type_workflow(
             pypeliner.managed.InputFile(normal_bam_file),
             '6',
             '|',
-            'samtools', 'collate', '-O', '-', pypeliner.managed.TempSpace('chr6_collate'),
+            'samtools', 'collate', '-O', '-', pypeliner.managed.TempSpace('chr6_collate_temp'),
             '|',
             'samtools', 'bam2fq',
             '-1', pypeliner.managed.TempOutputFile('chr6_reads_1.fq'),
@@ -39,7 +39,7 @@ def create_hla_type_workflow(
             pypeliner.managed.TempInputFile('chr6_reads_1.fq'),
             pypeliner.managed.TempInputFile('chr6_reads_2.fq'),
             pypeliner.managed.OutputFile(hla_type_file),
-            pypeliner.managed.TempSpace('chr6_collate'),
+            pypeliner.managed.TempSpace('optitype_temp'),
         )
     )
 
