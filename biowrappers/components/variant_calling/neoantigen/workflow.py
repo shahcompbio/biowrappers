@@ -11,6 +11,7 @@ import tasks
 def create_hla_type_workflow(
     normal_bam_file,
     hla_type_file,
+    config,
 ):
     workflow = Workflow()
 
@@ -30,14 +31,15 @@ def create_hla_type_workflow(
         ),
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='optitype',
+        ctx={'mem': 24},
+        func=tasks.run_optitype,
         args=(
-            'OptiTypePipeline.py', '-i',
             pypeliner.managed.TempInputFile('chr6_reads_1.fq'),
             pypeliner.managed.TempInputFile('chr6_reads_2.fq'),
-            '--dna', '-v', '-o',
             pypeliner.managed.OutputFile(hla_type_file),
+            pypeliner.managed.TempSpace('chr6_collate'),
         )
     )
 
