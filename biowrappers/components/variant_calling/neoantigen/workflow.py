@@ -44,3 +44,43 @@ def create_hla_type_workflow(
     )
 
     return workflow
+
+
+def create_pvacseq_workflow(
+    vcf_file,
+    hla_type_file,
+    results_file,
+    config,
+):
+    workflow = Workflow()
+
+    workflow.commandline(
+        name='vep',
+        args=(
+            'variant_effect_predictor.pl',
+            '--input_file', pypeliner.managed.InputFile(vcf_file),
+            '--format', 'vcf',
+            '--output_file', pypeliner.managed.TempOutputFile('vep_annotated.vcf'),
+            '--vcf', '--symbol', '--terms', 'SO',
+            '--plugin', 'Downstream',
+            '--plugin', 'Wildtype',
+            '--cache', '--offline',
+            '--assembly', 'GRCh37',
+            '--dir_plugins', config['vep_plugin_dir'],
+        ),
+    )
+
+    workflow.transform(
+        name='run_pvacseq',
+        func=tasks.run_pvacseq,
+        args=(
+            pypeliner.managed.InputFile(vcf_file),
+            pypeliner.managed.InputFile(hla_type_file),
+            pypeliner.managed.OutputFile(results_file),
+            pypeliner.managed.TempSpace('pvacseq_temp'),
+            config,
+        ),
+    )
+
+    return workflow
+
