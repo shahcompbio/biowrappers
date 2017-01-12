@@ -56,6 +56,7 @@ def create_pvacseq_workflow(
 
     workflow.commandline(
         name='vep',
+        ctx={'mem': 16},
         args=(
             'variant_effect_predictor.pl',
             '--input_file', pypeliner.managed.InputFile(vcf_file),
@@ -64,7 +65,7 @@ def create_pvacseq_workflow(
             '--vcf', '--symbol', '--terms', 'SO',
             '--plugin', 'Downstream',
             '--plugin', 'Wildtype',
-            '--cache', '--offline',
+            '--cache', '--offline', '--force_overwrite',
             '--assembly', 'GRCh37',
             '--dir_plugins', config['vep_plugin_dir'],
         ),
@@ -74,7 +75,7 @@ def create_pvacseq_workflow(
         name='run_pvacseq',
         func=tasks.run_pvacseq,
         args=(
-            pypeliner.managed.InputFile(vcf_file),
+            pypeliner.managed.TempInputFile('vep_annotated.vcf'),
             pypeliner.managed.InputFile(hla_type_file),
             pypeliner.managed.OutputFile(results_file),
             pypeliner.managed.TempSpace('pvacseq_temp'),
