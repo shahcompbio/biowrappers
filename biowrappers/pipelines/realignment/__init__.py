@@ -12,6 +12,11 @@ def realignment_pipeline(
     in_file, 
     out_file):
 
+    read_group_info = config.get('read_group', {})
+    
+    if 'ID' not in read_group_info:
+        read_group_info['ID'] = hash(in_file) % int(1e6)
+    
     ref_genome = pypeliner.managed.InputFile(config['ref_genome']['file'])
     
     read_1 = pypeliner.managed.TempFile('read_1', 'split')
@@ -29,7 +34,7 @@ def realignment_pipeline(
     if 'read_group' in config:
         workflow.setobj(
             obj=read_group_config.as_output(), 
-            value=config['read_group']
+            value=read_group_info,
         )
     
     else:
