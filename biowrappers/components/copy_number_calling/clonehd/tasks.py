@@ -42,7 +42,7 @@ def write_cna(cna_filename, seqdata_filename, chromosome_lengths, segment_length
 
         for chrom in chromosomes:
 
-            reads = remixt.seqdataio.read_filtered_fragment_data(seqdata_filename, chromosome=chrom)
+            reads = remixt.seqdataio.read_fragment_data(seqdata_filename, chromosome=chrom)
 
             reads.sort('start', inplace=True)
 

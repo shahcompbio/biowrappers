@@ -36,7 +36,7 @@ def create_segment_counts(seqdata_filename, chromosome_lengths, segment_length=1
     chromosomes = remixt.seqdataio.read_chromosomes(seqdata_filename)
 
     for chrom in chromosomes:
-        chrom_reads = remixt.seqdataio.read_filtered_fragment_data(seqdata_filename, chromosome=chrom)
+        chrom_reads = remixt.seqdataio.read_fragment_data(seqdata_filename, chromosome=chrom)
 
         chrom_reads.sort('start', inplace=True)
 

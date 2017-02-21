@@ -50,7 +50,7 @@ def run_bicseq2_norm(prefix, seqdata_filename, config, tmp_directory):
     fragment_means = []
     counts = []
     for chromosome in config['chromosomes']:
-        chrom_reads = remixt.seqdataio.read_filtered_fragment_data(seqdata_filename, chromosome=chromosome)
+        chrom_reads = remixt.seqdataio.read_fragment_data(seqdata_filename, chromosome=chromosome)
 
         fragment_means.append((chrom_reads['end'] - chrom_reads['start']).mean())
         counts.append(len(chrom_reads.index))
