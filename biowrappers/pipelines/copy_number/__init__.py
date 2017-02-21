@@ -130,6 +130,29 @@ def call_and_annotate_pipeline(
 
         merge_inputs['/copy_number/clonehd'] = pypeliner.managed.InputFile(clonehd_results_filename)
 
+    if 'theta' in config:
+        theta_raw_data = os.path.join(raw_data_dir, 'theta')
+        theta_results_filename = os.path.join(theta_raw_data, 'results.h5')
+        make_parent_directory(theta_results_filename)
+
+        workflow.subworkflow(
+            name='theta',
+            func=biowrappers.components.copy_number_calling.theta.create_theta_workflow,
+            args=(
+                pypeliner.managed.InputFile('seqdata', 'sample_id', template=seq_data_template),
+                config['theta']['config'],
+                pypeliner.managed.OutputFile(theta_results_filename),
+                theta_raw_data,
+            ),
+            kwargs={
+                'somatic_breakpoint_file': somatic_breakpoint_file,
+                'normal_id': normal_id,
+                'num_clones': config['theta']['kwargs']['num_clones'],
+            },
+        )
+
+        merge_inputs['/copy_number/theta'] = pypeliner.managed.InputFile(theta_results_filename)
+
     workflow.transform(
         name='merge_results',
         ctx={'mem': 8},
