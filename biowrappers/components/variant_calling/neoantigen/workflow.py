@@ -1,6 +1,7 @@
-from pypeliner.workflow import Workflow
+import os
 
 import pypeliner
+from pypeliner.workflow import Workflow
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
 import biowrappers.components.variant_calling.utils as utils
@@ -67,7 +68,8 @@ def create_pvacseq_workflow(
             '--plugin', 'Wildtype',
             '--cache', '--offline', '--force_overwrite',
             '--assembly', 'GRCh37',
-            '--dir_plugins', config['vep_plugin_dir'],
+            '--dir', config['vep_dir'],
+            '--dir_plugins', os.path.join(config['vep_dir'], 'Plugins'),
         ),
     )
 
