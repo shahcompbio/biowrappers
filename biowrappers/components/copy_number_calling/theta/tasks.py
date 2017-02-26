@@ -137,7 +137,7 @@ def write_results(theta_prefix, output_filename, **kwargs):
 
     best_cn = theta2_results.loc[best_idx, 'C']
     best_cn = [a.split(',') for a in best_cn.split(':')]
-    best_cn = np.array(best_cn).astype(int).T
+    best_cn = np.array(best_cn).T
 
     theta2_seg_filename = theta_prefix + '.n2.withBounds'
     cn_data = pd.read_csv(theta2_seg_filename, sep='\t')
@@ -145,7 +145,9 @@ def write_results(theta_prefix, output_filename, **kwargs):
     cn_data['chromosome'] = cn_data['chromosome'].astype(str)
 
     for m in range(best_cn.shape[0]):
-        cn_data['total_{}'.format(m + 1)] = best_cn[m]
+        col = 'total_{}'.format(m + 1)
+        cn_data[col] = best_cn[m]
+        cn_data[col] = cn_data[col].replace('X', None).astype(float)
 
     store['cn'] = cn_data
 
