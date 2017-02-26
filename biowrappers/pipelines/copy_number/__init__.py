@@ -9,6 +9,7 @@ from biowrappers.components.utils import make_parent_directory
 import biowrappers.components.copy_number_calling.remixt
 import biowrappers.components.copy_number_calling.titan
 import biowrappers.components.copy_number_calling.clonehd
+import biowrappers.components.copy_number_calling.theta
 
 import remixt.workflow
 
