@@ -50,7 +50,7 @@ def create_theta_workflow(
             pypeliner.managed.InputFile('normal_seqdata', template=normal_seqdata_file),
             pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
             config,
-            pypeliner.managed.TempSpace('bicseq2_work'),
+            pypeliner.managed.TempSpace('bicseq2_work', 'sample_id', cleanup=None),
         ),
     )
 
@@ -65,7 +65,7 @@ def create_theta_workflow(
             pypeliner.managed.InputFile('tumour_seqdata', 'sample_id', fnames=tumour_seqdata_files),
             pypeliner.managed.InputFile('bicseq2_seg', 'sample_id', template=bicseq2_seg_template),
             config,
-            pypeliner.managed.TempSpace('theta_work', cleanup=None),
+            pypeliner.managed.TempSpace('theta_work', 'sample_id', cleanup=None),
         ),
         kwargs={
             'breakpoints_filename': somatic_breakpoint_file,
