@@ -175,17 +175,28 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
     write_theta_format_alleles(normal_allele_filename, normal_allele_count)
     write_theta_format_alleles(tumour_allele_filename, tumour_allele_count)
 
+    segs = pd.read_csv(
+        bicseq2_seg_filename, sep='\t',
+        converters={'chrom': str, 'start': int, 'end': int})
+    segs['#ID'] = (
+        'start_' + segs['chrom'] + '_' + segs['start'].astype(str) +
+        'end_' + segs['chrom'] + '_' + segs['end'].astype(str))
+    segs['chrm'] = segs['chrom']
+    segs['tumorCount'] = segs['tumor']
+    segs['normalCount'] = segs['normal']
+    segs['length'] = segs['end'] - segs['start']
+
+    # Length filter (default 10Mb)
+    segs = segs[segs['length'] >= config.get('min_length', int(10e6))]
+
     theta_seg_filename = os.path.join(tmp_directory, 'theta_input.seg')
-    pypeliner.commandline.execute(
-        'BICSeqToTHetA',
-        bicseq2_seg_filename,
-        '-OUTPUT_PREFIX', theta_seg_filename,
-    )
+    cols = ['#ID', 'chrm', 'start', 'end', 'tumorCount', 'normalCount']
+    segs[cols].to_csv(theta_seg_filename, sep='\t', index=False)
 
     theta_prefix = os.path.join(tmp_directory, 'theta_results')
     pypeliner.commandline.execute(
         'RunTHetA', '--FORCE',
-        os.path.abspath(theta_seg_filename + '.all_processed'),
+        os.path.abspath(theta_seg_filename),
         '--TUMOR_FILE', os.path.abspath(normal_allele_filename),
         '--NORMAL_FILE', os.path.abspath(tumour_allele_filename),
         '--DIR', os.path.abspath(tmp_directory),
