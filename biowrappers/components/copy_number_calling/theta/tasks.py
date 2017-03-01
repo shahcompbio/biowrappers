@@ -181,7 +181,7 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
         bicseq2_seg_filename, sep='\t',
         converters={'chrom': str, 'start': int, 'end': int})
     segs['#ID'] = (
-        'start_' + segs['chrom'] + '_' + segs['start'].astype(str) +
+        'start_' + segs['chrom'] + '_' + segs['start'].astype(str) + ':' +
         'end_' + segs['chrom'] + '_' + segs['end'].astype(str))
     segs['chrm'] = segs['chrom']
     segs['tumorCount'] = segs['tumor']
