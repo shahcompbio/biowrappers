@@ -57,13 +57,13 @@ def write_segment_count_wig(wig_filename, seqdata_filename, chromosome_lengths, 
 def calculate_allele_counts(seqdata_filename):
 
     allele_counts = list()
-    
+
     chromosomes = remixt.seqdataio.read_chromosomes(seqdata_filename)
 
     for chrom in chromosomes:
 
         chrom_allele_counts = remixt.analysis.haplotype.read_snp_counts(seqdata_filename, chrom)
-        
+
         chrom_allele_counts['chromosome'] = chrom
 
         allele_counts.append(chrom_allele_counts)
@@ -76,7 +76,7 @@ def calculate_allele_counts(seqdata_filename):
 def infer_het_positions(seqdata_filename):
 
     allele_count = calculate_allele_counts(seqdata_filename)
-    
+
     remixt.analysis.haplotype.infer_snp_genotype(allele_count)
 
     het_positions = allele_count.loc[allele_count['AB'] == 1, ['chromosome', 'position']]
@@ -128,7 +128,8 @@ def prepare_normal_data(normal_filename, normal_wig_filename, het_positions_file
 
     chromosome_lengths = read_chromosome_lengths(config['chrom_info_filename'])
 
-    write_segment_count_wig(normal_wig_filename, normal_filename, chromosome_lengths, segment_length=config['window_size'])
+    write_segment_count_wig(
+        normal_wig_filename, normal_filename, chromosome_lengths, segment_length=config['window_size'])
 
     het_positions = infer_het_positions(normal_filename)
     het_positions.to_csv(het_positions_filename, sep='\t', index=False)
@@ -140,7 +141,8 @@ def prepare_tumour_data(tumour_filename, het_positions_filename, tumour_wig_file
 
     chromosome_lengths = read_chromosome_lengths(config['chrom_info_filename'])
 
-    write_segment_count_wig(tumour_wig_filename, tumour_filename, chromosome_lengths, segment_length=config['window_size'])
+    write_segment_count_wig(
+        tumour_wig_filename, tumour_filename, chromosome_lengths, segment_length=config['window_size'])
 
     het_positions = pd.read_csv(het_positions_filename, sep='\t', converters={'chromosome': str})
 
@@ -153,9 +155,9 @@ def create_intialization_parameters(config):
     """
 
     normal_contamination = config.get('normal_contamination', [0.2, 0.4, 0.6, 0.8])
-    
+
     num_clusters = config.get('num_clusters', [1, 2, 3, 4, 5])
-    
+
     ploidy = config.get('ploidy', [1, 2, 3, 4])
 
     init_param_values = itertools.product(
@@ -243,13 +245,13 @@ def select_solution(
         if init_params.loc[best_idx, 'num_clusters'] == 1:
             t_1 = init_params.loc[best_idx, 'cell_prev_est_1']
 
-            mix = [n, (1-n) * t_1]
+            mix = [n, (1 - n) * t_1]
 
         elif init_params.loc[best_idx, 'num_clusters'] == 2:
             t_1 = init_params.loc[best_idx, 'cell_prev_est_1']
             t_2 = init_params.loc[best_idx, 'cell_prev_est_2']
 
-            mix = [n, (1-n) * t_2, (1-n) * abs(t_1 - t_2)]
+            mix = [n, (1 - n) * t_2, (1 - n) * abs(t_1 - t_2)]
 
         elif init_params.loc[best_idx, 'num_clusters'] > 2:
             raise ValueError('Unable to convert output for more than 2 clonal clusters')
@@ -260,9 +262,9 @@ def select_solution(
             mix.append(init_params.loc[best_idx, 'cell_prev_est_{0}'.format(i + 1)])
 
     shutil.copyfile(params_filename[best_idx], output_params_filename)
-    
+
     shutil.copyfile(cn_filename[best_idx], output_loci_filename)
-    
+
     pypeliner.commandline.execute(
         'createTITANsegmentfiles.pl',
         '-id', sample_id,
@@ -284,7 +286,7 @@ def select_solution(
         'MajorCN': 'major_1',
         'MinorCN': 'minor_1',
         'Clonal_Cluster': 'clone',
-        'Clonal_Frequency' : 'prevalence'
+        'Clonal_Frequency': 'prevalence'
     }
 
     cn_data = cn_data.rename(columns=cn_columns)[cn_columns.values()]
@@ -308,6 +310,3 @@ def select_solution(
 
         if config.get('convert_output', False) and breakpoints_filename is not None:
             store['brk_cn'] = calculate_breakpoint_copy_number(breakpoints_filename, cn_data)
-
-
-

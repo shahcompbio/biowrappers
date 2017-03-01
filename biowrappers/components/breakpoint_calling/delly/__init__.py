@@ -18,17 +18,17 @@ def delly_pipeline(
     bams = list()
     for lib_id, bam_filename in tumour_bam_files.iteritems():
         bams += [utils.symlink(bam_filename, link_name='{0}.bam'.format(lib_id), link_directory=raw_data_dir)]
-        utils.symlink(bam_filename+'.bai', link_name='{0}.bam.bai'.format(lib_id), link_directory=raw_data_dir)
+        utils.symlink(bam_filename + '.bai', link_name='{0}.bam.bai'.format(lib_id), link_directory=raw_data_dir)
 
     bams += [utils.symlink(normal_bam_file, link_name='Normal.bam', link_directory=raw_data_dir)]
-    utils.symlink(normal_bam_file+'.bai', link_name='Normal.bam.bai', link_directory=raw_data_dir)
+    utils.symlink(normal_bam_file + '.bai', link_name='Normal.bam.bai', link_directory=raw_data_dir)
 
     sample_type = {'Normal': 'control'}
     for lib_id in tumour_bam_files.iterkeys():
         sample_type[lib_id] = 'tumor'
 
     workflow = Workflow()
-    
+
     workflow.setobj(
         obj=pypeliner.managed.TempOutputObj('sample_type', 'sample_id'),
         value=sample_type,
@@ -98,4 +98,3 @@ def delly_pipeline(
     )
 
     return workflow
-

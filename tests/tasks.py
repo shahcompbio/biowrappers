@@ -19,4 +19,3 @@ def extract_somatic_breakpoint(breakpoint_results, somatic_breakpoints_file, con
     ]]
 
     breakpoints.to_csv(somatic_breakpoints_file, sep='\t', index=False)
-

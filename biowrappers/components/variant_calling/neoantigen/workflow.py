@@ -86,4 +86,3 @@ def create_pvacseq_workflow(
     )
 
     return workflow
-

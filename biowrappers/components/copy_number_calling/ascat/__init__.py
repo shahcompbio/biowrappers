@@ -40,7 +40,7 @@ def create_ascat_workflow(
 
     workflow.transform(
         name='prepare_normal_data',
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
+        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
         func=tasks.prepare_normal_data,
         args=(
             pypeliner.managed.InputFile(normal_seqdata_file),
@@ -64,5 +64,3 @@ def create_ascat_workflow(
     )
 
     return workflow
-
-

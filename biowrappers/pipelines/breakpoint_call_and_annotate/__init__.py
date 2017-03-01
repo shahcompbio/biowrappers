@@ -1,7 +1,7 @@
 from pypeliner.workflow import Workflow
 
 import os
-import pypeliner  
+import pypeliner
 
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 from biowrappers.components.utils import make_parent_directory
@@ -18,14 +18,14 @@ def call_and_annotate_pipeline(
     results_file,
 ):
     workflow = Workflow()
-    
+
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('tumour_sample_id'),
         value=tumour_bam_paths.keys(),
     )
 
     merge_inputs = {}
-    
+
     if 'destruct' in config:
         destruct_raw_data = os.path.join(raw_data_dir, 'destruct')
         destruct_results_filename = os.path.join(destruct_raw_data, 'results.h5')
@@ -77,4 +77,3 @@ def call_and_annotate_pipeline(
     )
 
     return workflow
-

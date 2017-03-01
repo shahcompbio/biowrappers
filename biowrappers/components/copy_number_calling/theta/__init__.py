@@ -96,18 +96,18 @@ def create_setup_theta_workflow(config, databases, **kwargs):
 
     utils.make_directory(mappability_dir)
     utils.make_directory(chromosomes_dir)
-    
+
     workflow = Workflow()
 
     workflow.subworkflow(
-        name='download_mappability', 
-        func=biowrappers.components.io.download.create_download_workflow, 
+        name='download_mappability',
+        func=biowrappers.components.io.download.create_download_workflow,
         args=(
             config['mappability_url'],
             pypeliner.managed.TempOutputFile('mappability.tar.gz'),
         )
     )
-    
+
     workflow.commandline(
         name='extract_mappability',
         args=(
@@ -116,17 +116,17 @@ def create_setup_theta_workflow(config, databases, **kwargs):
             '>', pypeliner.managed.OutputFile(map_extract_log),
         ),
     )
-    
+
     for chromosome in config['chromosomes']:
         workflow.subworkflow(
             name='download_chromosome_{}'.format(chromosome),
-            func=biowrappers.components.io.download.create_download_workflow, 
+            func=biowrappers.components.io.download.create_download_workflow,
             args=(
                 config['chromosome_url_template'].format(chromosome),
                 pypeliner.managed.TempOutputFile('chromosome_{}.fa.gz'.format(chromosome)),
             )
         )
-        
+
         workflow.commandline(
             name='extract_chromosome_{}'.format(chromosome),
             args=(
@@ -136,4 +136,3 @@ def create_setup_theta_workflow(config, databases, **kwargs):
         )
 
     return workflow
-

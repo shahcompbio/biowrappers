@@ -17,9 +17,10 @@ import biowrappers.components.variant_calling.snv_allele_counts as snv_allele_co
 import biowrappers.components.variant_calling.strelka as strelka
 import biowrappers.components.variant_calling.tri_nucleotide_context as tri_nucleotide_context
 
-default_ctx = {'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2}
+default_ctx = {'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2}
 
-big_mem_ctx = {'mem' : 8, 'num_retry' : 3, 'mem_retry_increment' : 2}
+big_mem_ctx = {'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2}
+
 
 def call_and_annotate_pipeline(
         config,
@@ -69,7 +70,7 @@ def call_and_annotate_pipeline(
                 '/snv/vcf/nuseq_multi_sample/all',
             ),
             kwargs={
-                'score_callback' : vcf_score_callbacks['snv']['nuseq']
+                'score_callback': vcf_score_callbacks['snv']['nuseq']
             }
         )
 
@@ -143,7 +144,7 @@ def call_and_annotate_pipeline(
                     )
                 ),
                 kwargs={
-                    'score_callback' : vcf_score_callbacks[var_type][prog]
+                    'score_callback': vcf_score_callbacks[var_type][prog]
                 }
             )
 
@@ -180,7 +181,7 @@ def call_and_annotate_pipeline(
             os.path.join(raw_data_dir, 'indel'),
         ),
         kwargs={
-            'variant_type' : 'indel'
+            'variant_type': 'indel'
         }
     )
 
@@ -217,7 +218,7 @@ def call_and_annotate_pipeline(
             os.path.join(raw_data_dir, 'snv'),
         ),
         kwargs={
-            'variant_type' : 'snv'
+            'variant_type': 'snv'
         }
     )
 
@@ -239,7 +240,8 @@ def call_and_annotate_pipeline(
         args=(
             tumour_bam_files.as_input(),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'snv', 'counts', '{tumour_sample_id}.h5'), 'tumour_sample_id')
+            pypeliner.managed.OutputFile(
+                os.path.join(raw_data_dir, 'snv', 'counts', '{tumour_sample_id}.h5'), 'tumour_sample_id')
         ),
         kwargs=get_kwargs(
             config['snv_counts']['kwargs'],
@@ -254,7 +256,8 @@ def call_and_annotate_pipeline(
         pypeliner.managed.TempInputFile('indel_annotations.h5'),
         pypeliner.managed.TempInputFile('snv_annotations.h5'),
         pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'snv', 'counts', 'normal.h5')),
-        pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'snv', 'counts', '{tumour_sample_id}.h5'), 'tumour_sample_id'),
+        pypeliner.managed.InputFile(
+            os.path.join(raw_data_dir, 'snv', 'counts', '{tumour_sample_id}.h5'), 'tumour_sample_id'),
     ]
 
     for var_type in variant_files:
@@ -270,11 +273,12 @@ def call_and_annotate_pipeline(
             pypeliner.managed.OutputFile(results_file)
         ),
         kwargs={
-            'drop_duplicates' : True,
+            'drop_duplicates': True,
         }
     )
 
     return workflow
+
 
 def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, variant_type='snv'):
 
@@ -364,6 +368,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
 
     return workflow
 
+
 def get_variant_files(chromosomes, config, raw_data_dir):
     indel_hdf_files = {}
 
@@ -417,15 +422,16 @@ def get_variant_files(chromosomes, config, raw_data_dir):
         )
 
     return {
-        'indel' : {
-            'hdf' : indel_hdf_files,
-            'vcf' : indel_vcf_files,
+        'indel': {
+            'hdf': indel_hdf_files,
+            'vcf': indel_vcf_files,
         },
-        'snv' : {
-            'hdf' : snv_hdf_files,
-            'vcf' : snv_vcf_files
+        'snv': {
+            'hdf': snv_hdf_files,
+            'vcf': snv_vcf_files
         }
     }
+
 
 def get_sample_out_file(cmd, ext, out_dir, variant_type):
 
@@ -435,6 +441,7 @@ def get_sample_out_file(cmd, ext, out_dir, variant_type):
 
     return out_file
 
+
 def get_kwargs(config, table_name):
 
     config = config.copy()
@@ -443,22 +450,25 @@ def get_kwargs(config, table_name):
 
     return config
 
+
 def nuseq_callback(record):
     return record.INFO['PS']
 
+
 def strelka_indel_callback(record):
     return record.INFO['QSI']
+
 
 def strelka_snv_callback(record):
     return record.INFO['QSS']
 
 vcf_score_callbacks = {
-    'indel' : {
-        'strelka' : strelka_indel_callback,
+    'indel': {
+        'strelka': strelka_indel_callback,
     },
     'snv': {
-        'mutect' : None,
-        'nuseq' : nuseq_callback,
-        'strelka' : strelka_snv_callback,
+        'mutect': None,
+        'nuseq': nuseq_callback,
+        'strelka': strelka_snv_callback,
     }
 }

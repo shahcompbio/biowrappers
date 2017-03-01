@@ -28,7 +28,7 @@ def create_remixt_workflow(
         raise ValueError('ref data directory required')
 
     sample_ids = seqdata_files.keys()
-    
+
     tumour_ids = seqdata_files.keys()
     if normal_id is not None:
         tumour_ids.remove(normal_id)
@@ -68,7 +68,7 @@ def create_remixt_workflow(
 
     workflow.transform(
         name='select_solution',
-        ctx={'mem' : 2, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.select_solution,
         axes=('tumour_id',),
         args=(
@@ -80,7 +80,7 @@ def create_remixt_workflow(
 
     workflow.transform(
         name='merge_results',
-        ctx={'mem': 8, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
         func=hdf5_tasks.merge_hdf5,
         args=(
             pypeliner.managed.InputFile('selected', 'tumour_id', template=selected_files),
@@ -90,7 +90,7 @@ def create_remixt_workflow(
             'table_names': '/sample_{}',
         },
     )
-    
+
     return workflow
 
 
@@ -122,4 +122,3 @@ def create_setup_remixt_workflow(config, databases, **kwargs):
     )
 
     return workflow
-

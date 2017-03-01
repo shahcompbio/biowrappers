@@ -32,7 +32,7 @@ def run_delly_call(sv_type, delly_excl_chrom, ref_genome_fasta_file, bam_files, 
     ]
 
     delly_args += bam_files
-    
+
     pypeliner.commandline.execute(*delly_args)
     _rename_index(out_file)
 
@@ -106,4 +106,3 @@ def convert_vcf(bcf_filename, store_filename):
     with pd.HDFStore(store_filename, 'w') as store:
         store['/breakpoint'] = breakpoint_table
         store['/breakpoint_library'] = breakpoint_library_table
-

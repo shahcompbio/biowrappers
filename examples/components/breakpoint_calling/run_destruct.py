@@ -15,9 +15,9 @@ def main(args):
             destruct_config = yaml.load(fh)
 
     pypeliner_config = cli.load_pypeliner_config(args)
-    
+
     pyp = pypeliner.app.Pypeline(config=pypeliner_config)
-    
+
     workflow = destruct.destruct_pipeline(
         args.normal_bam_file,
         cli.get_tumour_bam_file_dict(args),
@@ -26,22 +26,22 @@ def main(args):
         args.out_file,
         args.raw_data_dir,
     )
-    
+
     pyp.run(workflow)
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
 
     cli.add_normal_multiple_tumour_bam_args(parser)
     cli.add_pypeliner_args(parser)
-    
+
     parser.add_argument('--out_file', required=True)
     parser.add_argument('--raw_data_dir', required=True)
     parser.add_argument('--ref_data_dir', required=True)
     parser.add_argument('--destruct_config', default=None)
-    
+
     args = parser.parse_args()
-    
+
     main(args)

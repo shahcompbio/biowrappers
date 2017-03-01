@@ -7,69 +7,70 @@ import biowrappers.components.alignment.bwa.tasks as bwa_tasks
 
 import tasks
 
+
 def realignment_pipeline(
-    config,
-    in_file, 
-    out_file):
+        config,
+        in_file,
+        out_file):
 
     read_group_info = config.get('read_group', {})
-    
+
     if 'ID' not in read_group_info:
         read_group_info['ID'] = hash(in_file) % int(1e6)
-    
+
     ref_genome = pypeliner.managed.InputFile(config['ref_genome']['file'])
-    
+
     read_1 = pypeliner.managed.TempFile('read_1', 'split')
-    
+
     read_2 = pypeliner.managed.TempFile('read_2', 'split')
-    
+
     read_1_sai = pypeliner.managed.TempFile('read_1.sai', 'split')
-    
+
     read_2_sai = pypeliner.managed.TempFile('read_2.sai', 'split')
-    
+
     read_group_config = pypeliner.managed.TempObj('read_group_config')
-    
+
     workflow = Workflow()
-    
+
     if 'read_group' in config:
         workflow.setobj(
-            obj=read_group_config.as_output(), 
+            obj=read_group_config.as_output(),
             value=read_group_info,
         )
-    
+
     else:
         workflow.transform(
-            name='get_read_group_config', 
-            ctx={'local' : True}, 
+            name='get_read_group_config',
+            ctx={'local': True},
             func=tasks.get_read_group_config,
             ret=read_group_config.as_output(),
             args=(
                 pypeliner.managed.InputFile(in_file),
             )
         )
-    
+
     workflow.transform(
         name='bam_to_fasta',
         axes=(),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=bam_tasks.convert_to_fastqs, 
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        func=bam_tasks.convert_to_fastqs,
         args=(
             pypeliner.managed.InputFile(in_file),
             {
-                1 : read_1.as_output(),
-                2 : read_2.as_output(),
+                1: read_1.as_output(),
+                2: read_2.as_output(),
             },
             pypeliner.managed.TempSpace('bam_to_fastq'),
         ),
         kwargs={
-            'split_size' : config['split_size']
+            'split_size': config['split_size']
         },
     )
-    
+
     workflow.transform(
         name='aln_read_1',
         axes=('split',),
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 6, 'num_retry': 3, 'mem_retry_increment': 2},
         func=bwa_tasks.run_aln,
         args=(
             read_1.as_input(),
@@ -77,11 +78,11 @@ def realignment_pipeline(
             read_1_sai.as_output(),
         ),
     )
-    
+
     workflow.transform(
         name='aln_read_2',
         axes=('split',),
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 6, 'num_retry': 3, 'mem_retry_increment': 2},
         func=bwa_tasks.run_aln,
         args=(
             read_2.as_input(),
@@ -89,12 +90,12 @@ def realignment_pipeline(
             read_2_sai.as_output(),
         ),
     )
-    
+
     workflow.transform(
-        name='sampe', 
+        name='sampe',
         axes=('split',),
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=bwa_tasks.run_sampe, 
+        ctx={'mem': 6, 'num_retry': 3, 'mem_retry_increment': 2},
+        func=bwa_tasks.run_sampe,
         args=(
             read_1.as_input(),
             read_2.as_input(),
@@ -104,25 +105,25 @@ def realignment_pipeline(
             pypeliner.managed.TempOutputFile('aligned.bam', 'split'),
         ),
         kwargs={
-            'read_group_info' : read_group_config.as_input()
+            'read_group_info': read_group_config.as_input()
         },
     )
-    
+
     workflow.transform(
         name='sort',
         axes=('split',),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         func=bam_tasks.sort,
         args=(
             pypeliner.managed.TempInputFile('aligned.bam', 'split'),
             pypeliner.managed.TempOutputFile('sorted.bam', 'split'),
         ),
     )
-    
+
     workflow.transform(
         name='write_header_file',
         axes=(),
-        ctx={'local' : True},
+        ctx={'local': True},
         func=tasks.write_header_file,
         args=(
             pypeliner.managed.TempInputFile('sorted.bam', 'split'),
@@ -130,19 +131,19 @@ def realignment_pipeline(
             config['ref_genome']['header']
         ),
     )
-    
+
     workflow.transform(
         name='merge',
         axes=(),
-        ctx={'mem' : 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
-        func=bam_tasks.merge, 
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        func=bam_tasks.merge,
         args=(
             pypeliner.managed.TempInputFile('sorted.bam', 'split'),
             pypeliner.managed.OutputFile(out_file),
         ),
         kwargs={
-            'header_file' : pypeliner.managed.TempInputFile('header.sam'),
+            'header_file': pypeliner.managed.TempInputFile('header.sam'),
         },
     )
-    
+
     return workflow

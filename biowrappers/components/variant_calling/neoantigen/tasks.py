@@ -12,6 +12,7 @@ def remove_temp(temp_space):
         if e.errno != errno.ENOENT:
             raise
 
+
 def run_optitype(reads_1_fastq, reads_2_fastq, hla_type_file, temp_space):
     remove_temp(temp_space)
 
@@ -46,7 +47,7 @@ def run_pvacseq(vcf_file, hla_type_file, results_file, temp_space, config):
         remove_temp(temp_space)
 
         pypeliner.commandline.execute(
-            'pvacseq', 'run', vcf_file, 'tumour_sample', hla_alleles_arg, algorithm, 
+            'pvacseq', 'run', vcf_file, 'tumour_sample', hla_alleles_arg, algorithm,
             temp_space, '--iedb-install-directory', iedb_install_dir, '-e', epitope_length)
 
         results_filename = os.path.join(temp_space, 'MHC_Class_I', 'tumour_sample.final.tsv')
@@ -55,4 +56,3 @@ def run_pvacseq(vcf_file, hla_type_file, results_file, temp_space, config):
     with pd.HDFStore(results_file, 'w') as results_store:
         for algorithm in algorithms:
             results_store[algorithm] = results[algorithm]
-

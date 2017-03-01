@@ -5,17 +5,18 @@ Created on Oct 31, 2015
 '''
 import pypeliner
 
+
 def run_classify(
-    normal_bam_file,
-    tumour_bam_files,
-    ref_genome_fasta_file,
-    region,
-    out_file,
-    chunk_size=int(1e5),
-    min_normal_depth=1,
-    min_tumour_depth=1,
-    min_somatic_probability=0):
-    
+        normal_bam_file,
+        tumour_bam_files,
+        ref_genome_fasta_file,
+        region,
+        out_file,
+        chunk_size=int(1e5),
+        min_normal_depth=1,
+        min_tumour_depth=1,
+        min_somatic_probability=0):
+
     cmd = [
         'nuseq',
         'classify',
@@ -28,17 +29,18 @@ def run_classify(
         '--min_somatic_probability', min_somatic_probability,
         '--region', region
     ]
-    
+
     if len(tumour_bam_files) > 1:
         cmd.extend(['--model_file', 'multi_sample'])
-    
+
     cmd.append('--tumour_bam_files')
     cmd.extend(tumour_bam_files)
-    
+
     pypeliner.commandline.execute(*cmd)
 
+
 def write_vcf(in_file, out_file, indel_threshold=0.05):
-    
+
     cmd = [
         'nuseq',
         'write_vcf',
@@ -46,6 +48,5 @@ def write_vcf(in_file, out_file, indel_threshold=0.05):
         '--out_file', out_file,
         '--indel_threshold', indel_threshold
     ]
-    
+
     pypeliner.commandline.execute(*cmd)
-    

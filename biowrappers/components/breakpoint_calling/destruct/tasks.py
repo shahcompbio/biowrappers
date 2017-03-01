@@ -31,28 +31,28 @@ def annotate_rearrangement_type(df):
 
 
 def filter_annotate_breakpoints(
-    input_breakpoint_filename,
-    input_breakpoint_library_filename,
-    control_ids,
-    output_breakpoint_filename,
-    output_breakpoint_library_filename,
-    patient_libraries=None):
+        input_breakpoint_filename,
+        input_breakpoint_library_filename,
+        control_ids,
+        output_breakpoint_filename,
+        output_breakpoint_library_filename,
+        patient_libraries=None):
     """ Filter and annotate breakpoints.
-    
+
     Args:
         input_breakpoint_filename (str): filename of breakpoint table
         input_breakpoint_library_filename (str): filename of breakpoint library table
         control_ids (list): control id or ids
         output_breakpoint_filename (str): output filename of breakpoint table
         output_breakpoint_library_filename (str): output filename of breakpoint library table
-    
+
     KwArgs:
         patient_libraries (dict of list): library ids for each patient
-        
+
     If patient_libraries is not specified, assumed one patient for all libraries.
-    
+
     """
-    
+
     brk = pd.read_csv(input_breakpoint_filename, sep='\t',
                       converters={'chromosome_1': str, 'chromosome_2': str})
 
@@ -60,16 +60,16 @@ def filter_annotate_breakpoints(
 
     if patient_libraries is None:
         patient_libraries = {'null': list(brklib['library'].unique())}
-    
+
     # Add is_normal column
     brklib['is_normal'] = brklib['library'].isin(control_ids)
-    
+
     # Add patient_id column
     brklib['patient_id'] = ''
     for patient_id, library_ids in patient_libraries.iteritems():
         for library_id in library_ids:
             brklib.loc[brklib['library'] == library_id, 'patient_id'] = patient_id
-            
+
     num_patients = (
         brklib[['prediction_id', 'patient_id']]
         .drop_duplicates()
@@ -77,7 +77,7 @@ def filter_annotate_breakpoints(
         .size()
         .rename('num_patients')
     )
-    
+
     # Mark as germline any prediction with nonzero normal reads
     is_germline = brklib[brklib['num_reads'] > 0].groupby('prediction_id')['is_normal'].any()
 
@@ -92,8 +92,8 @@ def filter_annotate_breakpoints(
     # Get a list of breakends and their filtered status
     def get_brkend(brk, side, data_cols):
         cols = ['chromosome', 'strand', 'position']
-        side_cols = [a+'_'+side for a in cols]
-        brkend = brk[['prediction_id']+side_cols+data_cols]
+        side_cols = [a + '_' + side for a in cols]
+        brkend = brk[['prediction_id'] + side_cols + data_cols]
         brkend = brkend.rename(columns=dict(zip(side_cols, cols)))
         brkend['side'] = side
         return brkend
@@ -119,7 +119,7 @@ def filter_annotate_breakpoints(
         data['nearest_right'] = data['nearest_right'] - data['position']
 
         data['dist_filtered'] = data[['nearest_left', 'nearest_right']].min(axis=1)
-        
+
         return data['dist_filtered']
 
     dist_filtered = brkend.set_index(['prediction_id', 'side'])\
@@ -151,7 +151,7 @@ def filter_annotate_breakpoints(
 
     # Balanced rearrangement annotation
     balanced_prediction_ids = []
-    
+
     for patient_id, library_ids in patient_libraries.iteritems():
         patient_prediction_ids = brklib.loc[brklib['library'].isin(library_ids), ['prediction_id']].drop_duplicates()
         patient_brks = brk.merge(patient_prediction_ids)
@@ -160,7 +160,7 @@ def filter_annotate_breakpoints(
             balanced_prediction_ids.extend(rearrangement.prediction_ids)
 
     brk['balanced'] = False
-    brk.loc[brk['prediction_id'].isin(balanced_prediction_ids), 'balanced'] = True    
+    brk.loc[brk['prediction_id'].isin(balanced_prediction_ids), 'balanced'] = True
 
     # Annotate rearrangement type
     annotate_rearrangement_type(brk)
@@ -183,4 +183,3 @@ def write_store(breakpoint_filename, breakpoint_library_filename, store_filename
     with pd.HDFStore(store_filename, 'w') as store:
         store['/breakpoint'] = breakpoint_table
         store['/breakpoint_library'] = breakpoint_library_table
-

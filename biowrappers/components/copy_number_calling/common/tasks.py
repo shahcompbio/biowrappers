@@ -42,12 +42,11 @@ def calculate_breakpoint_copy_number(breakpoints_filename, cn_table, max_brk_dis
 
     adjacencies = remixt.analysis.experiment.get_wild_type_adjacencies(cn_table, max_seg_gap)
     breakpoint_data = pd.read_csv(breakpoints_filename, sep='\t', converters={'chromosome_1': str, 'chromosome_2': str})
-    breakpoint_segment_data = remixt.analysis.experiment.create_breakpoint_segment_table(cn_table, breakpoint_data, adjacencies, max_brk_dist=max_brk_dist)
+    breakpoint_segment_data = remixt.analysis.experiment.create_breakpoint_segment_table(
+        cn_table, breakpoint_data, adjacencies, max_brk_dist=max_brk_dist)
     breakpoints = remixt.analysis.experiment.convert_breakpoints_to_dict(breakpoint_segment_data)
 
     brk_cn = remixt.cn_model.decode_breakpoints_naive(cn, adjacencies, breakpoints)
     brk_cn_table = remixt.analysis.experiment.create_brk_cn_table(brk_cn, breakpoint_segment_data)
 
     return brk_cn_table
-
-

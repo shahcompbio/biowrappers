@@ -40,7 +40,7 @@ def create_titan_workflow(
 
     workflow.transform(
         name='prepare_normal_data',
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
+        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
         func=tasks.prepare_normal_data,
         args=(
             pypeliner.managed.InputFile(normal_seqdata_file),
@@ -67,7 +67,7 @@ def create_titan_workflow(
     workflow.transform(
         name='create_intialization_parameters',
         axes=('sample_id',),
-        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.create_intialization_parameters,
         ret=pypeliner.managed.TempOutputObj('init_params', 'sample_id', 'init_param_id'),
         args=(config,),
@@ -76,7 +76,7 @@ def create_titan_workflow(
     workflow.transform(
         name='run_titan',
         axes=('sample_id', 'init_param_id'),
-        ctx={'mem': 16, 'num_retry' : 3, 'mem_retry_increment' : 4},
+        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
         func=tasks.run_titan,
         args=(
             pypeliner.managed.TempInputObj('init_params', 'sample_id', 'init_param_id'),
@@ -95,7 +95,7 @@ def create_titan_workflow(
     workflow.transform(
         name='select_solution',
         axes=('sample_id',),
-        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.select_solution,
         args=(
             pypeliner.managed.TempInputObj('init_params', 'sample_id', 'init_param_id'),
@@ -103,7 +103,8 @@ def create_titan_workflow(
             pypeliner.managed.TempInputFile('params.tsv', 'sample_id', 'init_param_id'),
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_files),
             pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_segments.tsv'), 'sample_id'),
+            pypeliner.managed.OutputFile(
+                os.path.join(raw_data_dir, 'output', '{sample_id}_cn_segments.tsv'), 'sample_id'),
             pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_igv.tsv'), 'sample_id'),
             pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_params.tsv'), 'sample_id'),
             config,
@@ -123,13 +124,14 @@ def create_titan_workflow(
     workflow.commandline(
         name='plot_chromosome',
         axes=('sample_id', 'chromosome'),
-        ctx={'mem': 4, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         args=(
             'plot_titan_chromosome.R',
             pypeliner.managed.Instance('chromosome'),
             pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
             pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_params.tsv'), 'sample_id'),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_chr_{chromosome}.png'), 'sample_id', 'chromosome'),
+            pypeliner.managed.OutputFile(
+                os.path.join(raw_data_dir, 'output', '{sample_id}_chr_{chromosome}.png'), 'sample_id', 'chromosome'),
         ),
     )
 
@@ -169,7 +171,7 @@ def create_gc_wig_file(config, genome_file, out_file):
 
 def create_mappability_wig_file(config, out_file):
     workflow = Workflow()
-    
+
     workflow.subworkflow(
         name='download_mappability_bigwig',
         func=biowrappers.components.io.download.create_download_workflow,
@@ -217,4 +219,3 @@ def create_setup_titan_workflow(config, databases, **kwargs):
     )
 
     return workflow
-

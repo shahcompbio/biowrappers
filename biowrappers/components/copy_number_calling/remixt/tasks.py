@@ -21,5 +21,3 @@ def select_solution(selected_file, results_file, config):
 
             else:
                 selected_store[table_name] = results_store[table_name]
-
-

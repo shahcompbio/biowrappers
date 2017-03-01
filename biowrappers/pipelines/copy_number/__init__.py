@@ -24,13 +24,13 @@ def call_and_annotate_pipeline(
     patient_config=None,
 ):
     sample_ids = bam_files.keys()
-    
+
     tumour_ids = bam_files.keys()
     if normal_id is not None:
         tumour_ids.remove(normal_id)
 
     workflow = Workflow()
-    
+
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('sample_id'),
         value=sample_ids,
@@ -59,7 +59,7 @@ def call_and_annotate_pipeline(
     )
 
     merge_inputs = {}
-    
+
     if 'remixt' in config:
         remixt_raw_data = os.path.join(raw_data_dir, 'remixt')
         remixt_results_filename = os.path.join(remixt_raw_data, 'results.h5')
@@ -165,4 +165,3 @@ def call_and_annotate_pipeline(
     )
 
     return workflow
-

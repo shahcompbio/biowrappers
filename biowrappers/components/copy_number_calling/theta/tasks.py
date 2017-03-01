@@ -33,7 +33,7 @@ def write_theta_format_alleles(allele_filename, allele_count):
         'ref_count',
         'alt_count',
     ]]
-    
+
     allele_count['ref_count'] = allele_count['ref_count'].astype(int)
     allele_count['alt_count'] = allele_count['alt_count'].astype(int)
 
@@ -124,7 +124,7 @@ def write_results(theta_prefix, output_filename, **kwargs):
         solution_name = 'n{}'.format(num_clones)
 
     theta2_results_filename = '.'.join([theta_prefix, solution_name, 'results'])
-    theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL':'NLL'})
+    theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL': 'NLL'})
 
     store['full'] = theta2_results
 
@@ -204,4 +204,3 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
     )
 
     write_results(theta_prefix, output_filename, **kwargs)
-

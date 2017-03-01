@@ -26,7 +26,6 @@ def download_cosmic(config, out_file, raw_dir):
             os.path.join(raw_dir, file_type + '.vcf.gz'))
 
     biowrappers.components.io.vcf.tasks.concatenate_vcf({
-            'coding': os.path.join(raw_dir, 'coding.vcf.gz'),
-            'non_coding': os.path.join(raw_dir, 'non_coding.vcf.gz')},
+        'coding': os.path.join(raw_dir, 'coding.vcf.gz'),
+        'non_coding': os.path.join(raw_dir, 'non_coding.vcf.gz')},
         out_file, allow_overlap=True)
-

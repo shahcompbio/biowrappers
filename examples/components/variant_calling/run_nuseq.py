@@ -3,11 +3,12 @@ import pypeliner
 import biowrappers.cli as cli
 import biowrappers.components.variant_calling.nuseq as nuseq
 
+
 def main(args):
     config = cli.load_pypeliner_config(args)
-    
+
     pyp = pypeliner.app.Pypeline([], config)
-    
+
     workflow = nuseq.create_nuseq_classify_workflow(
         args.normal_bam_file,
         args.tumour_bam_files,
@@ -21,34 +22,34 @@ def main(args):
         min_somatic_probability=args.min_somatic_probability,
         split_size=args.split_size
     )
-    
+
     pyp.run(workflow)
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
 
     cli.add_normal_multiple_tumour_bam_args(parser)
-    
+
     cli.add_ref_genome_arg(parser)
-    
+
     parser.add_argument('--out_file', required=True)
-    
+
     cli.add_variant_calling_region_args(parser)
-    
+
     cli.add_pypeliner_args(parser)
-    
+
     parser.add_argument('--chunk_size', default=int(1e5), type=int)
-    
+
     parser.add_argument('--indel_threshold', default=0.05, type=float)
-    
+
     parser.add_argument('--min_normal_depth', default=1, type=int)
-    
+
     parser.add_argument('--min_tumour_depth', default=1, type=int)
-    
+
     parser.add_argument('--min_somatic_probability', default=0.5, type=float)
-    
+
     args = parser.parse_args()
-    
+
     main(args)

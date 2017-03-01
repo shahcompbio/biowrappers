@@ -57,7 +57,7 @@ def write_cna(cna_filename, seqdata_filename, chromosome_lengths, segment_length
             segments['num_obs'] = 1
 
             segments.to_csv(cna, sep='\t', index=False, header=False,
-                columns=['chromosome', 'end', 'count', 'num_obs'])
+                            columns=['chromosome', 'end', 'count', 'num_obs'])
 
 
 def write_tumour_baf(baf_filename, normal_filename, tumour_filename):
@@ -93,7 +93,7 @@ def write_tumour_baf(baf_filename, normal_filename, tumour_filename):
             tumour_allele_count['chromosome'] = chrom
 
             tumour_allele_count.to_csv(baf_file, sep='\t', index=False, header=False,
-                columns=['chromosome', 'position', 'minor_count', 'total_count'])
+                                       columns=['chromosome', 'position', 'minor_count', 'total_count'])
 
 
 def _get_segments(filename):
@@ -189,7 +189,7 @@ def run_clonehd(
             os.path.join(raw_data_dir, 'normal.cna.pref.intersect.txt'),
             os.path.join(raw_data_dir, 'tumour.cna.pref.intersect.txt'),
             os.path.join(raw_data_dir, 'tumour.baf.intersect.txt'),
-        ),            
+        ),
     )
 
     pypeliner.commandline.execute(
@@ -250,9 +250,11 @@ def run_clonehd(
     )
 
     shutil.copyfile(os.path.join(raw_data_dir, 'tumour.summary.txt'), tumour_summary_filename)
-    for clone_id in xrange(1, num_clones+1):
-        shutil.copyfile(os.path.join(raw_data_dir, 'tumour.cna.subclone-{0}.txt'.format(clone_id)), cna_subclone_filenames[clone_id])
-        shutil.copyfile(os.path.join(raw_data_dir, 'tumour.baf.subclone-{0}.txt'.format(clone_id)), baf_subclone_filenames[clone_id])
+    for clone_id in xrange(1, num_clones + 1):
+        shutil.copyfile(
+            os.path.join(raw_data_dir, 'tumour.cna.subclone-{0}.txt'.format(clone_id)), cna_subclone_filenames[clone_id])
+        shutil.copyfile(
+            os.path.join(raw_data_dir, 'tumour.baf.subclone-{0}.txt'.format(clone_id)), baf_subclone_filenames[clone_id])
 
 
 def report(
@@ -278,17 +280,17 @@ def report(
                 names = line[1:].split()
                 if len(names) == 2 and names[1] == 'clones':
                     summary_info['num_clones'] = int(names[0])
-                    names = ['mass'] + ['frac_'+str(i+1) for i in xrange(int(names[0]))]
+                    names = ['mass'] + ['frac_' + str(i + 1) for i in xrange(int(names[0]))]
             else:
                 values = line.split()
                 summary_info.update(dict(zip(names, values)))
 
-    mix = [float(summary_info['frac_'+str(i+1)]) for i in xrange(summary_info['num_clones'])]
-    mix = [1-sum(mix)] + mix
+    mix = [float(summary_info['frac_' + str(i + 1)]) for i in xrange(summary_info['num_clones'])]
+    mix = [1 - sum(mix)] + mix
 
     cn_table = None
 
-    for clone_id in xrange(1, summary_info['num_clones']+1):
+    for clone_id in xrange(1, summary_info['num_clones'] + 1):
 
         cna_filename = cna_subclone_filenames[clone_id]
 
@@ -362,6 +364,3 @@ def report(
         store['cn'] = cn_table
         if brk_cn is not None:
             store['brk_cn'] = brk_cn
-
-
-

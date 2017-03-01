@@ -7,15 +7,16 @@ import os
 import pypeliner
 import time
 
+
 def run_mutect(
-    normal_bam_file,
-    tumour_bam_file,
-    ref_genome_fasta_file,
-    cosmic_vcf_file,
-    dbsnp_vcf_file,
-    region,
-    out_file):
-    
+        normal_bam_file,
+        tumour_bam_file,
+        ref_genome_fasta_file,
+        cosmic_vcf_file,
+        dbsnp_vcf_file,
+        region,
+        out_file):
+
     cmd = [
         'mutect',
         '--normal_bam_file', normal_bam_file,
@@ -25,14 +26,14 @@ def run_mutect(
         '--dbsnp_vcf_file', dbsnp_vcf_file,
         '--out_file', out_file,
         '--region', region,
-        '>', '/dev/null' # Avoid dumping mutect tsv file to stdout
+        '>', '/dev/null'  # Avoid dumping mutect tsv file to stdout
     ]
 
     pypeliner.commandline.execute(*cmd)
 
     idx_file_name = out_file + '.idx'
-    
+
     # Guard against slow file system
     time.sleep(1)
-    
+
     os.unlink(idx_file_name)

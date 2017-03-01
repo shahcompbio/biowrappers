@@ -15,6 +15,8 @@ nucleotides = ('A', 'C', 'G', 'T')
 #=======================================================================================================================
 # Allele counting
 #=======================================================================================================================
+
+
 def get_snv_allele_counts_for_vcf_targets(
     bam_file,
     vcf_file,
@@ -29,7 +31,7 @@ def get_snv_allele_counts_for_vcf_targets(
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
     vcf_reader = vcf.Reader(filename=vcf_file)
-    
+
     if region is not None:
         chrom, beg, end = utils.parse_region_for_vcf(region)
         vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
@@ -63,17 +65,17 @@ def get_snv_allele_counts_for_vcf_targets(
                 continue
 
             # Skip record with alt base == N
-            if alt_base not in  nucleotides:
+            if alt_base not in nucleotides:
                 continue
 
             # Format output record
             out_row = {
-                'chrom' : record.CHROM,
-                'coord' : record.POS,
-                'ref' : ref_base,
-                'alt' : alt_base,
-                'ref_counts' : counts[ref_base],
-                'alt_counts' : counts[alt_base]
+                'chrom': record.CHROM,
+                'coord': record.POS,
+                'ref': ref_base,
+                'alt': alt_base,
+                'ref_counts': counts[ref_base],
+                'alt_counts': counts[alt_base]
             }
 
             data.append(out_row)
@@ -86,41 +88,42 @@ def get_snv_allele_counts_for_vcf_targets(
 
     hdf_store.close()
 
+
 def get_snv_allele_counts_for_region(
-    bam_file,
-    out_file,
-    region,
-    table_name,
-    count_duplicates=False,
-    min_bqual=0,
-    min_mqual=0,
-    report_non_variant_positions=True,
-    report_zero_count_positions=False):
+        bam_file,
+        out_file,
+        region,
+        table_name,
+        count_duplicates=False,
+        min_bqual=0,
+        min_mqual=0,
+        report_non_variant_positions=True,
+        report_zero_count_positions=False):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
     chrom, beg, end = _parse_region(region)
 
     forward_df = _get_counts_df(
-            bam,
-            chrom,
-            beg,
-            end,
-            count_duplicates=count_duplicates,
-            min_bqual=min_bqual,
-            min_mqual=min_mqual,
-            strand='forward'
+        bam,
+        chrom,
+        beg,
+        end,
+        count_duplicates=count_duplicates,
+        min_bqual=min_bqual,
+        min_mqual=min_mqual,
+        strand='forward'
     )
 
     reverse_df = _get_counts_df(
-            bam,
-            chrom,
-            beg,
-            end,
-            count_duplicates=count_duplicates,
-            min_bqual=min_bqual,
-            min_mqual=min_mqual,
-            strand='reverse'
+        bam,
+        chrom,
+        beg,
+        end,
+        count_duplicates=count_duplicates,
+        min_bqual=min_bqual,
+        min_mqual=min_mqual,
+        strand='reverse'
     )
 
     reverse_df = reverse_df.rename(columns=lambda x: x.lower())
@@ -141,19 +144,20 @@ def get_snv_allele_counts_for_region(
 
     hdf_store.close()
 
+
 def get_variant_position_counts(
-    normal_bam_file,
-    tumour_bam_files,
-    out_file,
-    region,
-    table_group,
-    count_duplicates=False,
-    min_bqual=0,
-    min_mqual=0,
-    min_normal_depth=0,
-    min_tumour_depth=0,
-    min_variant_depth=0,
-    report_strand_counts=True):
+        normal_bam_file,
+        tumour_bam_files,
+        out_file,
+        region,
+        table_group,
+        count_duplicates=False,
+        min_bqual=0,
+        min_mqual=0,
+        min_normal_depth=0,
+        min_tumour_depth=0,
+        min_variant_depth=0,
+        report_strand_counts=True):
     """ Get counts for positions with at least two alleles in one or more tumour samples.
 
     This function filters for all positions which exceed the minimum depth in the normal sample and at least one tumour
@@ -165,7 +169,7 @@ def get_variant_position_counts(
 
     tumour_samples = tumour_bam_files.keys()
 
-    bams = {'normal' : pysam.AlignmentFile(normal_bam_file, 'rb')}
+    bams = {'normal': pysam.AlignmentFile(normal_bam_file, 'rb')}
 
     for sample in tumour_samples:
         bams[sample] = pysam.AlignmentFile(tumour_bam_files[sample], 'rb')
@@ -230,10 +234,12 @@ def get_variant_position_counts(
 
         for sample in tumour_samples:
             if report_strand_counts:
-                variant_positions = np.logical_or(variant_positions, counts[sample].apply(_get_variant_positions_strand, axis=1))
+                variant_positions = np.logical_or(
+                    variant_positions, counts[sample].apply(_get_variant_positions_strand, axis=1))
 
             else:
-                variant_positions = np.logical_or(variant_positions, counts[sample].apply(lambda x: _get_variant_positions(x, min_variant_depth), axis=1))
+                variant_positions = np.logical_or(
+                    variant_positions, counts[sample].apply(lambda x: _get_variant_positions(x, min_variant_depth), axis=1))
 
         for sample in counts:
             counts[sample] = counts[sample][variant_positions]
@@ -252,15 +258,15 @@ def get_variant_position_counts(
 
     hdf_store.close()
 
-def _get_counts_df(bam_file,
-                  chrom,
-                  beg,
-                  end,
-                  count_duplicates=False,
-                  min_bqual=30,
-                  min_mqual=30,
-                  strand='both'):
 
+def _get_counts_df(bam_file,
+                   chrom,
+                   beg,
+                   end,
+                   count_duplicates=False,
+                   min_bqual=30,
+                   min_mqual=30,
+                   strand='both'):
     '''
     Get counts 1 based indexing.
     '''
@@ -286,6 +292,7 @@ def _get_counts_df(bam_file,
     df = df.set_index(['chrom', 'coord'])
 
     return df
+
 
 def _check_read(read, count_duplicates=False, min_mqual=30, strand='both'):
     valid = True
@@ -313,6 +320,7 @@ def _check_read(read, count_duplicates=False, min_mqual=30, strand='both'):
 
     return valid
 
+
 def _get_variant_positions(row, min_variant_depth):
     counts = sorted(row, reverse=True)
 
@@ -321,6 +329,7 @@ def _get_variant_positions(row, min_variant_depth):
 
     else:
         return False
+
 
 def _get_variant_positions_strand(row):
     counts = [row[x.lower()] + row[x.upper()] for x in nucleotides]
@@ -332,6 +341,7 @@ def _get_variant_positions_strand(row):
 
     else:
         return False
+
 
 def _parse_region(region):
     chrom, coords = region.split(':')

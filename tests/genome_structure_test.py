@@ -15,7 +15,7 @@ import tasks
 
 def main(args):
     biowrappers.components.utils.make_directory(args.out_dir)
-    
+
     with open(args.config_file) as config_file:
         config_text = config_file.read()
     config_text = config_text.format(out_dir=args.out_dir, ref_db_dir=args.ref_db_dir)
@@ -106,7 +106,7 @@ def main(args):
 
     workflow.transform(
         name='extract_somatic_breakpoint',
-        ctx={'mem':4},
+        ctx={'mem': 4},
         func=tasks.extract_somatic_breakpoint,
         args=(
             pypeliner.managed.InputFile(breakpoint_results_file),
@@ -136,20 +136,19 @@ def main(args):
     pyp.run(workflow)
 
 
-
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
 
     pypeliner.app.add_arguments(parser)
 
     parser.add_argument('--config_file', required=True)
-        
+
     parser.add_argument('--ref_db_dir', required=True)
 
     parser.add_argument('--out_dir', required=True)
 
     args = parser.parse_args()
-    
+
     main(args)

@@ -6,6 +6,7 @@ Created on Nov 2, 2015
 from biowrappers.components.io.vcf.tasks import index_bcf
 import pypeliner
 
+
 def run_samtools_variant_calling(
         bam_file,
         ref_genome_fasta_file,
@@ -15,7 +16,7 @@ def run_samtools_variant_calling(
         min_depth=0,
         min_mqual=0,
         region=None):
-    
+
     mpileup_cmd = [
         'samtools',
         'mpileup',
@@ -24,23 +25,23 @@ def run_samtools_variant_calling(
         '-q', min_mqual,
         bam_file
     ]
-    
+
     if region is not None:
         mpileup_cmd.extend(['-r', region])
-    
+
     bcf_cmd = [
         'bcftools',
         'call',
         '-vmO', 'z',
         '-o', out_file,
     ]
-    
+
     cmd = []
-    
+
     cmd.extend(mpileup_cmd)
     cmd.append('|')
     cmd.extend(bcf_cmd)
-    
+
     pypeliner.commandline.execute(*cmd)
-    
+
     index_bcf(out_file)

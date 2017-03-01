@@ -44,7 +44,6 @@ def lumpysv_pipeline(
         ),
     )
 
-
                 *'bwa bwasw -H -t 20 {genome} {unmapped_fastq} \
             | samtools view -Sb - > {split_unsort_bam}' \
 

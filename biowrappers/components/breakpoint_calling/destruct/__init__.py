@@ -79,6 +79,5 @@ def destruct_pipeline(
             mgd.OutputFile(out_file),
         ),
     )
-    
-    return workflow
 
+    return workflow

@@ -15,9 +15,9 @@ import pypeliner
 
 
 def create_setup_reference_dbs_workflow(config):
-    
+
     workflow = Workflow()
-    
+
     if 'cosmic' in config:
         workflow.transform(
             name='cosmic',
@@ -28,7 +28,7 @@ def create_setup_reference_dbs_workflow(config):
                 pypeliner.managed.TempSpace('cosmic_work', cleanup=None)
             )
         )
-    
+
     if 'dbsnp' in config:
         workflow.subworkflow(
             name='dbsnp',
@@ -38,30 +38,30 @@ def create_setup_reference_dbs_workflow(config):
                 pypeliner.managed.OutputFile(config['dbsnp']['local_path']),
             )
         )
-    
+
     if 'mappability' in config:
         workflow.subworkflow(
-            name='mappability', 
-            func=download.create_download_workflow, 
+            name='mappability',
+            func=download.create_download_workflow,
             args=(
                 config['mappability']['url'],
                 pypeliner.managed.OutputFile(config['mappability']['local_path']),
             )
         )
-    
+
     if 'ref_genome' in config and 'url' in config['ref_genome']:
         workflow.subworkflow(
-            name='ref_genome', 
-            func=create_ref_genome_download_and_index_workflow, 
+            name='ref_genome',
+            func=create_ref_genome_download_and_index_workflow,
             args=(
                 config['ref_genome'],
                 pypeliner.managed.OutputFile(config['ref_genome']['local_path']),
             )
         )
-        
+
     if 'snpeff' in config:
         workflow.commandline(
-            name='snpeff', 
+            name='snpeff',
             args=(
                 'snpEff',
                 'download',
@@ -83,7 +83,7 @@ def create_setup_reference_dbs_workflow(config):
 
 
 def create_setup_tools_workflow(databases, config):
-    
+
     workflow = Workflow()
 
     if 'destruct' in config:
@@ -155,46 +155,47 @@ def create_setup_tools_workflow(databases, config):
 
 
 def create_dbsnp_download_workflow(config, out_file):
-    
+
     workflow = Workflow()
-    
+
     workflow.subworkflow(
         name='download',
         func=download.create_download_workflow,
         args=(
-            config['url'], 
+            config['url'],
             pypeliner.managed.OutputFile(out_file)
         )
     )
-        
+
     workflow.transform(
         name='index',
-        ctx={'mem' : 4},
+        ctx={'mem': 4},
         func=vcf_tasks.index_vcf,
         args=(
             pypeliner.managed.InputFile(out_file),
             pypeliner.managed.OutputFile(out_file + '.tbi')
         )
     )
-    
+
     return workflow
+
 
 def create_ref_genome_download_and_index_workflow(config, out_file):
 
     workflow = Workflow()
-    
+
     workflow.subworkflow(
         name='download',
         func=download.create_download_workflow,
         args=(
-            config['url'], 
+            config['url'],
             pypeliner.managed.OutputFile(out_file)
         )
     )
-    
+
     workflow.commandline(
         name='build_dict',
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 6, 'num_retry': 3, 'mem_retry_increment': 2},
         args=(
             'samtools',
             'dict',
@@ -203,10 +204,10 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
             pypeliner.managed.OutputFile(out_file + '.build_dict.log'),
         )
     )
-    
+
     workflow.commandline(
         name='build_fai',
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        ctx={'mem': 6, 'num_retry': 3, 'mem_retry_increment': 2},
         args=(
             'samtools',
             'faidx',
@@ -215,10 +216,10 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
             pypeliner.managed.OutputFile(out_file + '.build_fai.log'),
         )
     )
-    
+
     workflow.commandline(
-        name='build_bwa_index', 
-        ctx={'mem' : 6, 'num_retry' : 3, 'mem_retry_increment' : 2},
+        name='build_bwa_index',
+        ctx={'mem': 6, 'num_retry': 3, 'mem_retry_increment': 2},
         args=(
             'bwa',
             'index',
@@ -227,6 +228,5 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
             pypeliner.managed.OutputFile(out_file + '.build_bwa_index.log'),
         )
     )
-    
-    return workflow
 
+    return workflow
