@@ -21,6 +21,18 @@ def get_read_group_config(file_name):
     return config
 
 
+def get_read_group_configs(file_name):
+    bam = pysam.AlignmentFile(file_name, mode='rb', check_sq=False)
+
+    config = dict()
+    for read_group_info in bam.header['RG']:
+        config[read_group_info['ID']] = read_group_info
+
+    bam.close()
+
+    return config
+
+
 def write_header_file(in_files, out_file, seq_info):
 
     bam = pysam.AlignmentFile(flatten_input(in_files)[0], mode='r', check_sq=False)

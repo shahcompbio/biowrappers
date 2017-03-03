@@ -11,9 +11,11 @@ import tasks
 def realignment_pipeline(
         config,
         in_file,
-        out_file):
+        out_file,
+        read_group_info=None):
 
-    read_group_info = config.get('read_group', {})
+    if read_group_info is None:
+        read_group_info = config.get('read_group', {})
 
     if 'ID' not in read_group_info:
         read_group_info['ID'] = hash(in_file) % int(1e6)
@@ -147,3 +149,63 @@ def realignment_pipeline(
     )
 
     return workflow
+
+
+def realignment_readgroups_pipeline(
+        config,
+        in_file,
+        out_file):
+
+    workflow = Workflow()
+
+    workflow.transform(
+        name='get_read_group_configs',
+        func=tasks.get_read_group_configs,
+        ret=pypeliner.managed.TempOutputObj('read_group_id', 'read_group_config'),
+        args=(
+            pypeliner.managed.InputFile(in_file),
+        )
+    )
+
+    workflow.commandline(
+        name='create_read_group_bam',
+        axes=('read_group_id',),
+        args=(
+            'samtools', 'view', '-b',
+            '-r', pypeliner.managed.InputInstance('read_group_id'),
+            pypeliner.managed.InputFile(in_file),
+            '>',
+            pypeliner.managed.TempOutputFile('read_group_bam', 'read_group_id'),
+        )
+    )
+
+    workflow.subworkflow(
+        name='realignment_pipeline',
+        axes=('read_group_id',),
+        func=realignment_pipeline,
+        args=(
+            config,
+            pypeliner.managed.TempInputFile('read_group_bam', 'read_group_id'),
+            pypeliner.managed.TempOutputFile('realigned_read_group_bam', 'read_group_id'),
+        )
+        kwargs={
+            'read_group_info': pypeliner.managed.TempOutputObj('read_group_config', 'read_group_id'),
+        }
+    )
+
+    workflow.transform(
+        name='merge_and_markdups',
+        axes=('read_group_id',),
+        ctx={'mem' : 48, 'num_retry' : 3, 'mem_retry_increment' : 16},
+        func=bam_tasks.mark_duplicates,
+        args=(
+            pypeliner.managed.TempInputFile('realigned_read_group_bam', 'read_group_id'),
+            pypeliner.managed.OutputFile(out_file),
+        ),
+        kwargs={
+            'tmp_dir' : pypeliner.managed.TempSpace('markdup_temp', 'read_group_id')
+        }
+    )
+
+    return workflow
+
