@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import subprocess32
 
 import pypeliner.commandline
 import remixt.seqdataio
@@ -113,7 +114,7 @@ def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, confi
     )
 
 
-def write_results(theta_prefix, output_filename, alleles_failed, **kwargs):
+def write_results(theta_prefix, output_filename, run_info, **kwargs):
     breakpoints_filename = kwargs.get('breakpoints_filename', None)
     num_clones = kwargs.get('num_clones', None)
 
@@ -154,7 +155,15 @@ def write_results(theta_prefix, output_filename, alleles_failed, **kwargs):
     if breakpoints_filename is not None:
         store['brk_cn'] = calculate_breakpoint_copy_number(breakpoints_filename, cn_data)
 
-    store['info'] = pd.Series({'alleles_failed': alleles_failed})
+    store['info'] = pd.Series(run_info)
+
+
+def write_empty_results(output_filename, run_info):
+    store = pd.HDFStore(output_filename, 'w')
+    store['mix'] = pd.Series()
+    store['cn'] = pd.DataFrame()
+    store['brk_cn'] = pd.DataFrame()
+    store['info'] = pd.Series(run_info)
 
 
 def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_filename, config, tmp_directory, **kwargs):
@@ -197,28 +206,53 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
 
     theta_prefix = os.path.join(tmp_directory, 'theta_results')
 
-    # Try using alleles
+    run_info = {}
+
+    run_info['alleles_failed'] = False
+    run_info['alleles_timeout'] = False
+    run_info['total_failed'] = False
+    run_info['total_timeout'] = False
+
     try:
-        pypeliner.commandline.execute(
+        args = [
             'RunTHetA', '--FORCE',
             os.path.abspath(theta_seg_filename),
             '--TUMOR_FILE', os.path.abspath(normal_allele_filename),
             '--NORMAL_FILE', os.path.abspath(tumour_allele_filename),
             '--DIR', os.path.abspath(tmp_directory),
             '--OUTPUT_PREFIX', 'theta_results',
-        )
-        alleles_failed = False
-    except pypeliner.commandline.CommandLineException:
-        alleles_failed = True
+        ]
 
-    # Fallback to running without alleles
-    if alleles_failed:
-        pypeliner.commandline.execute(
-            'RunTHetA', '--FORCE',
-            os.path.abspath(theta_seg_filename),
-            '--DIR', os.path.abspath(tmp_directory),
-            '--OUTPUT_PREFIX', 'theta_results',
-        )
+        subprocess32(args, timeout=1)
 
-    write_results(theta_prefix, output_filename, alleles_failed, **kwargs)
+    except subprocess32.CalledProcessError:
+        run_info['alleles_failed'] = True
+
+    except subprocess32.TimeoutExpired:
+        run_info['alleles_failed'] = True
+        run_info['alleles_timeout'] = True
+
+    if run_info['alleles_failed']:
+        try:
+            args = [
+                'RunTHetA', '--FORCE',
+                os.path.abspath(theta_seg_filename),
+                '--DIR', os.path.abspath(tmp_directory),
+                '--OUTPUT_PREFIX', 'theta_results',
+            ]
+
+            subprocess32(args, timeout=1)
+
+        except subprocess32.CalledProcessError:
+            run_info['total_failed'] = True
+
+        except subprocess32.TimeoutExpired:
+            run_info['total_failed'] = True
+            run_info['total_timeout'] = True
+
+    if run_info['alleles_failed'] and run_info['total_failed']:
+        write_empty_results(output_filename, run_info)
+
+    else:
+        write_results(theta_prefix, output_filename, run_info, **kwargs)
 
