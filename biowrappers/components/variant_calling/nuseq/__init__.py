@@ -80,7 +80,7 @@ def create_nuseq_classify_workflow(
         )
     )
 
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise',
         func=vcf_tasks.finalise_vcf,
         args=(

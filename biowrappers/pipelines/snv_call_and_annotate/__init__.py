@@ -161,7 +161,7 @@ def call_and_annotate_pipeline(
         )
     )
 
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_indels',
         func=vcf_tasks.finalise_vcf,
         args=(
@@ -198,7 +198,7 @@ def call_and_annotate_pipeline(
         )
     )
 
-    workflow.subworkflow(
+    workflow.transform(
         name='finalise_snvs',
         func=vcf_tasks.finalise_vcf,
         args=(
