@@ -161,7 +161,7 @@ def realignment_readgroups_pipeline(
     workflow.transform(
         name='get_read_group_configs',
         func=tasks.get_read_group_configs,
-        ret=pypeliner.managed.TempOutputObj('read_group_id', 'read_group_config'),
+        ret=pypeliner.managed.TempOutputObj('read_group_config', 'read_group_id'),
         args=(
             pypeliner.managed.InputFile(in_file),
         )
@@ -187,9 +187,9 @@ def realignment_readgroups_pipeline(
             config,
             pypeliner.managed.TempInputFile('read_group_bam', 'read_group_id'),
             pypeliner.managed.TempOutputFile('realigned_read_group_bam', 'read_group_id'),
-        )
+        ),
         kwargs={
-            'read_group_info': pypeliner.managed.TempOutputObj('read_group_config', 'read_group_id'),
+            'read_group_info': pypeliner.managed.TempInputObj('read_group_config', 'read_group_id'),
         }
     )
 
