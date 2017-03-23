@@ -34,7 +34,12 @@ def get_snv_allele_counts_for_vcf_targets(
 
     if region is not None:
         chrom, beg, end = utils.parse_region_for_vcf(region)
-        vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
+
+        try:
+            vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
+
+        except ValueError:
+            vcf_reader = ()
 
     data = []
 
