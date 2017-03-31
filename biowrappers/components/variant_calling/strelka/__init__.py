@@ -23,15 +23,17 @@ def create_strelka_workflow(
 
     workflow = Workflow()
 
-    workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('chrom_dummy', 'chrom'),
-        value=get_chromosomes(tumour_bam_file, chromosomes=chromosomes)
+    workflow.transform(
+        name='get_chromosomes',
+        func=get_chromosomes,
+        ret=pypeliner.managed.TempOutputObj('chrom_dummy', 'chrom'),
+        args=(pypeliner.managed.InputFile(tumour_bam_file),),
+        kwargs={'chromosomes': chromosomes},
     )
 
     workflow.transform(
         name='split_chromosomes',
         axes=('chrom',),
-        ctx={'local': True},
         func=get_coords,
         ret=pypeliner.managed.TempOutputObj('coord_dummy', 'chrom', 'coord'),
         args=(

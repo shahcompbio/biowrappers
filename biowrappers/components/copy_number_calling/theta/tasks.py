@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import subprocess32
 
 import pypeliner.commandline
 import remixt.seqdataio
@@ -113,7 +114,7 @@ def run_bicseq2_seg(seg_output_filename, normal_filename, tumour_filename, confi
     )
 
 
-def write_results(theta_prefix, output_filename, **kwargs):
+def write_results(theta_prefix, output_filename, run_info, **kwargs):
     breakpoints_filename = kwargs.get('breakpoints_filename', None)
     num_clones = kwargs.get('num_clones', None)
 
@@ -124,7 +125,7 @@ def write_results(theta_prefix, output_filename, **kwargs):
         solution_name = 'n{}'.format(num_clones)
 
     theta2_results_filename = '.'.join([theta_prefix, solution_name, 'results'])
-    theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL': 'NLL'})
+    theta2_results = pd.read_csv(theta2_results_filename, sep='\t').rename(columns={'#NLL':'NLL'})
 
     store['full'] = theta2_results
 
@@ -154,6 +155,16 @@ def write_results(theta_prefix, output_filename, **kwargs):
     if breakpoints_filename is not None:
         store['brk_cn'] = calculate_breakpoint_copy_number(breakpoints_filename, cn_data)
 
+    store['info'] = pd.Series(run_info)
+
+
+def write_empty_results(output_filename, run_info):
+    store = pd.HDFStore(output_filename, 'w')
+    store['mix'] = pd.Series()
+    store['cn'] = pd.DataFrame()
+    store['brk_cn'] = pd.DataFrame()
+    store['info'] = pd.Series(run_info)
+
 
 def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_filename, config, tmp_directory, **kwargs):
     utils.make_directory(tmp_directory)
@@ -179,7 +190,7 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
         bicseq2_seg_filename, sep='\t',
         converters={'chrom': str, 'start': int, 'end': int})
     segs['#ID'] = (
-        'start_' + segs['chrom'] + '_' + segs['start'].astype(str) +
+        'start_' + segs['chrom'] + '_' + segs['start'].astype(str) + ':' +
         'end_' + segs['chrom'] + '_' + segs['end'].astype(str))
     segs['chrm'] = segs['chrom']
     segs['tumorCount'] = segs['tumor']
@@ -194,13 +205,54 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
     segs[cols].to_csv(theta_seg_filename, sep='\t', index=False)
 
     theta_prefix = os.path.join(tmp_directory, 'theta_results')
-    pypeliner.commandline.execute(
-        'RunTHetA', '--FORCE',
-        os.path.abspath(theta_seg_filename),
-        '--TUMOR_FILE', os.path.abspath(normal_allele_filename),
-        '--NORMAL_FILE', os.path.abspath(tumour_allele_filename),
-        '--DIR', os.path.abspath(tmp_directory),
-        '--OUTPUT_PREFIX', 'theta_results',
-    )
 
-    write_results(theta_prefix, output_filename, **kwargs)
+    run_info = {}
+
+    run_info['alleles_failed'] = False
+    run_info['alleles_timeout'] = False
+    run_info['total_failed'] = False
+    run_info['total_timeout'] = False
+
+    try:
+        args = [
+            'RunTHetA', '--FORCE',
+            os.path.abspath(theta_seg_filename),
+            '--TUMOR_FILE', os.path.abspath(normal_allele_filename),
+            '--NORMAL_FILE', os.path.abspath(tumour_allele_filename),
+            '--DIR', os.path.abspath(tmp_directory),
+            '--OUTPUT_PREFIX', 'theta_results',
+        ]
+
+        subprocess32(args, timeout=1)
+
+    except subprocess32.CalledProcessError:
+        run_info['alleles_failed'] = True
+
+    except subprocess32.TimeoutExpired:
+        run_info['alleles_failed'] = True
+        run_info['alleles_timeout'] = True
+
+    if run_info['alleles_failed']:
+        try:
+            args = [
+                'RunTHetA', '--FORCE',
+                os.path.abspath(theta_seg_filename),
+                '--DIR', os.path.abspath(tmp_directory),
+                '--OUTPUT_PREFIX', 'theta_results',
+            ]
+
+            subprocess32(args, timeout=1)
+
+        except subprocess32.CalledProcessError:
+            run_info['total_failed'] = True
+
+        except subprocess32.TimeoutExpired:
+            run_info['total_failed'] = True
+            run_info['total_timeout'] = True
+
+    if run_info['alleles_failed'] and run_info['total_failed']:
+        write_empty_results(output_filename, run_info)
+
+    else:
+        write_results(theta_prefix, output_filename, run_info, **kwargs)
+

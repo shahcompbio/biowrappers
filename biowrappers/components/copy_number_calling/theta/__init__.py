@@ -57,7 +57,7 @@ def create_theta_workflow(
     workflow.transform(
         name='run_theta',
         axes=('sample_id',),
-        ctx={'mem': 20},
+        ctx={'mem': 32},
         func=tasks.run_theta,
         args=(
             pypeliner.managed.OutputFile('results', 'sample_id', template=results_template),

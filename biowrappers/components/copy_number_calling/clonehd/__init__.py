@@ -43,7 +43,7 @@ def create_clonehd_single_workflow(
             pypeliner.managed.TempOutputFile('tumour.summary.txt'),
             pypeliner.managed.TempOutputFile('cna_subclone', 'subclone'),
             pypeliner.managed.TempOutputFile('bam_subclone', 'subclone'),
-            pypeliner.managed.TempSpace('run_clonehd_temp'),
+            pypeliner.managed.TempSpace('run_clonehd_temp', cleanup=None),
         ),
     )
 
