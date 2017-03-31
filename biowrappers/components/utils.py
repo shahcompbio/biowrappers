@@ -9,6 +9,12 @@ import time
 import errno
 
 
+def find(name, path):
+    for root, _, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
+
 def get_ancestor_directory(path, level=1):
     '''
     Get the path of the directory a specified number of levels above the given path.
