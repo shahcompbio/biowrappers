@@ -11,7 +11,9 @@ def build_index(
         kmer_length=31,
         gencode=False,
         num_threads=1):
+
     make_parent_directory(index_sentinel_file)
+
     cmd = [
         'salmon',
         'index',
@@ -20,9 +22,12 @@ def build_index(
         '-p', num_threads,
         '-t', transcriptome_fasta_file,
     ]
+
     if gencode is not None:
         cmd.append('--gencode')
+
     pypeliner.commandline.execute(*cmd)
+
     open(index_sentinel_file, 'w').close()
 
 
@@ -34,6 +39,7 @@ def quantify(
         tmp_dir,
         library_type='A',
         num_threads=1):
+
     cmd = [
         'salmon',
         'quant',
@@ -44,8 +50,11 @@ def quantify(
         '-p', num_threads,
         '-o', tmp_dir,
     ]
+
     pypeliner.commandline.execute(*cmd)
+
     tmp_out_file = os.path.join(tmp_dir, 'quant.sf')
+
     shutil.move(tmp_out_file, out_file)
 
 

@@ -21,10 +21,14 @@ def align(
         read_group_info=None,
         unaligned_read_fastq_1=None,
         unaligned_read_fastq_2=None):
+
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
+
     os.makedirs(tmp_dir)
+
     tmp_prefix = os.path.join(tmp_dir, 'alignment')
+
     cmd = [
         'STAR',
         '--runThreadN', num_threads,
@@ -35,28 +39,42 @@ def align(
         '--readFilesCommand', 'zcat',
         '--outFileNamePrefix', tmp_prefix,
     ]
+
     if read_group_info is not None:
         read_group_str = ['ID:{0}'.format(read_group_info['ID']), ]
         for key, value in sorted(read_group_info.items()):
             if key == 'ID':
                 continue
+
             read_group_str.append(':'.join((key, value)))
+
         read_group_str = '\t'.join(read_group_str)
+
         cmd.extend(['--outSAMattrRGline', read_group_str])
+
     if unaligned_read_fastq_1 is not None:
         cmd.extend(['--outReadsUnmapped', 'Fastx'])
+
     pypeliner.commandline.execute(*cmd)
+
     tmp_out_file = tmp_prefix + 'Aligned.sortedByCoord.out.bam'
+
     shutil.move(tmp_out_file, out_file)
+
     if unaligned_read_fastq_1 is not None:
         tmp_out_file = tmp_prefix + 'Unmapped.out.mate1'
+
         shutil.move(tmp_out_file, unaligned_read_fastq_1)
+
     if unaligned_read_fastq_2 is not None:
         tmp_out_file = tmp_prefix + 'Unmapped.out.mate2'
+
         shutil.move(tmp_out_file, unaligned_read_fastq_2)
+
     if log_dir is not None:
         if os.path.exists(log_dir):
             shutil.rmtree(log_dir)
+
         shutil.copytree(tmp_dir, log_dir)
 
 
@@ -66,7 +84,9 @@ def build_index(
         transcript_gtf_file,
         overhang=100,
         num_threads=1):
+
     make_parent_directory(index_sentinel_file)
+
     cmd = [
         'STAR',
         '--runMode', 'genomeGenerate',
@@ -76,5 +96,7 @@ def build_index(
         '--sjdbGTFfile', transcript_gtf_file,
         '--sjdbOverhang', overhang,
     ]
+
     pypeliner.commandline.execute(*cmd)
+
     open(index_sentinel_file, 'w').close()
