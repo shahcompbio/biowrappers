@@ -65,23 +65,9 @@ def create_somatic_workflow(
         args=(
             mgd.TempInputFile('normal.mpileup', 'regions'),
             mgd.TempInputFile('tumour.mpileup', 'regions'),
-            mgd.TempOutputFile('region.vcf', 'regions'),
+            mgd.TempOutputFile('region.vcf.gz', 'regions'),
             mgd.TempSpace('varscan_tmp', 'regions'),
         ),
-    )
-
-    workflow.transform(
-        name='index_vcf',
-        axes=('regions',),
-        ctx={'mem': 2, 'mem_retry_increment': 2, 'num_retry': 3},
-        func=vcf_tasks.compress_vcf,
-        args=(
-            mgd.TempInputFile('region.vcf', 'regions'),
-            mgd.TempOutputFile('region.vcf.gz', 'regions'),
-        ),
-        kwargs={
-            'index_file': mgd.TempOutputFile('region.vcf.gz.tbi', 'regions'),
-        },
     )
 
     workflow.transform(

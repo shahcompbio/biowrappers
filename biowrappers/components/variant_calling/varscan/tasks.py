@@ -43,6 +43,6 @@ def run_somatic(normal_file, tumour_file, out_file, tmp_dir):
 
     cli.execute('tabix', indel_file)
 
-    cli.execute('bcftools', 'concat', snp_file, indel_file, '-a', '-o', out_file, '-O', 'v')
+    cli.execute('bcftools', 'concat', snp_file, indel_file, '-a', '-o', out_file, '-O', 'z')
 
     shutil.rmtree(tmp_dir)
