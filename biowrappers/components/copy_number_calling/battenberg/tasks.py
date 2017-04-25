@@ -132,7 +132,7 @@ def run_battenberg(
         '-t', str(num_threads),
         '-prob-loci', prob_loci_filename,
         '-tumbam', tumour_id,
-        '-normbam', normal_id
+        '-normbam', normal_id,
         '-ra', assembly,
         '-rs', species)
 
