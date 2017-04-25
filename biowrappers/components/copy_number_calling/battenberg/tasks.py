@@ -75,24 +75,25 @@ def prepare_data(
     chromosomes = config['chromosomes']
     chromosome_ids = config['chromosome_ids']
     thousand_genomes_snps_filename = config['thousand_genomes_snps']
-    alleles_template = os.path.join(temp_directory, config['alleles_template'])
 
     thousand_genomes_snps = pd.read_csv(
         thousand_genomes_snps_filename, sep='\t',
         header=None, names=['chromosome', 'position', 'ref', 'alt'],
         converters={'chromosome': str})
 
+    normal_alleles_template = os.path.join(temp_directory, normal_id + '_alleleFrequencies_chr{}.txt')
     normal_alleles_filenames = prepare_battenberg_allele_counts(
         normal_filename,
         thousand_genomes_snps,
-        alleles_template,
+        normal_alleles_template,
         chromosomes,
         chromosome_ids)
 
+    tumour_alleles_template = os.path.join(temp_directory, tumour_id + '_alleleFrequencies_chr{}.txt')
     tumour_alleles_filenames = prepare_battenberg_allele_counts(
         tumour_filename,
         thousand_genomes_snps,
-        alleles_template,
+        tumour_alleles_template,
         chromosomes,
         chromosome_ids)
 
