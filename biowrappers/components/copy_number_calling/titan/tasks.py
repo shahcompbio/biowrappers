@@ -8,6 +8,7 @@ import remixt.analysis.haplotype
 import shutil
 
 from biowrappers.components.copy_number_calling.common.tasks import calculate_breakpoint_copy_number
+from biowrappers.components.copy_number_calling.common.utils import calculate_allele_counts
 
 
 def read_chromosome_lengths(chrom_info_filename):
@@ -52,25 +53,6 @@ def write_segment_count_wig(wig_filename, seqdata_filename, chromosome_lengths, 
 
             wig.write('\n'.join([str(c) for c in seg_count]))
             wig.write('\n')
-
-
-def calculate_allele_counts(seqdata_filename):
-
-    allele_counts = list()
-
-    chromosomes = remixt.seqdataio.read_chromosomes(seqdata_filename)
-
-    for chrom in chromosomes:
-
-        chrom_allele_counts = remixt.analysis.haplotype.read_snp_counts(seqdata_filename, chrom)
-
-        chrom_allele_counts['chromosome'] = chrom
-
-        allele_counts.append(chrom_allele_counts)
-
-    allele_counts = pd.concat(allele_counts, ignore_index=True)
-
-    return allele_counts
 
 
 def infer_het_positions(seqdata_filename):
