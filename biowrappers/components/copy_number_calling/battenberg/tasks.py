@@ -17,18 +17,6 @@ from biowrappers.components.copy_number_calling.common.tasks import calculate_br
 from biowrappers.components.copy_number_calling.common.utils import calculate_allele_counts
 
 
-#thousand_genomes_loci_directory = '{ref_data_dir}/data/ref_db/battenberg/1000genomesloci/1000genomesloci2012_chr{chromosome}.txt'
-thousand_genomes_snps =  '{ref_data_dir}/data/ref_db/remixt/thousand_genomes_snps.tsv'
-genome_fasta_index = '`pwd`/data/ref_db/GRCh37-lite.fa.fai'
-impute_info_filename = '`pwd`/data/ref_db/battenberg/impute/impute_info.txt'
-thousand_genomes_loci_directory = '`pwd`/data/ref_db/battenberg/1000genomesloci/'
-ignore_contigs_filename = ' `pwd`/data/ref_db/battenberg/ignore_contigs.txt'
-num_threads = '1'
-prob_loci_filename =   /shahlab/amcpherson/anaconda/envs/ith3/lib/perl5/site_perl/5.22.0/auto/share/module/Sanger-CGP-Battenberg-Implement/battenberg/probloci.txt.gz
-assembly =  hg19/1000genomes
-species = '  "Homo sapiens"'
-
-
 def prepare_battenberg_allele_counts(
     seqdata_filename,
     thousand_genomes_snps,
