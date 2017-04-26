@@ -14,7 +14,6 @@ import remixt.cn_model
 
 from biowrappers.components.utils import make_directory
 from biowrappers.components.copy_number_calling.common.tasks import calculate_breakpoint_copy_number
-from biowrappers.components.copy_number_calling.common.utils import calculate_allele_counts
 
 
 def prepare_battenberg_allele_counts(
@@ -26,36 +25,39 @@ def prepare_battenberg_allele_counts(
     """ Prepare a matrix of allele counts in battenberg format.
     """
 
-    allele_counts = calculate_allele_counts(seqdata_filename)
-    allele_counts = normal_counts.merge(thousand_genomes_snps)
-
-    ref_counts = allele_counts.set_index(['chromosome', 'position', 'ref'])['ref_counts'].unstack(fill_value=0)
-    alt_counts = allele_counts.set_index(['chromosome', 'position', 'alt'])['alt_counts'].unstack(fill_value=0)
-
-    allele_matrix = (ref_counts + alt_counts)
-    allele_matrix['Good_depth'] = allele_matrix.sum(axis=1)
-    allele_matrix.reset_index(inplace=True)
-    allele_matrix.rename(
-        columns={
-            'chromosome': '#CHR',
-            'position': 'POS',
-            'A': 'Count_A',
-            'C': 'Count_C',
-            'G': 'Count_G',
-            'T': 'Count_T',
-        },
-        inplace=True,
-    )
-
     alleles_filenames = []
 
     for chromosome, chromosome_id in zip(chromosomes, chromosome_ids):
+        allele_counts = remixt.analysis.haplotype.read_snp_counts(seqdata_filename, chromosome)
+        allele_counts['chromosome'] = chromosome
+
+        allele_counts = allele_counts.merge(thousand_genomes_snps)
+
+        ref_counts = allele_counts.set_index(['chromosome', 'position', 'ref'])['ref_count'].unstack(fill_value=0)
+        alt_counts = allele_counts.set_index(['chromosome', 'position', 'alt'])['alt_count'].unstack(fill_value=0)
+
+        allele_matrix = (ref_counts + alt_counts)
+        allele_matrix['Good_depth'] = allele_matrix.sum(axis=1)
+        allele_matrix.reset_index(inplace=True)
+        allele_matrix.rename(
+            columns={
+                'chromosome': '#CHR',
+                'position': 'POS',
+                'A': 'Count_A',
+                'C': 'Count_C',
+                'G': 'Count_G',
+                'T': 'Count_T',
+            },
+            inplace=True,
+        )
+
         alleles_filename = alleles_template.format(chromosome_id)
-        chr_allele_matrix = allele_matrix.loc[allele_matrix['#CHR'] == chromosome]
-        chr_allele_matrix.to_csv(
+
+        allele_matrix.to_csv(
             alleles_filename,
             sep='\t', index=False,
             columns=['#CHR', 'POS', 'Count_A', 'Count_C', 'Count_G', 'Count_T', 'Good_depth'])
+
         alleles_filenames.append(alleles_filename)
 
     return alleles_filenames
@@ -71,6 +73,7 @@ def prepare_data(
     config):
     """ Create battenberg input data.
     """
+    make_directory(temp_directory)
 
     chromosomes = config['chromosomes']
     chromosome_ids = config['chromosome_ids']
@@ -80,6 +83,10 @@ def prepare_data(
         thousand_genomes_snps_filename, sep='\t',
         header=None, names=['chromosome', 'position', 'ref', 'alt'],
         converters={'chromosome': str})
+
+    # Ensure only SNPs are used
+    thousand_genomes_snps = thousand_genomes_snps.merge(pd.DataFrame({'ref': list('ACGT')}))
+    thousand_genomes_snps = thousand_genomes_snps.merge(pd.DataFrame({'alt': list('ACGT')}))
 
     normal_alleles_template = os.path.join(temp_directory, normal_id + '_alleleFrequencies_chr{}.txt')
     normal_alleles_filenames = prepare_battenberg_allele_counts(
@@ -111,6 +118,8 @@ def run_battenberg(
     config):
     """ Run the battenberg method.
     """
+    make_directory(temp_directory)
+
     genome_fasta_index = config['genome_fasta_index']
     impute_info_filename = config['impute_info_filename']
     thousand_genomes_loci_directory = config['thousand_genomes_loci_directory']
