@@ -44,6 +44,8 @@ def create_battenberg_single_workflow(
         func=tasks.run_battenberg,
         args=(
             pypeliner.managed.TempInputFile('allele_counts.tar.gz'),
+            normal_id,
+            tumour_id,
             pypeliner.managed.OutputFile(results_file),
             pypeliner.managed.TempSpace('run_battenberg_temp', cleanup=None),
             config

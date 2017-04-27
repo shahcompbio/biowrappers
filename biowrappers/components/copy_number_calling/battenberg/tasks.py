@@ -1,4 +1,5 @@
 import os
+import itertools
 import shutil
 import tarfile
 import numpy as np
@@ -106,7 +107,7 @@ def prepare_data(
 
     with tarfile.open(allele_counts_filename, "w:gz") as tar:
         for filename in itertools.chain(normal_alleles_filenames, tumour_alleles_filenames):
-            tar.add(filename)
+            tar.add(filename, arcname=os.path.basename(filename))
 
 
 def run_battenberg(
@@ -115,10 +116,13 @@ def run_battenberg(
     tumour_id,
     results_filename,
     temp_directory,
-    config):
+    config,
+    **kwargs):
     """ Run the battenberg method.
     """
     make_directory(temp_directory)
+    make_directory(os.path.join(temp_directory, 'tmpBattenberg', normal_id))
+    make_directory(os.path.join(temp_directory, 'tmpBattenberg', tumour_id))
 
     genome_fasta_index = config['genome_fasta_index']
     impute_info_filename = config['impute_info_filename']
