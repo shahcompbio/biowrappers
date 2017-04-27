@@ -19,6 +19,7 @@ from biowrappers.components.copy_number_calling.common.tasks import calculate_br
 
 def prepare_battenberg_allele_counts(
     seqdata_filename,
+    thousand_genomes_snps,
     thousand_genomes_alleles_template,
     alleles_template,
     chromosomes,
@@ -30,6 +31,9 @@ def prepare_battenberg_allele_counts(
 
     for chromosome, chromosome_id in zip(chromosomes, chromosome_ids):
         allele_counts = remixt.analysis.haplotype.read_snp_counts(seqdata_filename, chromosome)
+        allele_counts['chromosome'] = chromosome
+
+        allele_counts = allele_counts.merge(thousand_genomes_snps)
 
         positions = pd.read_csv(
             thousand_genomes_alleles_template.format(chromosome_id),
@@ -81,11 +85,22 @@ def prepare_data(
 
     chromosomes = config['chromosomes']
     chromosome_ids = config['chromosome_ids']
+    thousand_genomes_snps_filename = config['thousand_genomes_snps']
     thousand_genomes_alleles_template = config['thousand_genomes_alleles_template']
+
+    thousand_genomes_snps = pd.read_csv(
+        thousand_genomes_snps_filename, sep='\t',
+        header=None, names=['chromosome', 'position', 'ref', 'alt'],
+        converters={'chromosome': str})
+
+    # Ensure only SNPs are used
+    thousand_genomes_snps = thousand_genomes_snps.merge(pd.DataFrame({'ref': list('ACGT')}))
+    thousand_genomes_snps = thousand_genomes_snps.merge(pd.DataFrame({'alt': list('ACGT')}))
 
     normal_alleles_template = os.path.join(temp_directory, normal_id + '_alleleFrequencies_chr{}.txt')
     normal_alleles_filenames = prepare_battenberg_allele_counts(
         normal_filename,
+        thousand_genomes_snps,
         thousand_genomes_alleles_template,
         normal_alleles_template,
         chromosomes,
@@ -94,6 +109,7 @@ def prepare_data(
     tumour_alleles_template = os.path.join(temp_directory, tumour_id + '_alleleFrequencies_chr{}.txt')
     tumour_alleles_filenames = prepare_battenberg_allele_counts(
         tumour_filename,
+        thousand_genomes_snps,
         thousand_genomes_alleles_template,
         tumour_alleles_template,
         chromosomes,
