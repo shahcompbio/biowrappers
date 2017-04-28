@@ -34,6 +34,8 @@ def prepare_battenberg_allele_counts(
         allele_counts['chromosome'] = chromosome
 
         allele_counts = allele_counts.merge(thousand_genomes_snps)
+        allele_counts['ref_count'] = allele_counts['ref_count'].fillna(0).astype(int)
+        allele_counts['alt_count'] = allele_counts['alt_count'].fillna(0).astype(int)
 
         positions = pd.read_csv(
             thousand_genomes_alleles_template.format(chromosome_id),
