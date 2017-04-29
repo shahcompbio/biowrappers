@@ -13,6 +13,8 @@ def run_pileup2snp(in_file, out_file):
         'varscan',
         'pileup2snp',
         in_file,
+        '|',
+        'gzip',
         '>',
         out_file
     ]
