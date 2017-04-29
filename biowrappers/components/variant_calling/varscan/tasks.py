@@ -8,6 +8,18 @@ import pypeliner.commandline as cli
 import shutil
 
 
+def run_pileup2snp(in_file, out_file):
+    cmd = [
+        'varscan',
+        'pileup2snp',
+        in_file,
+        '>',
+        out_file
+    ]
+
+    cli.execute(*cmd)
+
+
 def run_somatic(normal_file, tumour_file, out_file, tmp_dir):
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
