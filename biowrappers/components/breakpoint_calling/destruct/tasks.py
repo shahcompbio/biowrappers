@@ -82,7 +82,7 @@ def filter_annotate_breakpoints(
     is_germline = brklib[brklib['num_reads'] > 0].groupby('prediction_id')['is_normal'].any()
 
     # DGV predictions also germline
-    is_dgv = breakpoints['dgv_ids'].notnull()
+    is_dgv = brk.set_index('prediction_id')['dgv_ids'].notnull()
 
     brk.set_index('prediction_id', inplace=True)
     brk['is_germline'] = is_germline
