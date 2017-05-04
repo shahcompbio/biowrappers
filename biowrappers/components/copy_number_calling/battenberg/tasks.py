@@ -2,6 +2,8 @@ import os
 import itertools
 import shutil
 import tarfile
+import vcf
+import gzip
 import numpy as np
 import pandas as pd
 
@@ -165,9 +167,9 @@ def run_battenberg(
     cellularity_ploidy = pd.read_csv(cellularity_ploidy_filename, sep='\t')
     tumour_content = cellularity_ploidy['cellularity'].iloc[0]
 
-    cn_vcf_filename = os.path.join(temp_directory, '{}_cellularity_ploidy.txt'.format(tumour_id))
+    cn_vcf_filename = os.path.join(temp_directory, '{}_battenberg_cn.vcf.gz'.format(tumour_id))
     cn_data = []
-    vcf_reader = vcf.Reader(gzip.open(cn_vcf_filename))
+    vcf_reader = vcf.Reader(filename=cn_vcf_filename)
     for vcf_record in vcf_reader:
         segment_info = {}
 
@@ -179,18 +181,27 @@ def run_battenberg(
             if sample.sample == 'TUMOUR':
                 segment_info['total_1'] = sample.data.TCN
                 segment_info['minor_1'] = sample.data.MCN
-                segment_info['major_1'] = segment_info['total_1'] - segment_info['minor_1']
                 segment_info['fraction_1'] = sample.data.FCF
 
                 segment_info['total_2'] = sample.data.TCS
                 segment_info['minor_2'] = sample.data.MCS
-                segment_info['major_2'] = segment_info['total_2'] - segment_info['minor_2']
                 segment_info['fraction_2'] = sample.data.FCS
 
         cn_data.append(segment_info)
 
     cn_data = pd.DataFrame(cn_data)
 
+    cn_data['fraction_2'] = cn_data['fraction_2'].fillna(0.0)
+    cn_data.loc[cn_data['total_2'].isnull(), 'total_2'] = cn_data.loc[cn_data['total_2'].isnull(), 'total_1']
+    cn_data.loc[cn_data['minor_2'].isnull(), 'minor_2'] = cn_data.loc[cn_data['minor_2'].isnull(), 'minor_1']
+    cn_data['total_2'] = cn_data['total_2'].astype(int)
+    cn_data['minor_2'] = cn_data['minor_2'].astype(int)
+    cn_data['major_1'] = cn_data['total_1'] - cn_data['minor_1']
+    cn_data['major_2'] = cn_data['total_2'] - cn_data['minor_2']
+
     with pd.HDFStore(results_filename, 'w') as store:
         store['cn'] = cn_data
         store['mix'] = pd.Series([1. - tumour_content, tumour_content])
+        store['brk_cn'] = pd.DataFrame()
+
+
