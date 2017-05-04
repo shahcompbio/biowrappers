@@ -81,13 +81,17 @@ def filter_annotate_breakpoints(
     # Mark as germline any prediction with nonzero normal reads
     is_germline = brklib[brklib['num_reads'] > 0].groupby('prediction_id')['is_normal'].any()
 
+    # DGV predictions also germline
+    is_dgv = breakpoints['dgv_ids'].notnull()
+
     brk.set_index('prediction_id', inplace=True)
     brk['is_germline'] = is_germline
+    brk['is_dgv'] = is_dgv
     brk['num_patients'] = num_patients
     brk.reset_index(inplace=True)
 
     # Mark as a filtered any breakpoint that is common or germline
-    brk['is_filtered'] = brk['is_germline'] | (brk['num_patients'] > 1)
+    brk['is_filtered'] = brk['is_germline'] | brk['is_dgv'] | (brk['num_patients'] > 1)
 
     # Get a list of breakends and their filtered status
     def get_brkend(brk, side, data_cols):
