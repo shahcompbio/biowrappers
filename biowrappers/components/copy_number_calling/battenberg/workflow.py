@@ -40,7 +40,7 @@ def create_battenberg_single_workflow(
 
     workflow.transform(
         name='run_battenberg',
-        ctx={'mem': 8},
+        ctx={'mem': 20},
         func=tasks.run_battenberg,
         args=(
             pypeliner.managed.TempInputFile('allele_counts.tar.gz'),
