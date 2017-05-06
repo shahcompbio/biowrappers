@@ -39,7 +39,7 @@ def create_single_sample_workflow(bam_file, ref_genome_fasta_file, out_file, chr
     workflow.transform(
         name='run_pileup2snp',
         axes=('regions',),
-        ctx={'mem': 2, 'mem_retry_increment': 2, 'num_retry': 3},
+        ctx={'mem': 8, 'mem_retry_increment': 2, 'num_retry': 3},
         func=tasks.run_pileup2snp,
         args=(
             mgd.TempInputFile('split.mpileup', 'regions'),
