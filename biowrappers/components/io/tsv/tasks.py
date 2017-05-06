@@ -3,28 +3,42 @@ Created on Nov 2, 2015
 
 @author: Andrew Roth
 '''
+from biowrappers.components.utils import flatten_input
+from pandas.errors import EmptyDataError
 
 import csv
 import gzip
 import pandas as pd
 
 
-def concatenate_tables(in_files, out_file):
+def concatenate_tables(in_files, out_file, ignore_empty_files=False, use_gzip=True):
 
-    writer = None
+    if use_gzip:
+        open_func = gzip.GzipFile
+    
+    else:
+        open_func = open
 
-    with gzip.GzipFile(out_file, 'w') as out_fh:
-        for key in sorted(in_files):
-            with gzip.GzipFile(in_files[key], 'r') as in_fh:
-                reader = csv.DictReader(in_fh, delimiter='\t')
+    write_header = True
+    
+    with open_func(out_file, 'w') as out_fh:
+        for file_name in flatten_input(in_files):
+            try:
+                df = pd.read_csv(file_name, sep='\t')
+            
+            except EmptyDataError as e:
+                if ignore_empty_files:
+                    continue
 
-                if writer is None:
-                    writer = csv.DictWriter(out_fh, reader.fieldnames, delimiter='\t')
+                else:
+                    raise e
 
-                    writer.writeheader()
-
-                for row in reader:
-                    writer.writerow(row)
+            if df.empty:
+                continue
+ 
+            df.to_csv(out_fh, header=write_header, index=False, sep='\t')
+            
+            write_header = False
 
 
 def concatenate_tables_hdf5(in_files, out_file, table_name='table'):
