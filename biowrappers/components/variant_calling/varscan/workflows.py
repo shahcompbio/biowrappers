@@ -108,7 +108,7 @@ def create_somatic_workflow(
     workflow.transform(
         name='run_somatic',
         axes=('regions',),
-        ctx={'mem': 2, 'mem_retry_increment': 2, 'num_retry': 3},
+        ctx={'mem': 4, 'mem_retry_increment': 2, 'num_retry': 3},
         func=tasks.run_somatic,
         args=(
             mgd.TempInputFile('normal.mpileup', 'regions'),
