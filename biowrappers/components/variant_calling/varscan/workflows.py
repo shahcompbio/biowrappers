@@ -76,44 +76,16 @@ def create_somatic_workflow(
     workflow.setobj(obj=pypeliner.managed.TempOutputObj('config', 'regions'), value=regions)
 
     workflow.transform(
-        name='build_normal_mpileup',
-        axes=('regions',),
-        ctx={'mem': 2, 'mem_retry_increment': 2, 'num_retry': 3},
-        func=samtools_tasks.mpileup,
-        args=(
-            mgd.InputFile(normal_bam_file),
-            mgd.TempOutputFile('normal.mpileup', 'regions'),
-        ),
-        kwargs={
-            'ref_genome_fasta_file': mgd.InputFile(ref_genome_fasta_file),
-            'region': mgd.TempInputObj('config', 'regions'),
-        },
-    )
-
-    workflow.transform(
-        name='build_tumour_mpileup',
-        axes=('regions',),
-        ctx={'mem': 2, 'mem_retry_increment': 2, 'num_retry': 3},
-        func=samtools_tasks.mpileup,
-        args=(
-            mgd.InputFile(tumour_bam_file),
-            mgd.TempOutputFile('tumour.mpileup', 'regions'),
-        ),
-        kwargs={
-            'ref_genome_fasta_file': mgd.InputFile(ref_genome_fasta_file),
-            'region': mgd.TempInputObj('config', 'regions'),
-        },
-    )
-
-    workflow.transform(
         name='run_somatic',
         axes=('regions',),
         ctx={'mem': 2, 'mem_retry_increment': 2, 'num_retry': 3},
         func=tasks.run_somatic,
         args=(
-            mgd.TempInputFile('normal.mpileup', 'regions'),
-            mgd.TempInputFile('tumour.mpileup', 'regions'),
+            mgd.InputFile(normal_bam_file),
+            mgd.InputFile(tumour_bam_file),
+            mgd.InputFile(ref_genome_fasta_file),
             mgd.TempOutputFile('region.vcf.gz', 'regions'),
+            mgd.TempInputObj('config', 'regions'),
             mgd.TempSpace('varscan_tmp', 'regions'),
         ),
     )

@@ -7,6 +7,8 @@ import os
 import pypeliner.commandline as cli
 import shutil
 
+from biowrappers.components.ngs.samtools.tasks import mpileup
+
 
 def run_pileup2snp(in_file, out_file):
     cmd = [
@@ -22,19 +24,27 @@ def run_pileup2snp(in_file, out_file):
     cli.execute(*cmd)
 
 
-def run_somatic(normal_file, tumour_file, out_file, tmp_dir):
+def run_somatic(normal_bam, tumour_bam, ref_genome_fasta_file, out_file, region, tmp_dir):
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
 
     os.makedirs(tmp_dir)
+
+    normal_pileup = os.path.join(tmp_dir, 'normal.pileup')
+
+    tumour_pileup = os.path.join(tmp_dir, 'tumour.pileup')
+
+    mpileup(normal_bam, normal_pileup, ref_genome_fasta_file, region)
+
+    mpileup(tumour_bam, tumour_pileup, ref_genome_fasta_file, region)
 
     tmp_prefix = os.path.join(tmp_dir, 'varscan')
 
     cmd = [
         'varscan',
         'somatic',
-        normal_file,
-        tumour_file,
+        normal_pileup,
+        tumour_pileup,
         tmp_prefix,
         '--output-vcf'
     ]
