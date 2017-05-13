@@ -18,14 +18,15 @@ def run_mutect(
         out_file):
 
     cmd = [
-        'mutect',
-        '--normal_bam_file', normal_bam_file,
-        '--tumour_bam_file', tumour_bam_file,
-        '--ref_genome_fasta_file', ref_genome_fasta_file,
-        '--cosmic_vcf_file', cosmic_vcf_file,
-        '--dbsnp_vcf_file', dbsnp_vcf_file,
-        '--out_file', out_file,
-        '--region', region,
+        'gatk',
+        '-T', 'MuTect2',
+        '-I:normal', normal_bam_file,
+        '-I:tumor', tumour_bam_file,
+        '-R', ref_genome_fasta_file,
+        '--cosmic', cosmic_vcf_file,
+        '--dbsnp', dbsnp_vcf_file,
+        '-o', out_file,
+        '-L', region,
         '>', '/dev/null'  # Avoid dumping mutect tsv file to stdout
     ]
 
