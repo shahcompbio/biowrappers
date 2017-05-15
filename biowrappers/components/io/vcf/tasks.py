@@ -131,7 +131,7 @@ def concatenate_vcf(in_files, out_file, allow_overlap=False, bcf_index_file=None
     else:
         cmd = ['bcftools', 'concat', '-O', 'z', '-o', out_file]
 
-    cmd += [in_files[x] for x in sorted(in_files.keys())]
+    cmd += flatten_input(in_files)
 
     pypeliner.commandline.execute(*cmd)
 
@@ -149,7 +149,7 @@ def concatenate_bcf(in_files, out_file):
     """
 
     cmd = ['bcftools', 'concat', '-a', '-O', 'b', '-o', out_file]
-    cmd += [in_files[x] for x in sorted(in_files.keys())]
+    cmd += flatten_input(in_files)
 
     pypeliner.commandline.execute(*cmd)
 
