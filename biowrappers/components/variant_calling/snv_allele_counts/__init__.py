@@ -22,7 +22,8 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         min_bqual=0,
         min_mqual=0,
         split_size=int(1e7),
-        table_name='snv_allele_counts'):
+        table_name='snv_allele_counts',
+        vcf_to_bam_chrom_map=None):
 
     workflow = Workflow()
 
@@ -55,6 +56,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             'min_bqual': min_bqual,
             'min_mqual': min_mqual,
             'region': pypeliner.managed.TempInputObj('regions_obj', 'regions'),
+            'vcf_to_bam_chrom_map': vcf_to_bam_chrom_map,
         }
     )
 

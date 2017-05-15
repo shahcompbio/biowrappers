@@ -18,15 +18,15 @@ nucleotides = ('A', 'C', 'G', 'T')
 
 
 def get_snv_allele_counts_for_vcf_targets(
-    bam_file,
-    vcf_file,
-    out_file,
-    table_name,
-    count_duplicates=False,
-    min_bqual=0,
-    min_mqual=0,
-    region=None,
-):
+        bam_file,
+        vcf_file,
+        out_file,
+        table_name,
+        count_duplicates=False,
+        min_bqual=0,
+        min_mqual=0,
+        region=None,
+        vcf_to_bam_chrom_map=None):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
@@ -44,9 +44,15 @@ def get_snv_allele_counts_for_vcf_targets(
     data = []
 
     for record in vcf_reader:
+        if vcf_to_bam_chrom_map is not None:
+            bam_chrom = vcf_to_bam_chrom_map[record.CHROM]
+
+        else:
+            bam_chrom = record.CHROM
+
         df = _get_counts_df(
             bam,
-            record.CHROM,
+            bam_chrom,
             record.POS,
             record.POS + 1,
             count_duplicates=count_duplicates,
