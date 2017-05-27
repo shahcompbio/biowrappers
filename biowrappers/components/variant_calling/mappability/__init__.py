@@ -1,6 +1,5 @@
-from pypeliner.workflow import Workflow
-
 import pypeliner
+import pypeliner.managed as mgd
 
 from biowrappers.components.variant_calling.utils import default_chromosomes
 
@@ -15,17 +14,24 @@ def create_vcf_mappability_annotation_workflow(
         vcf_file,
         out_file,
         chromosomes=default_chromosomes,
+        hdf5_output=True,
         split_size=int(1e7),
         table_name='mappability'):
 
-    workflow = Workflow()
+    if hdf5_output:
+        merged_file = mgd.File(out_file)
+
+    else:
+        merged_file = mgd.TempFile('merged.h5')
+
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name='get_regions',
-        ret=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
+        ret=mgd.TempOutputObj('regions_obj', 'regions'),
         func=utils.get_vcf_regions,
         args=(
-            pypeliner.managed.InputFile(vcf_file),
+            mgd.InputFile(vcf_file),
             split_size,
         ),
         kwargs={
@@ -39,13 +45,13 @@ def create_vcf_mappability_annotation_workflow(
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.get_mappability,
         args=(
-            pypeliner.managed.InputFile(mappability_file),
-            pypeliner.managed.InputFile(vcf_file),
-            pypeliner.managed.TempOutputFile('mappability.h5', 'regions'),
+            mgd.InputFile(mappability_file),
+            mgd.InputFile(vcf_file),
+            mgd.TempOutputFile('mappability.h5', 'regions'),
             table_name
         ),
         kwargs={
-            'region': pypeliner.managed.TempInputObj('regions_obj', 'regions'),
+            'region': mgd.TempInputObj('regions_obj', 'regions'),
         },
     )
 
@@ -54,9 +60,24 @@ def create_vcf_mappability_annotation_workflow(
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=hdf5_tasks.concatenate_tables,
         args=(
-            pypeliner.managed.TempInputFile('mappability.h5', 'regions'),
-            pypeliner.managed.OutputFile(out_file)
+            mgd.TempInputFile('mappability.h5', 'regions'),
+            merged_file.as_output()
         )
     )
+
+    if not hdf5_output:
+        workflow.transform(
+            name='convert_to_tsv',
+            ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+            func=hdf5_tasks.convert_hdf5_to_tsv,
+            args=(
+                merged_file.as_input(),
+                table_name,
+                mgd.OutputFile(out_file),
+            ),
+            kwargs={
+                'compress': True,
+            }
+        )
 
     return workflow
