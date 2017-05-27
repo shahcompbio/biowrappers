@@ -35,6 +35,11 @@ def run_mutect(
     idx_file_name = out_file + '.idx'
 
     # Guard against slow file system
-    time.sleep(1)
+    time.sleep(10)
+    
+    if os.path.getsize(out_file) == 0:
+        os.unlink(out_file)
+
+        raise Exception('{} is empty. Removing.'.format(out_file))
 
     os.unlink(idx_file_name)

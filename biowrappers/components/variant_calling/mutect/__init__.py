@@ -45,12 +45,16 @@ def create_mutect_workflow(
 
     workflow.transform(
         name='merge_vcf',
-        ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 8},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('classified.vcf', 'regions'),
-            pypeliner.managed.TempOutputFile('merged.vcf'),
-        )
+            pypeliner.managed.TempOutputFile('merged.vcf.gz'),
+        ),
+        kwargs={
+            'bcf_index_file': pypeliner.managed.TempOutputFile('merged.vcf.gz.csi'),
+            'vcf_index_file': pypeliner.managed.TempOutputFile('merged.vcf.gz.tbi'),
+        }
     )
 
     workflow.transform(
@@ -58,7 +62,7 @@ def create_mutect_workflow(
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=vcf_tasks.filter_vcf,
         args=(
-            pypeliner.managed.TempInputFile('merged.vcf'),
+            pypeliner.managed.TempInputFile('merged.vcf.gz'),
             pypeliner.managed.TempOutputFile('merged.filtered.vcf')
         )
     )
