@@ -12,9 +12,9 @@ def create_snpeff_annotation_workflow(
         db,
         target_vcf_file,
         out_file,
+        hdf5_output=True,
         split_size=int(1e3),
-        table_name='snpeff',
-        vcf_output=False):
+        table_name='snpeff'):
 
     workflow = Workflow()
 
@@ -41,23 +41,7 @@ def create_snpeff_annotation_workflow(
         )
     )
 
-    if vcf_output:
-        workflow.transform(
-            name='merge_vcf',
-            axes=(),
-            ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
-            func=vcf_tasks.concatenate_vcf,
-            args=(
-                mgd.TempInputFile('snpeff.vcf', 'split'),
-                mgd.OutputFile(out_file),
-            ),
-            kwargs={
-                'bcf_index_file': mgd.TempOutputFile('bcf.index'),
-                'vcf_index_file': mgd.OutputFile(out_file + '.tbi'),
-            }
-        )
-
-    else:
+    if hdf5_output:
         workflow.transform(
             name='convert_vcf_to_table',
             axes=('split',),
@@ -78,6 +62,22 @@ def create_snpeff_annotation_workflow(
                 mgd.TempInputFile('snpeff.h5', 'split'),
                 mgd.OutputFile(out_file)
             )
+        )
+
+    else:
+        workflow.transform(
+            name='merge_vcf',
+            axes=(),
+            ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+            func=vcf_tasks.concatenate_vcf,
+            args=(
+                mgd.TempInputFile('snpeff.vcf', 'split'),
+                mgd.OutputFile(out_file),
+            ),
+            kwargs={
+                'bcf_index_file': mgd.TempOutputFile('bcf.index'),
+                'vcf_index_file': mgd.OutputFile(out_file + '.tbi'),
+            }
         )
 
     return workflow
