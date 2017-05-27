@@ -1,6 +1,5 @@
-from pypeliner.workflow import Workflow
-
 import pypeliner
+import pypeliner.managed as mgd
 
 from biowrappers.components.variant_calling.utils import default_chromosomes
 
@@ -19,20 +18,27 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         out_file,
         chromosomes=default_chromosomes,
         count_duplicates=False,
+        hdf5_output=True,
         min_bqual=0,
         min_mqual=0,
         split_size=int(1e7),
         table_name='snv_allele_counts',
         vcf_to_bam_chrom_map=None):
 
-    workflow = Workflow()
+    if hdf5_output:
+        merged_file = mgd.File(out_file)
+
+    else:
+        merged_file = mgd.TempFile('merged.h5')
+
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name='get_regions',
-        ret=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
+        ret=mgd.TempOutputObj('regions_obj', 'regions'),
         func=utils.get_vcf_regions,
         args=(
-            pypeliner.managed.InputFile(vcf_file),
+            mgd.InputFile(vcf_file),
             split_size,
         ),
         kwargs={
@@ -46,16 +52,16 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         ctx=med_ctx,
         func=tasks.get_snv_allele_counts_for_vcf_targets,
         args=(
-            pypeliner.managed.InputFile(bam_file),
-            pypeliner.managed.InputFile(vcf_file),
-            pypeliner.managed.TempOutputFile('counts.h5', 'regions'),
+            mgd.InputFile(bam_file),
+            mgd.InputFile(vcf_file),
+            mgd.TempOutputFile('counts.h5', 'regions'),
             table_name
         ),
         kwargs={
             'count_duplicates': count_duplicates,
             'min_bqual': min_bqual,
             'min_mqual': min_mqual,
-            'region': pypeliner.managed.TempInputObj('regions_obj', 'regions'),
+            'region': mgd.TempInputObj('regions_obj', 'regions'),
             'vcf_to_bam_chrom_map': vcf_to_bam_chrom_map,
         }
     )
@@ -65,13 +71,28 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         ctx=med_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
-            pypeliner.managed.TempInputFile('counts.h5', 'regions'),
-            pypeliner.managed.OutputFile(out_file)
+            mgd.TempInputFile('counts.h5', 'regions'),
+            merged_file.as_output(),
         ),
         kwargs={
             'in_memory': False,
         }
     )
+
+    if not hdf5_output:
+        workflow.transform(
+            name='convert_to_tsv',
+            ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+            func=hdf5_tasks.convert_hdf5_to_tsv,
+            args=(
+                merged_file.as_input(),
+                table_name,
+                mgd.OutputFile(out_file),
+            ),
+            kwargs={
+                'compress': True,
+            }
+        )
 
     return workflow
 
@@ -88,10 +109,10 @@ def create_snv_allele_counts_workflow(
         report_zero_count_positions=False,
         split_size=int(1e7)):
 
-    workflow = Workflow()
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
+        obj=mgd.TempOutputObj('regions_obj', 'regions'),
         value=utils.get_bam_regions(bam_file, split_size, chromosomes=chromosomes)
     )
 
@@ -101,9 +122,9 @@ def create_snv_allele_counts_workflow(
         ctx=med_ctx,
         func=tasks.get_snv_allele_counts_for_region,
         args=(
-            pypeliner.managed.InputFile(bam_file),
-            pypeliner.managed.TempOutputFile('counts.h5', 'regions'),
-            pypeliner.managed.TempInputObj('regions_obj', 'regions'),
+            mgd.InputFile(bam_file),
+            mgd.TempOutputFile('counts.h5', 'regions'),
+            mgd.TempInputObj('regions_obj', 'regions'),
             table_name
         ),
         kwargs={
@@ -120,8 +141,8 @@ def create_snv_allele_counts_workflow(
         ctx=med_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
-            pypeliner.managed.TempInputFile('counts.h5', 'regions'),
-            pypeliner.managed.OutputFile(out_file)
+            mgd.TempInputFile('counts.h5', 'regions'),
+            mgd.OutputFile(out_file)
         )
     )
 
@@ -143,17 +164,17 @@ def create_snv_variant_position_counts_workflow(
         split_size=int(1e7),
         table_group=''):
 
-    workflow = Workflow()
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('regions_obj', 'regions'),
+        obj=mgd.TempOutputObj('regions_obj', 'regions'),
         value=utils.get_bam_regions(normal_bam_file, split_size, chromosomes=chromosomes)
     )
 
     tumour_input_files = {}
 
     for sample in tumour_bam_files:
-        tumour_input_files[sample] = pypeliner.managed.InputFile(tumour_bam_files[sample])
+        tumour_input_files[sample] = mgd.InputFile(tumour_bam_files[sample])
 
     workflow.transform(
         name='get_counts',
@@ -161,10 +182,10 @@ def create_snv_variant_position_counts_workflow(
         ctx=med_ctx,
         func=tasks.get_variant_position_counts,
         args=(
-            pypeliner.managed.InputFile(normal_bam_file),
+            mgd.InputFile(normal_bam_file),
             tumour_input_files,
-            pypeliner.managed.TempOutputFile('counts.h5', 'regions'),
-            pypeliner.managed.TempInputObj('regions_obj', 'regions'),
+            mgd.TempOutputFile('counts.h5', 'regions'),
+            mgd.TempInputObj('regions_obj', 'regions'),
             table_group
         ),
         kwargs={
@@ -184,8 +205,8 @@ def create_snv_variant_position_counts_workflow(
         ctx=med_ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
-            pypeliner.managed.TempInputFile('counts.h5', 'regions'),
-            pypeliner.managed.OutputFile(out_file),
+            mgd.TempInputFile('counts.h5', 'regions'),
+            mgd.OutputFile(out_file),
         )
     )
 
