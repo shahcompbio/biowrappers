@@ -15,7 +15,7 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         table_name='tri_nucleotide_context'):
 
     if hdf5_output:
-        merged_file = mgd.OutputFile(out_file)
+        merged_file = mgd.File(out_file)
 
     else:
         merged_file = mgd.TempFile('merged.h5')
