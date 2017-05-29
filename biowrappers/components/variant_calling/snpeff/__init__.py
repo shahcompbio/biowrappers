@@ -12,6 +12,7 @@ def create_snpeff_annotation_workflow(
         db,
         target_vcf_file,
         out_file,
+        classic_mode=True,
         hdf5_output=True,
         split_size=int(1e3),
         table_name='snpeff'):
@@ -38,7 +39,10 @@ def create_snpeff_annotation_workflow(
             db,
             mgd.TempInputFile('split.vcf', 'split'),
             mgd.TempOutputFile('snpeff.vcf', 'split')
-        )
+        ),
+        kwargs={
+            'classic_mode': classic_mode,
+        }
     )
 
     if hdf5_output:

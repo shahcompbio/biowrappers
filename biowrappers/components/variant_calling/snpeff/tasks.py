@@ -10,7 +10,7 @@ import os
 import vcf
 
 
-def run_snpeff(db, in_vcf_file, out_file):
+def run_snpeff(db, in_vcf_file, out_file, classic_mode=True):
 
     os.environ['MALLOC_ARENA_MAX'] = '2'
 
@@ -18,14 +18,20 @@ def run_snpeff(db, in_vcf_file, out_file):
         'snpEff',
         '-noStats',
         '-noLog',
-        '-classic',
         '-Xms2g',
         '-Xmx5g',
+        '-hgvs1LetterAa',
+    ]
+
+    if classic_mode:
+        cmd.append('-classic')
+
+    cmd.extend([
         db,
         in_vcf_file,
         '>',
         out_file
-    ]
+    ])
 
     pypeliner.commandline.execute(*cmd)
 
