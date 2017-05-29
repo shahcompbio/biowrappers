@@ -66,18 +66,25 @@ def create_snpeff_annotation_workflow(
 
     else:
         workflow.transform(
+            name='run_snpeff',
+            axes=('split',),
+            ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+            func=vcf_tasks.finalise_vcf,
+            args=(
+                mgd.TempInputFile('snpeff.vcf', 'split'),
+                mgd.TempOutputFile('snpeff.vcf.gz', 'split'),
+            )
+        )
+
+        workflow.transform(
             name='merge_vcf',
             axes=(),
             ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
             func=vcf_tasks.concatenate_vcf,
             args=(
-                mgd.TempInputFile('snpeff.vcf', 'split'),
+                mgd.TempInputFile('snpeff.vcf.gz', 'split'),
                 mgd.OutputFile(out_file),
-            ),
-            kwargs={
-                'bcf_index_file': mgd.TempOutputFile('bcf.index'),
-                'vcf_index_file': mgd.OutputFile(out_file + '.tbi'),
-            }
+            )
         )
 
     return workflow
