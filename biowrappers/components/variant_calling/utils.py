@@ -78,13 +78,19 @@ def load_vcf_chromosome_lengths(file_name, chromosomes=None):
     else:
         chromosomes = chromosomes
 
+    calc_lens = calculate_vcf_chromosome_lengths(file_name, chromosomes=chromosomes)
+
     for chrom, contig in vcf_reader.contigs.iteritems():
         assert chrom == contig.id
 
         if chrom not in chromosomes:
             continue
 
-        chromosome_lengths[str(chrom)] = int(contig.length)
+        if contig.length is None:
+            chromosome_lengths[str(chrom)] = calc_lens[str(chrom)]
+
+        else:
+            chromosome_lengths[str(chrom)] = int(contig.length)
 
     if len(chromosome_lengths) == 0:
         raise Exception('no chromosomes found in vcf header')
