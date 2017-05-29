@@ -66,7 +66,7 @@ def create_snpeff_annotation_workflow(
 
     else:
         workflow.transform(
-            name='run_snpeff',
+            name='compress_split_vcf',
             axes=('split',),
             ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
             func=vcf_tasks.finalise_vcf,
