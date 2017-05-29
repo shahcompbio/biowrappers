@@ -22,6 +22,9 @@ def filter_somatic_variants(in_file, out_file):
             if (record.FILTER is None) or (len(record.FILTER) == 0):
                 pass_filter = True
 
+            else:
+                pass_filter = False
+
             if pass_filter and ('SOMATIC' in record.INFO):
                 writer.write_record(record)
 
