@@ -1,19 +1,15 @@
-import os
-
-import pypeliner
 from pypeliner.workflow import Workflow
 
-import biowrappers.components.io.vcf.tasks as vcf_tasks
-import biowrappers.components.variant_calling.utils as utils
+import os
+import pypeliner
 
 import tasks
 
 
 def create_hla_type_workflow(
-    normal_bam_file,
-    hla_type_file,
-    config,
-):
+        normal_bam_file,
+        hla_type_file):
+
     workflow = Workflow()
 
     workflow.commandline(
