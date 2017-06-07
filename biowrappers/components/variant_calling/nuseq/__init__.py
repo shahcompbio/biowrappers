@@ -23,9 +23,17 @@ def create_nuseq_classify_workflow(
 
     workflow = Workflow()
 
-    workflow.setobj(
-        obj=pypeliner.managed.TempOutputObj('regions', 'regions'),
-        value=utils.get_bam_regions(tumour_bam_files[0], split_size, chromosomes=chromosomes)
+    workflow.transform(
+        name='get_regions',
+        func=utils.get_bam_regions,
+        ret=pypeliner.managed.TempOutputObj('regions', 'regions'),
+        args=(
+            pypeliner.managed.InputFile(tumour_bam_files[0]),
+            split_size,
+        ),
+        kwargs={
+            'chromosomes': chromosomes,
+        },
     )
 
     workflow.transform(
