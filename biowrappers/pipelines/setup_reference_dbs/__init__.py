@@ -184,14 +184,32 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
 
     workflow = Workflow()
 
-    workflow.subworkflow(
-        name='download',
-        func=download.create_download_workflow,
-        args=(
-            config['url'],
-            pypeliner.managed.OutputFile(out_file)
+    if config['url'].endswith('gz'):
+        workflow.subworkflow(
+            name='download',
+            func=download.create_download_workflow,
+            args=(
+                config['url'],
+                pypeliner.managed.TempOutputFile('ref.fasta.gz'),
+            )
         )
-    )
+
+        workflow.commandline(
+            'gzip', '-cd',
+            pypeliner.managed.TempInputFile('ref.fasta.gz'),
+            '>',
+            pypeliner.managed.OutputFile(out_file),
+        )
+
+    else:
+        workflow.subworkflow(
+            name='download',
+            func=download.create_download_workflow,
+            args=(
+                config['url'],
+                pypeliner.managed.OutputFile(out_file)
+            )
+        )
 
     workflow.commandline(
         name='build_dict',
