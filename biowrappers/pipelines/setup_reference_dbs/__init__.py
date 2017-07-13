@@ -195,10 +195,13 @@ def create_ref_genome_download_and_index_workflow(config, out_file):
         )
 
         workflow.commandline(
-            'gzip', '-cd',
-            pypeliner.managed.TempInputFile('ref.fasta.gz'),
-            '>',
-            pypeliner.managed.OutputFile(out_file),
+            name='gunzip',
+            args=(
+                'gzip', '-cd',
+                pypeliner.managed.TempInputFile('ref.fasta.gz'),
+                '>',
+                pypeliner.managed.OutputFile(out_file)
+            ),
         )
 
     else:
