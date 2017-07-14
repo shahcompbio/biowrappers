@@ -187,3 +187,23 @@ def write_store(breakpoint_filename, breakpoint_library_filename, store_filename
     with pd.HDFStore(store_filename, 'w') as store:
         store['/breakpoint'] = breakpoint_table
         store['/breakpoint_library'] = breakpoint_library_table
+
+
+def extract_somatic_breakpoint(breakpoint_results, somatic_breakpoints_file, min_num_reads=1):
+    store = pd.HDFStore(breakpoint_results, 'r')
+
+    breakpoints = store['/breakpoints/destruct/breakpoint']
+
+    breakpoints = breakpoints[breakpoints['num_reads'] >= min_num_reads]
+
+    breakpoints = breakpoints[[
+        'prediction_id',
+        'chromosome_1',
+        'strand_1',
+        'position_1',
+        'chromosome_2',
+        'strand_2',
+        'position_2',
+    ]]
+
+    breakpoints.to_csv(somatic_breakpoints_file, sep='\t', index=False)
