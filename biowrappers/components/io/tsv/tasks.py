@@ -50,3 +50,11 @@ def concatenate_tables_hdf5(in_files, out_file, table_name='table'):
         hdf_store.append(table_name, df)
 
     hdf_store.close()
+
+
+def convert_tsv_to_hdf5(in_file, out_file, converters=None, table_name='table'):
+    store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+
+    store[table_name] = pd.read_csv(in_file, converters=converters, sep='\t')
+
+    store.close()
