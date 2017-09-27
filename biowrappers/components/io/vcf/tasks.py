@@ -234,6 +234,12 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
     alt_categories = sorted(alt_categories)
 
+    min_itemsize = {
+        'chrom': min([len(x) for x in chrom_categories]),
+        'ref': min([len(x) for x in ref_categories]),
+        'alt': min([len(x) for x in alt_categories])
+    }
+
     #===================================================================================================================
     # convert
     #===================================================================================================================
@@ -279,7 +285,7 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
         df = df[['chrom', 'coord', 'ref', 'alt', 'score']]
 
-        hdf_store.append(table_name, df)
+        hdf_store.append(table_name, df, min_itemsize=min_itemsize)
 
     hdf_store.close()
 
