@@ -235,9 +235,9 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
     alt_categories = sorted(alt_categories)
 
     min_itemsize = {
-        'chrom': min([len(x) for x in chrom_categories]),
-        'ref': min([len(x) for x in ref_categories]),
-        'alt': min([len(x) for x in alt_categories])
+        'chrom': max([len(x) for x in chrom_categories]),
+        'ref': max([len(x) for x in ref_categories]),
+        'alt': max([len(x) for x in alt_categories])
     }
 
     #===================================================================================================================
