@@ -9,6 +9,8 @@ import pypeliner
 import os
 import vcf
 
+from parser import SnpEffParser
+
 
 def run_snpeff(db, in_vcf_file, out_file, classic_mode=True):
 
@@ -57,11 +59,18 @@ effect_impact = ('HIGH', 'MODERATE', 'LOW', 'MODIFIER')
 cols = ['chrom', 'coord', 'ref', 'alt', 'effect'] + list(effect_keys)
 
 
-def convert_vcf_to_table(in_file, out_file, table_name):
+def convert_vcf_to_table(in_file, out_file, table_name, mode='classic'):
     data = []
 
-    for out_row in _get_annotations_table(in_file):
-        data.append(out_row)
+    if mode == 'classic':
+        for out_row in _get_annotations_table(in_file):
+            data.append(out_row)
+
+    else:
+        parser = SnpEffParser(in_file)
+
+        for row in parser:
+            data.append(row)
 
     hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
 
