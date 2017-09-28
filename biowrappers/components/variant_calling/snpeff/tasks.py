@@ -59,10 +59,10 @@ effect_impact = ('HIGH', 'MODERATE', 'LOW', 'MODIFIER')
 cols = ['chrom', 'coord', 'ref', 'alt', 'effect'] + list(effect_keys)
 
 
-def convert_vcf_to_table(in_file, out_file, table_name, mode='classic'):
+def convert_vcf_to_table(in_file, out_file, table_name, classic_mode=True):
     data = []
 
-    if mode == 'classic':
+    if classic_mode:
         for out_row in _get_annotations_table(in_file):
             data.append(out_row)
 
