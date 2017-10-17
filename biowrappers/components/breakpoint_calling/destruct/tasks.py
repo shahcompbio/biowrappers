@@ -108,7 +108,7 @@ def filter_annotate_breakpoints(
     # Calculate the minimum distance to the nearest filtered breakend for all breakpoints
     def calculate_dist_filtered(data):
 
-        data = data.sort('position')
+        data = data.sort_values('position')
 
         data['nearest_left'] = None
         data['nearest_right'] = None
