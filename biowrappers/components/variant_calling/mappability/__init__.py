@@ -45,7 +45,7 @@ def create_vcf_mappability_annotation_workflow(
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.get_mappability,
         args=(
-            mgd.InputFile(mappability_file),
+            mappability_file,
             mgd.InputFile(vcf_file),
             mgd.TempOutputFile('mappability.h5', 'regions'),
             table_name

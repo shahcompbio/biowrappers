@@ -305,7 +305,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
         name='cosmic_status',
         func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['databases']['cosmic']['local_path']),
+            config['databases']['cosmic']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['cosmic_status'].as_output(),
         ),
@@ -316,7 +316,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
         name='dbsnp_status',
         func=annotated_db_status.create_vcf_db_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['databases']['dbsnp']['local_path']),
+            config['databases']['dbsnp']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['dbsnp_status'].as_output(),
         ),
@@ -327,7 +327,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
         name='mappability',
         func=mappability.create_vcf_mappability_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['databases']['mappability']['local_path']),
+            config['databases']['mappability']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['mappability'].as_output(),
         ),
@@ -349,7 +349,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
         name='tri_nucleotide_context',
         func=tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow,
         args=(
-            pypeliner.managed.InputFile(config['databases']['ref_genome']['local_path']),
+            config['databases']['ref_genome']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['tri_nucleotide_context'].as_output(),
         ),

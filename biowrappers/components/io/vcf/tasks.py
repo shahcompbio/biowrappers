@@ -172,12 +172,12 @@ def extract_variant_type(in_file, out_file, variant_type):
     index_bcf(out_file)
 
 
-def split_vcf(in_file, out_file_callback, lines_per_file):
+def split_vcf(in_file, out_files, lines_per_file):
     """ Split a VCF file into smaller files.
 
     :param in_file: Path of VCF file to split.
 
-    :param out_file_callback: Callback function which supplies file name given index of split.
+    :param out_files: Callback function which supplies file name given index of split.
 
     :param lines_per_file: Maximum number of lines to be written per file.
 
@@ -189,7 +189,7 @@ def split_vcf(in_file, out_file_callback, lines_per_file):
     reader = vcf.Reader(filename=in_file)
 
     for file_idx, records in itertools.groupby(reader, key=line_group):
-        file_name = out_file_callback(file_idx)
+        file_name = out_files[file_idx]
 
         with open(file_name, 'w') as out_fh:
             writer = vcf.Writer(out_fh, reader)

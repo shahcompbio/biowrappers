@@ -39,7 +39,7 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.get_tri_nucelotide_context,
         args=(
-            mgd.InputFile(ref_genome_fasta_file),
+            ref_genome_fasta_file,
             mgd.TempInputFile('split.vcf', 'split'),
             mgd.TempOutputFile('tri_nucleotide_context.h5', 'split'),
             table_name

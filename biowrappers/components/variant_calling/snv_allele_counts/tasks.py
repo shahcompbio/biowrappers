@@ -19,6 +19,7 @@ nucleotides = ('A', 'C', 'G', 'T')
 
 def get_snv_allele_counts_for_vcf_targets(
         bam_file,
+        bai_file,
         vcf_file,
         out_file,
         table_name,
@@ -26,7 +27,8 @@ def get_snv_allele_counts_for_vcf_targets(
         min_bqual=0,
         min_mqual=0,
         region=None,
-        vcf_to_bam_chrom_map=None):
+        vcf_to_bam_chrom_map=None,
+        **extra_columns):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
 
@@ -92,6 +94,9 @@ def get_snv_allele_counts_for_vcf_targets(
             data.append(out_row)
 
     data = pd.DataFrame(data, columns=['chrom', 'coord', 'ref', 'alt', 'ref_counts', 'alt_counts'])
+
+    for col, value in extra_columns.iteritems():
+        data[col] = value
 
     hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
 

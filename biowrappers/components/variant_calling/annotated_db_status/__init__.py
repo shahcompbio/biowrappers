@@ -39,7 +39,7 @@ def create_vcf_db_annotation_workflow(
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.annotate_db_status,
         args=(
-            mgd.InputFile(db_vcf_file),
+            db_vcf_file,
             mgd.TempInputFile('split.vcf', 'split'),
             mgd.TempOutputFile('annotated.h5', 'split'),
             table_name
