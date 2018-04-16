@@ -31,7 +31,7 @@ def create_vcf_mappability_annotation_workflow(
         ret=mgd.TempOutputObj('regions_obj', 'regions'),
         func=utils.get_vcf_regions,
         args=(
-            mgd.InputFile(vcf_file),
+            mgd.InputFile(vcf_file, extensions=['.tbi']),
             split_size,
         ),
         kwargs={
@@ -46,7 +46,7 @@ def create_vcf_mappability_annotation_workflow(
         func=tasks.get_mappability,
         args=(
             mappability_file,
-            mgd.InputFile(vcf_file),
+            mgd.InputFile(vcf_file, extensions=['.tbi']),
             mgd.TempOutputFile('mappability.h5', 'regions'),
             table_name
         ),
