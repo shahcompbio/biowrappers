@@ -328,7 +328,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
         func=mappability.create_vcf_mappability_annotation_workflow,
         args=(
             config['databases']['mappability']['local_path'],
-            pypeliner.managed.InputFile(in_vcf_file),
+            pypeliner.managed.InputFile(in_vcf_file, extensions=['.tbi']),
             result_files['mappability'].as_output(),
         ),
         kwargs=kwargs['mappability']
