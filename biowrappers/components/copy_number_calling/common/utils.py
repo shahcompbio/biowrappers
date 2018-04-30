@@ -6,7 +6,7 @@ import remixt.analysis.haplotype
 def calculate_allele_counts(seqdata_filename):
     """ Calculate allele counts from seqdata.
     """
-    allele_counts = list()
+    allele_counts = [pd.DataFrame(columns = ["position", "ref_count", "alt_count", "chromosome"])]
 
     chromosomes = remixt.seqdataio.read_chromosomes(seqdata_filename)
 
