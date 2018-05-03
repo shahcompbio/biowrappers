@@ -19,6 +19,12 @@ def run_single_sample_vardict(
         min_allele_frequency=0.01,
         remove_duplicate_reads=False,
         sample_name=None):
+    try:
+        region = region.split('-')
+        if ':' in region[0]:
+            region = region[0].split(':') + region[1:]
+    except:
+        pass
 
     if java:
         prog = 'vardict-java'
@@ -56,6 +62,12 @@ def run_paired_sample_vardict(
 
     :param sample_names: dictionary with sample names. Should have keys `normal` and `tumour`.
     """
+    try:
+        region = region.split('-')
+        if ':' in region[0]:
+            region = region[0].split(':') + region[1:]
+    except:
+        pass
 
     if java:
         prog = 'vardict-java'
