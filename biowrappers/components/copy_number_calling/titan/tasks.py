@@ -59,9 +59,13 @@ def infer_het_positions(seqdata_filename):
 
     allele_count = calculate_allele_counts(seqdata_filename)
 
-    remixt.analysis.haplotype.infer_snp_genotype(allele_count)
+    if not allele_count.empty:
+        remixt.analysis.haplotype.infer_snp_genotype(allele_count)
 
-    het_positions = allele_count.loc[allele_count['AB'] == 1, ['chromosome', 'position']]
+        het_positions = allele_count.loc[allele_count['AB'] == 1, ['chromosome', 'position']]
+
+    else:
+        het_positions = pd.DataFrame(columns=['chromosome', 'position'])
 
     return het_positions
 

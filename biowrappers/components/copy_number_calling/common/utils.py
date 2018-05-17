@@ -15,7 +15,10 @@ def calculate_allele_counts(seqdata_filename):
         chrom_allele_counts['chromosome'] = chrom
         allele_counts.append(chrom_allele_counts)
 
-    allele_counts = pd.concat(allele_counts, ignore_index=True)
+    if len(allele_counts) > 0:
+        allele_counts = pd.concat(allele_counts, ignore_index=True)
+    else:
+        allele_counts = pd.DataFrame()
 
     return allele_counts
 
