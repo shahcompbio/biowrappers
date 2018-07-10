@@ -66,6 +66,24 @@ def call_and_annotate_pipeline(
 
         merge_inputs['/breakpoints/delly'] = pypeliner.managed.InputFile(delly_results_filename)
 
+    if 'lumpysv' in config:
+        lumpysv_raw_data = os.path.join(raw_data_dir, 'lumpysv')
+        lumpysv_results_filename = os.path.join(lumpysv_raw_data, 'results.h5')
+        make_parent_directory(lumpysv_results_filename)
+
+        workflow.subworkflow(
+            name='lumpysv',
+            func=lumpysv.lumpysv_pipeline,
+            args=(
+                pypeliner.managed.InputFile(normal_bam_path),
+                pypeliner.managed.InputFile('tumour_bams', 'tumour_sample_id', fnames=tumour_bam_paths),
+                pypeliner.managed.OutputFile(lumpysv_results_filename),
+                lumpysv_raw_data,
+            ),
+        )
+
+        merge_inputs['/breakpoints/lumpysv'] = pypeliner.managed.InputFile(lumpysv_results_filename)
+
     workflow.transform(
         name='merge_results',
         ctx={'mem': 8},
