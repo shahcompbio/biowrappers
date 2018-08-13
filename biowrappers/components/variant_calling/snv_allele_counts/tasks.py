@@ -28,6 +28,7 @@ def get_snv_allele_counts_for_vcf_targets(
         min_mqual=0,
         region=None,
         vcf_to_bam_chrom_map=None,
+        report_zero_count_positions=False,
         **extra_columns):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
@@ -79,6 +80,9 @@ def get_snv_allele_counts_for_vcf_targets(
 
             # Skip record with alt base == N
             if alt_base not in nucleotides:
+                continue
+
+            if not report_zero_count_positions and counts[ref_base] == 0 and counts[alt_base] == 0:
                 continue
 
             # Format output record
