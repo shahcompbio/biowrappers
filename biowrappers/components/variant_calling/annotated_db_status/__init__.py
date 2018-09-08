@@ -11,6 +11,7 @@ def create_vcf_db_annotation_workflow(
         target_vcf_file,
         out_file,
         table_name,
+        docker_config={},
         hdf5_output=True,
         split_size=int(1e4)):
 
@@ -20,11 +21,13 @@ def create_vcf_db_annotation_workflow(
     else:
         merged_file = mgd.TempFile('merged.h5')
 
+    ctx = dict(mem=2, num_retry=3, mem_retry_increment=2, **docker_config)
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name='split_vcf',
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx=ctx,
         func=vcf_tasks.split_vcf,
         args=(
             mgd.InputFile(target_vcf_file),
@@ -36,7 +39,7 @@ def create_vcf_db_annotation_workflow(
     workflow.transform(
         name='annotate_db_status',
         axes=('split',),
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx=ctx,
         func=tasks.annotate_db_status,
         args=(
             db_vcf_file,
@@ -48,7 +51,7 @@ def create_vcf_db_annotation_workflow(
 
     workflow.transform(
         name='merge_tables',
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx=ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
             mgd.TempInputFile('annotated.h5', 'split'),
@@ -59,7 +62,7 @@ def create_vcf_db_annotation_workflow(
     if not hdf5_output:
         workflow.transform(
             name='convert_to_tsv',
-            ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+            ctx=ctx,
             func=hdf5_tasks.convert_hdf5_to_tsv,
             args=(
                 merged_file.as_input(),

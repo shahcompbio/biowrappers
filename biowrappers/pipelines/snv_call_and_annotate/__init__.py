@@ -280,7 +280,7 @@ def call_and_annotate_pipeline(
     return workflow
 
 
-def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, variant_type='snv'):
+def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, docker_config={}, variant_type='snv'):
 
     annotators = (
         'cosmic_status',
@@ -291,6 +291,8 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
     )
 
     kwargs = {}
+    if docker_config:
+        kwargs['docker_config'] = docker_config
 
     result_files = {}
 
@@ -356,9 +358,10 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, vari
         kwargs=kwargs['tri_nucleotide_context']
     )
 
+    singlecellimage = docker_config['docker']['images']['single_cell_pipeline']
     workflow.transform(
         name='build_results_file',
-        ctx=default_ctx,
+        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         func=hdf5_tasks.concatenate_tables,
         args=(
             [x.as_input() for x in result_files.values()],

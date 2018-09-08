@@ -13,14 +13,18 @@ def create_vcf_mappability_annotation_workflow(
         mappability_file,
         vcf_file,
         out_file,
+        docker_config={},
         chromosomes=default_chromosomes,
         hdf5_output=True,
         split_size=int(1e7),
         table_name='mappability'):
 
+    ctx = {'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2}
+    if docker_config:
+        ctx.update(docker_config)
+
     if hdf5_output:
         merged_file = mgd.File(out_file)
-
     else:
         merged_file = mgd.TempFile('merged.h5')
 
@@ -29,6 +33,7 @@ def create_vcf_mappability_annotation_workflow(
     workflow.transform(
         name='get_regions',
         ret=mgd.TempOutputObj('regions_obj', 'regions'),
+        ctx=ctx,
         func=utils.get_vcf_regions,
         args=(
             mgd.InputFile(vcf_file, extensions=['.tbi']),
@@ -42,7 +47,7 @@ def create_vcf_mappability_annotation_workflow(
     workflow.transform(
         name='annotate_db_status',
         axes=('regions',),
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx=ctx,
         func=tasks.get_mappability,
         args=(
             mappability_file,
@@ -57,7 +62,7 @@ def create_vcf_mappability_annotation_workflow(
 
     workflow.transform(
         name='merge_tables',
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx=ctx,
         func=hdf5_tasks.concatenate_tables,
         args=(
             mgd.TempInputFile('mappability.h5', 'regions'),
@@ -68,7 +73,7 @@ def create_vcf_mappability_annotation_workflow(
     if not hdf5_output:
         workflow.transform(
             name='convert_to_tsv',
-            ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+            ctx=ctx,
             func=hdf5_tasks.convert_hdf5_to_tsv,
             args=(
                 merged_file.as_input(),
