@@ -358,7 +358,6 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
         kwargs=kwargs['tri_nucleotide_context']
     )
 
-    singlecellimage = docker_config['docker']['images']['single_cell_pipeline']
     workflow.transform(
         name='build_results_file',
         ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
