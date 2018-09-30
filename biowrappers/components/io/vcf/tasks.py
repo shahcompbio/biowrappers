@@ -85,8 +85,7 @@ def finalise_vcf(in_file, compressed_file, docker_config={}):
     """ Compress a VCF using bgzip and create index.
 
     :param in_file: Path of file to compressed and index.
-
-    :param out_file: Path where compressed file will be written. Index file will written to `out_file` + `.tbi` and `out_file` + `.csi` and .
+    :param compressed_file: Path where compressed file will be written. Index file will written to `out_file` + `.tbi` and `out_file` + `.csi` and .
 
     """
 
@@ -95,8 +94,8 @@ def finalise_vcf(in_file, compressed_file, docker_config={}):
     pypeliner.commandline.execute('bgzip', uncompressed_file, '-c', '>', compressed_file, **docker_config)
     os.remove(uncompressed_file)
 
-    index_bcf(compressed_file, docker_config=docker_config)
-    index_vcf(compressed_file, docker_config=docker_config)
+    index_bcf(compressed_file, index_file=compressed_file+'.csi', docker_config=docker_config)
+    index_vcf(compressed_file, index_file=compressed_file+'.tbi', docker_config=docker_config)
 
 
 def index_vcf(vcf_file, docker_config={}, index_file=None):
@@ -233,11 +232,15 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
     alt_categories = sorted(alt_categories)
 
-    min_itemsize = {
-        'chrom': max([len(x) for x in chrom_categories]),
-        'ref': max([len(x) for x in ref_categories]),
-        'alt': max([len(x) for x in alt_categories])
-    }
+    if len(chrom_categories) > 0:
+        min_itemsize = {
+            'chrom': max([len(x) for x in chrom_categories]),
+            'ref': max([len(x) for x in ref_categories]),
+            'alt': max([len(x) for x in alt_categories])
+        }
+
+    else:
+        min_itesize = {}
 
     #===================================================================================================================
     # convert
