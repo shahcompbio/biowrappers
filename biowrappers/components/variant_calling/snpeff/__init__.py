@@ -85,7 +85,7 @@ def create_snpeff_annotation_workflow(
             func=vcf_tasks.finalise_vcf,
             args=(
                 mgd.TempInputFile('snpeff.vcf', 'split'),
-                mgd.TempOutputFile('snpeff.vcf.gz', 'split'),
+                mgd.TempOutputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
             ),
             kwargs={'docker_config':vcftools_docker}
         )
@@ -96,7 +96,7 @@ def create_snpeff_annotation_workflow(
             ctx=dict(mem=4, **ctx),
             func=vcf_tasks.concatenate_vcf,
             args=(
-                mgd.TempInputFile('snpeff.vcf.gz', 'split'),
+                mgd.TempInputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
                 mgd.OutputFile(out_file),
             ),
             kwargs={'docker_config': vcftools_docker,
