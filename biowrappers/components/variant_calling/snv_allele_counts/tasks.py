@@ -19,7 +19,6 @@ nucleotides = ('A', 'C', 'G', 'T')
 
 def get_snv_allele_counts_for_vcf_targets(
         bam_file,
-        bai_file,
         vcf_file,
         out_file,
         table_name,
