@@ -63,6 +63,9 @@ def get_snv_allele_counts_for_vcf_targets(
             strand='both'
         )
 
+        if df is None:
+            continue
+
         counts = df.iloc[0]
 
         ref_base = record.REF
@@ -301,6 +304,9 @@ def _get_counts_df(bam_file,
             min_mqual=min_mqual,
             strand=strand)
     )
+
+    if np.array(x).sum() == 0:
+        return None
 
     df = pd.DataFrame(pd.np.array(x).T, columns=['A', 'C', 'G', 'T'])
 
