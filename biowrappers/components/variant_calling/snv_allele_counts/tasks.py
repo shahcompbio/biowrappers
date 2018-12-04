@@ -60,7 +60,8 @@ def get_snv_allele_counts_for_vcf_targets(
             count_duplicates=count_duplicates,
             min_bqual=min_bqual,
             min_mqual=min_mqual,
-            strand='both'
+            strand='both',
+            report_zero_count_positions=report_zero_count_positions,
         )
 
         if df is None:
@@ -288,7 +289,8 @@ def _get_counts_df(bam_file,
                    count_duplicates=False,
                    min_bqual=30,
                    min_mqual=30,
-                   strand='both'):
+                   strand='both',
+                   report_zero_count_positions=True):
     '''
     Get counts 1 based indexing.
     '''
@@ -305,8 +307,9 @@ def _get_counts_df(bam_file,
             strand=strand)
     )
 
-    if np.array(x).sum() == 0:
-        return None
+    if not report_zero_count_positions:
+        if np.array(x).sum() == 0:
+            return None
 
     df = pd.DataFrame(pd.np.array(x).T, columns=['A', 'C', 'G', 'T'])
 
