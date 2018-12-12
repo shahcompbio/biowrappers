@@ -87,7 +87,8 @@ def create_snpeff_annotation_workflow(
                 mgd.TempInputFile('snpeff.vcf', 'split'),
                 mgd.TempOutputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
             ),
-            kwargs={'docker_config':vcftools_docker}
+            kwargs={'docker_config':vcftools_docker,
+                    }
         )
 
         workflow.transform(

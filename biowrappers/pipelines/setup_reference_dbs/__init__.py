@@ -173,7 +173,6 @@ def create_dbsnp_download_workflow(config, out_file):
         func=vcf_tasks.index_vcf,
         args=(
             pypeliner.managed.InputFile(out_file),
-            pypeliner.managed.OutputFile(out_file + '.tbi')
         )
     )
 

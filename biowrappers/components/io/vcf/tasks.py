@@ -18,15 +18,14 @@ from biowrappers.components.utils import flatten_input
 from ._merge import merge_vcfs
 
 
-def compress_vcf(in_file, out_file, index_file=None):
+def compress_vcf(in_file, out_file):
     """ Compress a VCF file using bgzip.
 
     :param in_file: Path of uncompressed VCF file.
     :param out_file: Path were compressed VCF file will be written.
     """
     pypeliner.commandline.execute('bgzip', '-c', in_file, '>', out_file)
-    if index_file is not None:
-        index_vcf(out_file, index_file=index_file)
+    index_vcf(out_file)
 
 
 def filter_vcf(in_file, out_file):
@@ -64,21 +63,14 @@ def _rename_index(in_file, index_suffix):
         os.rename(in_file + index_suffix, index_file)
 
 
-def index_bcf(in_file, docker_config={},  index_file=None):
+def index_bcf(in_file, docker_config={}):
     """ Index a VCF or BCF file with bcftools.
 
     :param in_file: Path of file to index.
     :param index_file: Path of index file.
 
     """
-
     pypeliner.commandline.execute('bcftools', 'index', in_file, **docker_config)
-
-    if index_file is None:
-        _rename_index(in_file, '.csi')
-
-    else:
-        shutil.move(in_file + '.csi', index_file)
 
 
 def finalise_vcf(in_file, compressed_file, docker_config={}):
@@ -98,7 +90,7 @@ def finalise_vcf(in_file, compressed_file, docker_config={}):
     index_vcf(compressed_file, index_file=compressed_file+'.tbi', docker_config=docker_config)
 
 
-def index_vcf(vcf_file, docker_config={}, index_file=None):
+def index_vcf(vcf_file, docker_config={}):
     """ Create a tabix index for a VCF file
 
     :param vcf_file: Path of VCF to create index for. Should compressed by bgzip.
@@ -109,11 +101,6 @@ def index_vcf(vcf_file, docker_config={}, index_file=None):
     """
 
     pypeliner.commandline.execute('tabix', '-f', '-p', 'vcf', vcf_file, **docker_config)
-
-    if index_file is None:
-        _rename_index(vcf_file, '.tbi')
-    else:
-        shutil.move(vcf_file + '.tbi', index_file)
 
 
 def concatenate_vcf(in_files, out_file, allow_overlap=False, bcf_index_file=None, vcf_index_file=None, docker_config={}):
@@ -133,8 +120,8 @@ def concatenate_vcf(in_files, out_file, allow_overlap=False, bcf_index_file=None
 
     pypeliner.commandline.execute(*cmd, **docker_config)
 
-    index_vcf(out_file, index_file=vcf_index_file, docker_config=docker_config)
-    index_bcf(out_file, index_file=bcf_index_file, docker_config=docker_config)
+    index_vcf(out_file, docker_config=docker_config)
+    index_bcf(out_file, docker_config=docker_config)
 
 
 def concatenate_bcf(in_files, out_file):
@@ -229,7 +216,6 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
     if not chrom_categories:
         open(out_file, 'w').close()
         return
-
 
     chrom_categories = sorted(chrom_categories)
 
