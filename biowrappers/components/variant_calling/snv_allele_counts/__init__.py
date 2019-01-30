@@ -1,12 +1,9 @@
 import pypeliner
 import pypeliner.managed as mgd
+import biowrappers
 
-from biowrappers.components.variant_calling.utils import default_chromosomes
+default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
-import biowrappers.components.io.hdf5.tasks as hdf5_tasks
-import biowrappers.components.variant_calling.utils as utils
-import biowrappers.components.io.vcf.tasks as vcf_tasks
-import tasks
 
 sml_ctx = {'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2}
 med_ctx = {'mem': 4, 'num_retry': 3, 'mem_retry_increment': 4}
@@ -36,7 +33,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow.transform(
         name='get_regions',
         ret=mgd.TempOutputObj('regions_obj', 'regions'),
-        func=utils.get_vcf_regions,
+        func='biowrappers.components.variant_calling.utils.get_vcf_regions',
         args=(
             mgd.InputFile(vcf_file),
             split_size,
@@ -50,7 +47,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         name='get_snv_allele_counts_for_vcf_targets',
         axes=('regions',),
         ctx=med_ctx,
-        func=tasks.get_snv_allele_counts_for_vcf_targets,
+        func='biowrappers.components.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets',
         args=(
             mgd.InputFile(bam_file),
             mgd.InputFile(vcf_file),
@@ -69,7 +66,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow.transform(
         name='merge_snv_allele_counts',
         ctx=med_ctx,
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             mgd.TempInputFile('counts.h5', 'regions'),
             merged_file.as_output(),
@@ -83,7 +80,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         workflow.transform(
             name='convert_to_tsv',
             ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
-            func=hdf5_tasks.convert_hdf5_to_tsv,
+            func='biowrappers.components.io.hdf5.tasks.convert_hdf5_to_tsv',
             args=(
                 merged_file.as_input(),
                 table_name,
@@ -101,7 +98,7 @@ def create_snv_allele_counts_workflow(
         bam_file,
         out_file,
         table_name,
-        chromosomes=utils.default_chromosomes,
+        chromosomes=default_chromosomes,
         count_duplicates=False,
         min_bqual=0,
         min_mqual=0,
@@ -113,14 +110,14 @@ def create_snv_allele_counts_workflow(
 
     workflow.setobj(
         obj=mgd.TempOutputObj('regions_obj', 'regions'),
-        value=utils.get_bam_regions(bam_file, split_size, chromosomes=chromosomes)
+        value=biowrappers.components.variant_calling.utils.get_bam_regions(bam_file, split_size, chromosomes=chromosomes)
     )
 
     workflow.transform(
         name='get_counts',
         axes=('regions',),
         ctx=med_ctx,
-        func=tasks.get_snv_allele_counts_for_region,
+        func='biowrappers.components.snv_allele_counts.tasks.get_snv_allele_counts_for_region',
         args=(
             mgd.InputFile(bam_file),
             mgd.TempOutputFile('counts.h5', 'regions'),
@@ -139,7 +136,7 @@ def create_snv_allele_counts_workflow(
     workflow.transform(
         name='concatenate_counts',
         ctx=med_ctx,
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             mgd.TempInputFile('counts.h5', 'regions'),
             mgd.OutputFile(out_file)
@@ -153,7 +150,7 @@ def create_snv_variant_position_counts_workflow(
         normal_bam_file,
         tumour_bam_files,
         out_file,
-        chromosomes=utils.default_chromosomes,
+        chromosomes=default_chromosomes,
         count_duplicates=False,
         min_bqual=0,
         min_mqual=0,
@@ -168,7 +165,7 @@ def create_snv_variant_position_counts_workflow(
 
     workflow.setobj(
         obj=mgd.TempOutputObj('regions_obj', 'regions'),
-        value=utils.get_bam_regions(normal_bam_file, split_size, chromosomes=chromosomes)
+        value=biowrappers.components.variant_calling.utils.get_bam_regions(normal_bam_file, split_size, chromosomes=chromosomes)
     )
 
     tumour_input_files = {}
@@ -180,7 +177,7 @@ def create_snv_variant_position_counts_workflow(
         name='get_counts',
         axes=('regions',),
         ctx=med_ctx,
-        func=tasks.get_variant_position_counts,
+        func='biowrappers.components.snv_allele_counts.tasks.get_variant_position_counts',
         args=(
             mgd.InputFile(normal_bam_file),
             tumour_input_files,
@@ -203,7 +200,7 @@ def create_snv_variant_position_counts_workflow(
         name='concatenate_counts',
         axes=(),
         ctx=med_ctx,
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             mgd.TempInputFile('counts.h5', 'regions'),
             mgd.OutputFile(out_file),

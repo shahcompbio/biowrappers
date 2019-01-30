@@ -1,12 +1,8 @@
 import pypeliner
 import pypeliner.managed as mgd
 
-from biowrappers.components.variant_calling.utils import default_chromosomes
 
-import biowrappers.components.io.hdf5.tasks as hdf5_tasks
-import biowrappers.components.io.vcf.tasks as vcf_tasks
-import biowrappers.components.variant_calling.utils as utils
-import tasks
+default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 
 def create_vcf_mappability_annotation_workflow(
@@ -35,7 +31,7 @@ def create_vcf_mappability_annotation_workflow(
         name='get_regions',
         ret=mgd.TempOutputObj('regions_obj', 'regions'),
         ctx=ctx,
-        func=utils.get_vcf_regions,
+        func='biowrappers.components.variant_calling.utils.get_vcf_regions',
         args=(
             mgd.InputFile(vcf_file, extensions=['.tbi']),
             split_size,
@@ -49,7 +45,7 @@ def create_vcf_mappability_annotation_workflow(
         name='annotate_db_status',
         axes=('regions',),
         ctx=ctx,
-        func=tasks.get_mappability,
+        func='biowrappers.components.variant_calling.mappability.tasks.get_mappability',
         args=(
             mappability_file,
             mgd.InputFile(vcf_file, extensions=['.tbi']),
@@ -64,7 +60,7 @@ def create_vcf_mappability_annotation_workflow(
     workflow.transform(
         name='merge_tables',
         ctx=ctx,
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             mgd.TempInputFile('mappability.h5', 'regions'),
             merged_file.as_output()
@@ -75,7 +71,7 @@ def create_vcf_mappability_annotation_workflow(
         workflow.transform(
             name='convert_to_tsv',
             ctx=ctx,
-            func=hdf5_tasks.convert_hdf5_to_tsv,
+            func='biowrappers.components.io.hdf5.tasks.convert_hdf5_to_tsv',
             args=(
                 merged_file.as_input(),
                 table_name,

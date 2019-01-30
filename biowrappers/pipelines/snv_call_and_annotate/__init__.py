@@ -6,17 +6,6 @@ import pypeliner
 from biowrappers.components.utils import make_parent_directory
 from biowrappers.components.variant_calling.utils import default_chromosomes
 
-import biowrappers.components.io.hdf5.tasks as hdf5_tasks
-import biowrappers.components.io.vcf.tasks as vcf_tasks
-import biowrappers.components.variant_calling.annotated_db_status as annotated_db_status
-import biowrappers.components.variant_calling.mappability as mappability
-import biowrappers.components.variant_calling.nuseq as nuseq
-import biowrappers.components.variant_calling.mutect as mutect
-import biowrappers.components.variant_calling.snpeff as snpeff
-import biowrappers.components.variant_calling.snv_allele_counts as snv_allele_counts
-import biowrappers.components.variant_calling.strelka as strelka
-import biowrappers.components.variant_calling.tri_nucleotide_context as tri_nucleotide_context
-
 default_ctx = {'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2}
 
 big_mem_ctx = {'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2}
@@ -49,7 +38,7 @@ def call_and_annotate_pipeline(
         workflow.subworkflow(
             name='nuseq_multi_sample',
             axes=(),
-            func=nuseq.create_nuseq_classify_workflow,
+            func='biowrappers.components.variant_calling.nuseq.create_nuseq_classify_workflow',
             args=(
                 normal_bam_file.as_input(),
                 [pypeliner.managed.InputFile(x) for x in tumour_bam_paths.values()],
@@ -63,7 +52,7 @@ def call_and_annotate_pipeline(
             name='convert_nuseq_multi_sample_vcf_to_hdf5',
             axes=(),
             ctx=default_ctx,
-            func=vcf_tasks.convert_vcf_to_hdf5,
+            func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
             args=(
                 variant_files['snv']['vcf']['nuseq_multi_sample'].as_input(),
                 variant_files['snv']['hdf']['nuseq_multi_sample'].as_output(),
@@ -81,7 +70,7 @@ def call_and_annotate_pipeline(
         workflow.subworkflow(
             name='nuseq',
             axes=('tumour_sample_id',),
-            func=nuseq.create_nuseq_classify_workflow,
+            func='biowrappers.components.variant_calling.nuseq.create_nuseq_classify_workflow',
             args=(
                 normal_bam_file.as_input(),
                 [tumour_bam_files.as_input(), ],
@@ -95,7 +84,7 @@ def call_and_annotate_pipeline(
         workflow.subworkflow(
             name='mutect',
             axes=('tumour_sample_id',),
-            func=mutect.create_mutect_workflow,
+            func='biowrappers.components.variant_calling.mutect.create_mutect_workflow',
             args=(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
@@ -111,7 +100,7 @@ def call_and_annotate_pipeline(
         workflow.subworkflow(
             name='strelka',
             axes=('tumour_sample_id',),
-            func=strelka.create_strelka_workflow,
+            func='biowrappers.components.variant_calling.strelka.create_strelka_workflow',
             args=(
                 normal_bam_file.as_input(),
                 tumour_bam_files.as_input(),
@@ -134,7 +123,7 @@ def call_and_annotate_pipeline(
                 name='convert_{0}_indel_{1}_to_hdf5'.format(prog, var_type),
                 axes=('tumour_sample_id',),
                 ctx=default_ctx,
-                func=vcf_tasks.convert_vcf_to_hdf5,
+                func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
                 args=(
                     variant_files[var_type]['vcf'][prog].as_input(),
                     variant_files[var_type]['hdf'][prog].as_output(),
@@ -154,7 +143,7 @@ def call_and_annotate_pipeline(
     workflow.transform(
         name='merge_indels',
         ctx=big_mem_ctx,
-        func=vcf_tasks.merge_vcfs,
+        func='biowrappers.components.io.vcf.tasks.vcf_tasks.merge_vcfs',
         args=(
             [x.as_input() for x in variant_files['indel']['vcf'].values()],
             pypeliner.managed.TempOutputFile('all.indel.vcf')
@@ -163,7 +152,7 @@ def call_and_annotate_pipeline(
 
     workflow.transform(
         name='finalise_indels',
-        func=vcf_tasks.finalise_vcf,
+        func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('all.indel.vcf'),
             pypeliner.managed.TempOutputFile('all.indel.vcf.gz')
@@ -191,7 +180,7 @@ def call_and_annotate_pipeline(
     workflow.transform(
         name='merge_snvs',
         ctx=big_mem_ctx,
-        func=vcf_tasks.merge_vcfs,
+        func="biowrappers.components.io.vcf.tasks.merge_vcfs",
         args=(
             [x.as_input() for x in variant_files['snv']['vcf'].values()],
             pypeliner.managed.TempOutputFile('all.snv.vcf')
@@ -200,7 +189,7 @@ def call_and_annotate_pipeline(
 
     workflow.transform(
         name='finalise_snvs',
-        func=vcf_tasks.finalise_vcf,
+        func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('all.snv.vcf'),
             pypeliner.managed.TempOutputFile('all.snv.vcf.gz')
@@ -224,7 +213,7 @@ def call_and_annotate_pipeline(
 
     workflow.subworkflow(
         name='normal_snv_counts',
-        func=snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow,
+        func='biowrappers.components.variant_calling.snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow',
         args=(
             normal_bam_file.as_input(),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -236,7 +225,7 @@ def call_and_annotate_pipeline(
     workflow.subworkflow(
         name='tumour_snv_counts',
         axes=('tumour_sample_id',),
-        func=snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow,
+        func='biowrappers.components.variant_calling.snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow',
         args=(
             tumour_bam_files.as_input(),
             pypeliner.managed.TempInputFile('all.snv.vcf.gz'),
@@ -267,7 +256,7 @@ def call_and_annotate_pipeline(
     workflow.transform(
         name='build_results_file',
         ctx=default_ctx,
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             tables,
             pypeliner.managed.OutputFile(results_file)
@@ -280,7 +269,16 @@ def call_and_annotate_pipeline(
     return workflow
 
 
-def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, docker_config={}, variant_type='snv'):
+def create_annotation_workflow(
+        config,
+        in_vcf_file,
+        out_file,
+        raw_data_dir,
+        variant_type='snv',
+        docker_config={},
+        snpeff_docker={},
+        vcftools_docker={},
+):
 
     annotators = (
         'cosmic_status',
@@ -290,11 +288,9 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
         'tri_nucleotide_context'
     )
 
-    kwargs = {}
-    if docker_config:
-        kwargs['docker_config'] = docker_config
-
     result_files = {}
+
+    kwargs = {}
 
     for a in annotators:
         kwargs[a] = get_kwargs(config[a]['kwargs'], '/{0}/{1}'.format(variant_type, a))
@@ -305,7 +301,8 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
 
     workflow.subworkflow(
         name='cosmic_status',
-        func=annotated_db_status.create_vcf_db_annotation_workflow,
+        func='biowrappers.components.variant_calling.annotated_db_status.create_vcf_db_annotation_workflow',
+        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         args=(
             config['databases']['cosmic']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
@@ -316,7 +313,8 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
 
     workflow.subworkflow(
         name='dbsnp_status',
-        func=annotated_db_status.create_vcf_db_annotation_workflow,
+        func='biowrappers.components.variant_calling.annotated_db_status.create_vcf_db_annotation_workflow',
+        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         args=(
             config['databases']['dbsnp']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
@@ -327,7 +325,8 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
 
     workflow.subworkflow(
         name='mappability',
-        func=mappability.create_vcf_mappability_annotation_workflow,
+        func='biowrappers.components.variant_calling.mappability.create_vcf_mappability_annotation_workflow',
+        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         args=(
             config['databases']['mappability']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file, extensions=['.tbi']),
@@ -338,18 +337,20 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
 
     workflow.subworkflow(
         name='snpeff',
-        func=snpeff.create_snpeff_annotation_workflow,
+        func='biowrappers.components.variant_calling.snpeff.create_snpeff_annotation_workflow',
+        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         args=(
             config['databases']['snpeff']['db'],
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['snpeff'].as_output(),
         ),
-        kwargs=kwargs['snpeff']
+        kwargs=dict(snpeff_docker=snpeff_docker, vcftools_docker=vcftools_docker, **kwargs['snpeff'])
     )
 
     workflow.subworkflow(
         name='tri_nucleotide_context',
-        func=tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow,
+        func='biowrappers.components.variant_calling.tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow',
+        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         args=(
             config['databases']['ref_genome']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
@@ -361,7 +362,7 @@ def create_annotation_workflow(config, in_vcf_file, out_file, raw_data_dir, dock
     workflow.transform(
         name='build_results_file',
         ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             [x.as_input() for x in result_files.values()],
             pypeliner.managed.OutputFile(out_file)

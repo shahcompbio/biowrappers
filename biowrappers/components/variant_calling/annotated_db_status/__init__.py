@@ -1,10 +1,6 @@
 import pypeliner
 import pypeliner.managed as mgd
 
-import biowrappers.components.io.hdf5.tasks as hdf5_tasks
-import biowrappers.components.io.vcf.tasks as vcf_tasks
-import tasks
-
 
 def create_vcf_db_annotation_workflow(
         db_vcf_file,
@@ -28,7 +24,7 @@ def create_vcf_db_annotation_workflow(
     workflow.transform(
         name='split_vcf',
         ctx=ctx,
-        func=vcf_tasks.split_vcf,
+        func='biowrappers.components.io.vcf.tasks.split_vcf',
         args=(
             mgd.InputFile(target_vcf_file),
             mgd.TempOutputFile('split.vcf', 'split')
@@ -40,7 +36,7 @@ def create_vcf_db_annotation_workflow(
         name='annotate_db_status',
         axes=('split',),
         ctx=ctx,
-        func=tasks.annotate_db_status,
+        func='biowrappers.components.variant_calling.annotated_db_status.tasks.annotate_db_status',
         args=(
             db_vcf_file,
             mgd.TempInputFile('split.vcf', 'split'),
@@ -52,7 +48,7 @@ def create_vcf_db_annotation_workflow(
     workflow.transform(
         name='merge_tables',
         ctx=ctx,
-        func=hdf5_tasks.concatenate_tables,
+        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
         args=(
             mgd.TempInputFile('annotated.h5', 'split'),
             merged_file.as_output()
@@ -63,7 +59,7 @@ def create_vcf_db_annotation_workflow(
         workflow.transform(
             name='convert_to_tsv',
             ctx=ctx,
-            func=hdf5_tasks.convert_hdf5_to_tsv,
+            func='biowrappers.components.io.hdf5.tasks.convert_hdf5_to_tsv',
             args=(
                 merged_file.as_input(),
                 table_name,

@@ -4,9 +4,6 @@ import pypeliner.managed as mgd
 from pypeliner.workflow import Workflow
 
 import biowrappers.components.utils as utils
-import tasks
-
-import destruct.workflow
 
 
 def destruct_pipeline(
@@ -42,7 +39,7 @@ def destruct_pipeline(
 
     workflow.subworkflow(
         name='run_destruct',
-        func=destruct.workflow.create_destruct_workflow,
+        func="destruct.workflow.create_destruct_workflow",
         args=(
             pypeliner.managed.InputFile('bam', 'sample_id', fnames=bam_files),
             pypeliner.managed.OutputFile(breakpoint_file),
@@ -59,7 +56,7 @@ def destruct_pipeline(
     workflow.transform(
         name='filter_annotate_breakpoints',
         ctx={'mem': 8},
-        func=tasks.filter_annotate_breakpoints,
+        func='biowrappers.components.breakpoint_calling.destruct.tasks.filter_annotate_breakpoints',
         args=(
             pypeliner.managed.InputFile(breakpoint_file),
             pypeliner.managed.InputFile(breakpoint_library_file),
@@ -71,7 +68,7 @@ def destruct_pipeline(
 
     workflow.transform(
         name='write_store',
-        func=tasks.write_store,
+        func='biowrappers.components.breakpoint_calling.destruct.tasks.write_store',
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
         args=(
             pypeliner.managed.InputFile(somatic_breakpoint_file),

@@ -3,10 +3,6 @@ from pypeliner.workflow import Workflow
 import pypeliner
 import pypeliner.managed as mgd
 
-import biowrappers.components.io.hdf5.tasks as hdf5_tasks
-import biowrappers.components.io.vcf.tasks as vcf_tasks
-import tasks
-
 
 def create_snpeff_annotation_workflow(
         db,
@@ -30,7 +26,7 @@ def create_snpeff_annotation_workflow(
     workflow.transform(
         name='split_vcf',
         ctx=dict(mem=2, **ctx),
-        func=vcf_tasks.split_vcf,
+        func='biowrappers.components.io.vcf.tasks.split_vcf',
         args=(
             mgd.InputFile(target_vcf_file),
             mgd.TempOutputFile('split.vcf', 'split')
@@ -42,7 +38,7 @@ def create_snpeff_annotation_workflow(
         name='run_snpeff',
         axes=('split',),
         ctx=dict(mem=8, **ctx),
-        func=tasks.run_snpeff,
+        func='biowrappers.components.variant_calling.snpeff.tasks.run_snpeff',
         args=(
             db,
             mgd.TempInputFile('split.vcf', 'split'),
@@ -59,7 +55,7 @@ def create_snpeff_annotation_workflow(
             name='convert_vcf_to_table',
             axes=('split',),
             ctx=dict(mem=4, **ctx),
-            func=tasks.convert_vcf_to_table,
+            func='biowrappers.components.variant_calling.snpeff.tasks.convert_vcf_to_table',
             args=(
                 mgd.TempInputFile('snpeff.vcf', 'split'),
                 mgd.TempOutputFile('snpeff.h5', 'split'),
@@ -70,7 +66,7 @@ def create_snpeff_annotation_workflow(
         workflow.transform(
             name='concatenate_tables',
             ctx=dict(mem=4, **ctx),
-            func=hdf5_tasks.concatenate_tables,
+            func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
             args=(
                 mgd.TempInputFile('snpeff.h5', 'split'),
                 mgd.OutputFile(out_file)
@@ -82,7 +78,7 @@ def create_snpeff_annotation_workflow(
             name='compress_split_vcf',
             axes=('split',),
             ctx=dict(mem=2, **ctx),
-            func=vcf_tasks.finalise_vcf,
+            func='biowrappers.components.io.vcf.tasks.finalise_vcf',
             args=(
                 mgd.TempInputFile('snpeff.vcf', 'split'),
                 mgd.TempOutputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
@@ -95,7 +91,7 @@ def create_snpeff_annotation_workflow(
             name='merge_vcf',
             axes=(),
             ctx=dict(mem=4, **ctx),
-            func=vcf_tasks.concatenate_vcf,
+            func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
             args=(
                 mgd.TempInputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
                 mgd.OutputFile(out_file),
