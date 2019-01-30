@@ -130,7 +130,7 @@ def prepare_tumour_data(tumour_filename, het_positions_filename, tumour_wig_file
     write_segment_count_wig(
         tumour_wig_filename, tumour_filename, chromosome_lengths, segment_length=config['window_size'])
 
-    het_positions = pd.read_csv(het_positions_filename, sep='\t', converters={'chromosome': str})
+    het_positions = pd.read_csv(het_positions_filename, sep='\t', converters={'chromosome': str, 'alt_count': int, 'ref_count': int})
 
     tumour_allele_count = calculate_allele_counts(tumour_filename).merge(het_positions)
     write_titan_format_alleles(tumour_allele_filename, tumour_allele_count)
@@ -171,6 +171,7 @@ def run_titan(init_params, normal_wig_filename, tumour_wig_filename,
     """ Run the analysis with specific initialization parameters
 
     """
+
 
     titan_cmd = [
         'run_titan.R',

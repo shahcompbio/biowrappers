@@ -20,6 +20,10 @@ def calculate_allele_counts(seqdata_filename):
     else:
         allele_counts = pd.DataFrame()
 
+    allele_counts['ref_count'] = allele_counts['ref_count'].astype(int)
+    allele_counts['alt_count'] = allele_counts['alt_count'].astype(int)
+    allele_counts['position'] = allele_counts['position'].astype(int)
+
     return allele_counts
 
 
