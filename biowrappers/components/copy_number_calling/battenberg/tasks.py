@@ -179,11 +179,11 @@ def run_battenberg(
 
         for sample in vcf_record.samples:
             if sample.sample == 'TUMOUR':
-                segment_info['total_1'] = sample.data.TCN
+                segment_info['major_1'] = sample.data.TCN
                 segment_info['minor_1'] = sample.data.MCN
                 segment_info['fraction_1'] = sample.data.FCF
 
-                segment_info['total_2'] = sample.data.TCS
+                segment_info['major_2'] = sample.data.TCS
                 segment_info['minor_2'] = sample.data.MCS
                 segment_info['fraction_2'] = sample.data.FCS
 
@@ -192,16 +192,16 @@ def run_battenberg(
     cn_data = pd.DataFrame(cn_data)
 
     cn_data['fraction_2'] = cn_data['fraction_2'].fillna(0.0)
-    cn_data.loc[cn_data['total_2'].isnull(), 'total_2'] = cn_data.loc[cn_data['total_2'].isnull(), 'total_1']
+    cn_data.loc[cn_data['major_2'].isnull(), 'major_2'] = cn_data.loc[cn_data['major_2'].isnull(), 'major_1']
     cn_data.loc[cn_data['minor_2'].isnull(), 'minor_2'] = cn_data.loc[cn_data['minor_2'].isnull(), 'minor_1']
-    cn_data['total_2'] = cn_data['total_2'].astype(int)
+    cn_data['major_2'] = cn_data['major_2'].astype(int)
     cn_data['minor_2'] = cn_data['minor_2'].astype(int)
-    cn_data['major_1'] = cn_data['total_1'] - cn_data['minor_1']
-    cn_data['major_2'] = cn_data['total_2'] - cn_data['minor_2']
+    cn_data['total_1'] = cn_data['major_1'] + cn_data['minor_1']
+    cn_data['total_2'] = cn_data['major_2'] + cn_data['minor_2']
 
     with pd.HDFStore(results_filename, 'w') as store:
         store['cn'] = cn_data
         store['mix'] = pd.Series([1. - tumour_content, tumour_content])
-        store['brk_cn'] = pd.DataFrame()
+        store['brk_cn'] = pd.DataFrame(columns=['prediction_id', 'cn_1', 'cn_2'])
 
 

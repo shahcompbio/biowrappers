@@ -213,6 +213,8 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
     run_info['total_failed'] = False
     run_info['total_timeout'] = False
 
+    timeout = 48 * 3600
+
     try:
         args = [
             'RunTHetA', '--FORCE',
@@ -223,7 +225,7 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
             '--OUTPUT_PREFIX', 'theta_results',
         ]
 
-        subprocess32(args, timeout=1)
+        subprocess32.check_call(args, timeout=timeout)
 
     except subprocess32.CalledProcessError:
         run_info['alleles_failed'] = True
@@ -241,7 +243,7 @@ def run_theta(output_filename, normal_filename, tumour_filename, bicseq2_seg_fil
                 '--OUTPUT_PREFIX', 'theta_results',
             ]
 
-            subprocess32(args, timeout=1)
+            subprocess32.check_call(args, timeout=timeout)
 
         except subprocess32.CalledProcessError:
             run_info['total_failed'] = True
