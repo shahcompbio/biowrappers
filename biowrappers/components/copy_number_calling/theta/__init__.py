@@ -43,7 +43,7 @@ def create_theta_workflow(
     workflow.transform(
         name='run_bicseq2',
         axes=('sample_id',),
-        ctx={'mem': 20},
+        ctx={'mem': 30},
         func=tasks.run_bicseq2_seg,
         args=(
             pypeliner.managed.OutputFile('bicseq2_seg', 'sample_id', template=bicseq2_seg_template),
