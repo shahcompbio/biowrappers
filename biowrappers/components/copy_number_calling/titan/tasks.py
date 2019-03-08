@@ -42,7 +42,7 @@ def write_segment_count_wig(wig_filename, seqdata_filename, chromosome_lengths, 
 
             chrom_reads = remixt.seqdataio.read_fragment_data(seqdata_filename, chromosome=chrom)
 
-            chrom_reads.sort('start', inplace=True)
+            chrom_reads.sort_values('start', inplace=True)
 
             chrom_segments = create_segments(chromosome_lengths[chrom], segment_length)
 
