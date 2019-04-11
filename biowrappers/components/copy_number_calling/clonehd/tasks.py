@@ -24,7 +24,7 @@ def read_chromosome_lengths(chrom_info_filename):
     return chrom_info.set_index('chrom')['length']
 
 
-def create_segments(chrom_length, segment_length=1000):
+def create_segments(chrom_length, segment_length):
 
     seg_start = np.arange(0, chrom_length, segment_length)
     seg_end = seg_start + segment_length
@@ -34,7 +34,7 @@ def create_segments(chrom_length, segment_length=1000):
     return segments
 
 
-def write_cna(cna_filename, seqdata_filename, chromosome_lengths, segment_length=1000):
+def write_cna(cna_filename, seqdata_filename, chromosome_lengths, segment_length):
 
     with open(cna_filename, 'w') as cna:
 
@@ -96,39 +96,83 @@ def write_tumour_baf(baf_filename, normal_filename, tumour_filename):
                                        columns=['chromosome', 'position', 'minor_count', 'total_count'])
 
 
-def _get_segments(filename):
-    segments = set()
+def _read_segments(filename, segment_length):
+    segments = list()
     with open(filename) as f:
         for line in f:
             if line.startswith('#'):
                 continue
             fields = line.rstrip().split()
-            segments.add((fields[0], fields[1]))
+            segments.append((fields[0], int(fields[1])))
+    segments = pd.DataFrame(segments, columns=['chromosome', 'end'])
+    segments['start'] = segments['end'] - segment_length
+    segments = segments.drop_duplicates()
     return segments
 
 
-def _filter_segments(filename, out_filename, segments):
-    with open(filename) as f_in, open(out_filename, 'w') as f_out:
-        for line in f_in:
-            if line.startswith('#'):
-                f_out.write(line)
-                continue
-            fields = line.rstrip().split()
-            if (fields[0], fields[1]) not in segments:
-                continue
-            f_out.write(line)
+def _intersect_filtered(
+        normal_cna_in_filename,
+        tumour_cna_in_filename,
+        tumour_baf_in_filename,
+        normal_cna_out_filename,
+        tumour_cna_out_filename,
+        tumour_baf_out_filename,
+        segment_length,
+):
+    normal_cna = _read_segments(normal_cna_in_filename, segment_length)
+    tumour_cna = _read_segments(tumour_cna_in_filename, segment_length)
+    tumour_baf = pd.read_csv(
+        tumour_baf_filename, sep='\t',
+        names=['chromosome', 'position', 'minor_count', 'total_count'],
+        converters={'chromosome': str})
+    tumour_baf = tumour_baf.drop_duplicates()
 
+    filtered_normal_cna = []
+    filtered_tumour_cna = []
+    filtered_tumour_baf = []
 
-def _intersect_filtered(in_filenames, out_filenames):
-    segments = None
-    for in_filename in in_filenames:
-        if segments is None:
-            segments = _get_segments(in_filename)
-        else:
-            segments = segments.intersection(_get_segments(in_filename))
+    chromosomes = set(
+        list(normal_cna['chromosome']) +
+        list(tumour_cna['chromosome']) +
+        list(tumour_baf['chromosome']))        
 
-    for in_filename, out_filename in zip(in_filenames, out_filenames):
-        _filter_segments(in_filename, out_filename, segments)
+    for chromosome in chromosomes:
+        chrom_normal_cna = normal_cna[normal_cna['chromosome'] == chromosome]
+        chrom_tumour_cna = tumour_cna[tumour_cna['chromosome'] == chromosome]
+        chrom_tumour_baf = tumour_baf[tumour_baf['chromosome'] == chromosome]
+
+        common_segments = pd.merge(
+            chrom_normal_cna[['start', 'end']]
+            chrom_tumour_cna[['start', 'end']]
+        ).sort_values('start')
+
+        chrom_normal_cna = chrom_normal_cna.merge(common_segments)
+        chrom_tumour_cna = chrom_tumour_cna.merge(common_segments)
+
+        index = find_contained_positions(
+            common_segments.values,
+            tumour_baf['position'].values,
+        )
+
+        chrom_tumour_baf = chrom_tumour_baf.iloc[index >= 0]
+
+        filterd_normal_cna.append(chrom_normal_cna)
+        filterd_tumour_cna.append(chrom_tumour_cna)
+        filterd_tumour_baf.append(chrom_tumour_baf)
+
+    filterd_normal_cna = pd.concat(filterd_normal_cna, ignore_index=True)
+    filterd_tumour_cna = pd.concat(filterd_tumour_cna, ignore_index=True)
+    filterd_tumour_baf = pd.concat(filterd_tumour_baf, ignore_index=True)
+
+    filterd_normal_cna.to_csv(
+        normal_cna_out_filename, sep='\t', index=False, header=False,
+        columns=['chromosome', 'end', 'count', 'num_obs'])
+    filterd_tumour_cna.to_csv(
+        tumour_cna_out_filename, sep='\t', index=False, header=False,
+        columns=['chromosome', 'end', 'count', 'num_obs'])
+    filterd_tumour_baf.to_csv(
+        baf_file, sep='\t', index=False, header=False,
+        columns=['chromosome', 'position', 'minor_count', 'total_count'])
 
 
 def prepare_data(
@@ -137,15 +181,16 @@ def prepare_data(
     normal_cna_filename,
     tumour_cna_filename,
     tumour_baf_filename,
-    config
+    config,
+    segment_length,
 ):
     """ Initialize analysis
     """
 
     chromosome_lengths = read_chromosome_lengths(config['chrom_info_filename'])
 
-    write_cna(normal_cna_filename, normal_filename, chromosome_lengths)
-    write_cna(tumour_cna_filename, tumour_filename, chromosome_lengths)
+    write_cna(normal_cna_filename, normal_filename, chromosome_lengths, segment_length)
+    write_cna(tumour_cna_filename, tumour_filename, chromosome_lengths, segment_length)
 
     write_tumour_baf(tumour_baf_filename, normal_filename, tumour_filename)
 
@@ -158,6 +203,7 @@ def run_clonehd(
     cna_subclone_filenames,
     baf_subclone_filenames,
     raw_data_dir,
+    segment_length,
 ):
     """ Run the analysis with specific initialization parameters
 
@@ -180,16 +226,13 @@ def run_clonehd(
     )
 
     _intersect_filtered(
-        (
-            os.path.join(raw_data_dir, 'normal.cna.pref.txt'),
-            os.path.join(raw_data_dir, 'tumour.cna.pref.txt'),
-            tumour_baf_filename,
-        ),
-        (
-            os.path.join(raw_data_dir, 'normal.cna.pref.intersect.txt'),
-            os.path.join(raw_data_dir, 'tumour.cna.pref.intersect.txt'),
-            os.path.join(raw_data_dir, 'tumour.baf.intersect.txt'),
-        ),
+        os.path.join(raw_data_dir, 'normal.cna.pref.txt'),
+        os.path.join(raw_data_dir, 'tumour.cna.pref.txt'),
+        tumour_baf_filename,
+        os.path.join(raw_data_dir, 'normal.cna.pref.intersect.txt'),
+        os.path.join(raw_data_dir, 'tumour.cna.pref.intersect.txt'),
+        os.path.join(raw_data_dir, 'tumour.baf.intersect.txt'),
+        segment_length,
     )
 
     pypeliner.commandline.execute(
