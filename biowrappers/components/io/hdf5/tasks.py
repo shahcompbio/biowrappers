@@ -70,7 +70,7 @@ def _concatenate_tables_in_memory(
             non_numeric_cols = _get_non_numeric_columns(tables[table_name])
 
             for col in non_numeric_cols:
-                if pd.lib.infer_dtype(tables[table_name][col]) == 'unicode':
+                if pd.api.types.infer_dtype(tables[table_name][col]) == 'unicode':
                     tables[table_name][col] = tables[table_name][col].astype(str)
                 tables[table_name][col] = tables[table_name][col].astype('category')
 
