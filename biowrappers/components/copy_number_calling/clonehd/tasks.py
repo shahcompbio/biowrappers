@@ -103,8 +103,9 @@ def _read_segments(filename, segment_length):
             if line.startswith('#'):
                 continue
             fields = line.rstrip().split()
-            segments.append((fields[0], int(fields[1])))
-    segments = pd.DataFrame(segments, columns=['chromosome', 'end'])
+            segments.append(fields)
+    segments = pd.DataFrame(segments, columns=['chromosome', 'end', 'count', 'num_obs'])
+    segments['end'] = segments['end'].astype(int)
     segments['start'] = segments['end'] - segment_length
     segments = segments.drop_duplicates()
     return segments
@@ -122,7 +123,7 @@ def _intersect_filtered(
     normal_cna = _read_segments(normal_cna_in_filename, segment_length)
     tumour_cna = _read_segments(tumour_cna_in_filename, segment_length)
     tumour_baf = pd.read_csv(
-        tumour_baf_filename, sep='\t',
+        tumour_baf_in_filename, sep='\t',
         names=['chromosome', 'position', 'minor_count', 'total_count'],
         converters={'chromosome': str})
     tumour_baf = tumour_baf.drop_duplicates()
@@ -141,37 +142,43 @@ def _intersect_filtered(
         chrom_tumour_cna = tumour_cna[tumour_cna['chromosome'] == chromosome]
         chrom_tumour_baf = tumour_baf[tumour_baf['chromosome'] == chromosome]
 
+        if chrom_normal_cna.empty or chrom_tumour_cna.empty or chrom_tumour_baf.empty:
+            continue
+
         common_segments = pd.merge(
-            chrom_normal_cna[['start', 'end']]
-            chrom_tumour_cna[['start', 'end']]
+            chrom_normal_cna[['start', 'end']],
+            chrom_tumour_cna[['start', 'end']],
         ).sort_values('start')
 
         chrom_normal_cna = chrom_normal_cna.merge(common_segments)
         chrom_tumour_cna = chrom_tumour_cna.merge(common_segments)
 
-        index = find_contained_positions(
+        index = remixt.segalg.find_contained_positions(
             common_segments.values,
-            tumour_baf['position'].values,
+            chrom_tumour_baf['position'].values,
         )
 
-        chrom_tumour_baf = chrom_tumour_baf.iloc[index >= 0]
+        chrom_tumour_baf = chrom_tumour_baf.loc[chrom_tumour_baf.index[index >= 0]]
 
-        filterd_normal_cna.append(chrom_normal_cna)
-        filterd_tumour_cna.append(chrom_tumour_cna)
-        filterd_tumour_baf.append(chrom_tumour_baf)
+        filtered_normal_cna.append(chrom_normal_cna)
+        filtered_tumour_cna.append(chrom_tumour_cna)
+        filtered_tumour_baf.append(chrom_tumour_baf)
 
-    filterd_normal_cna = pd.concat(filterd_normal_cna, ignore_index=True)
-    filterd_tumour_cna = pd.concat(filterd_tumour_cna, ignore_index=True)
-    filterd_tumour_baf = pd.concat(filterd_tumour_baf, ignore_index=True)
+    filtered_normal_cna = pd.concat(filtered_normal_cna, ignore_index=True)
+    filtered_tumour_cna = pd.concat(filtered_tumour_cna, ignore_index=True)
+    filtered_tumour_baf = pd.concat(filtered_tumour_baf, ignore_index=True)
 
-    filterd_normal_cna.to_csv(
+    filtered_normal_cna = filtered_normal_cna[['chromosome', 'end', 'count', 'num_obs']]
+    filtered_normal_cna.to_csv(
         normal_cna_out_filename, sep='\t', index=False, header=False,
         columns=['chromosome', 'end', 'count', 'num_obs'])
-    filterd_tumour_cna.to_csv(
+    filtered_tumour_cna = filtered_tumour_cna[['chromosome', 'end', 'count', 'num_obs']]
+    filtered_tumour_cna.to_csv(
         tumour_cna_out_filename, sep='\t', index=False, header=False,
         columns=['chromosome', 'end', 'count', 'num_obs'])
-    filterd_tumour_baf.to_csv(
-        baf_file, sep='\t', index=False, header=False,
+    filtered_tumour_baf = filtered_tumour_baf[['chromosome', 'position', 'minor_count', 'total_count']]
+    filtered_tumour_baf.to_csv(
+        tumour_baf_out_filename, sep='\t', index=False, header=False,
         columns=['chromosome', 'position', 'minor_count', 'total_count'])
 
 
