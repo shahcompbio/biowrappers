@@ -10,7 +10,7 @@ import pandas as pd
 import re
 
 from biowrappers.components.utils import flatten_input
-
+from pandas.api.types import CategoricalDtype
 
 def concatenate_tables(
     in_files,
@@ -109,7 +109,7 @@ def _concatenate_tables_on_disk(in_files, out_file, non_numeric_as_category=True
                         df[col] = df[col].cat.set_categories(col_categories[table_name][col])
 
                     else:
-                        df[col] = df[col].astype('category', categories=col_categories[table_name][col])
+                        df[col] = df[col].astype(CategoricalDtype(categories=col_categories[table_name][col]))
 
                 out_store.append(table_name, df)
 

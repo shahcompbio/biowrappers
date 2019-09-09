@@ -16,6 +16,7 @@ import vcf
 from biowrappers.components.utils import flatten_input
 
 from ._merge import merge_vcfs
+from pandas.api.types import CategoricalDtype
 
 
 def compress_vcf(in_file, out_file):
@@ -270,11 +271,14 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
         df = pd.DataFrame(df, index=range(beg, end))
 
-        df['chrom'] = df['chrom'].astype('category', categories=chrom_categories)
+        chrom_cat_type = CategoricalDtype(categories=chrom_categories)
+        df['chrom'] = df['chrom'].astype(chrom_cat_type)
 
-        df['alt'] = df['alt'].astype('category', categories=alt_categories)
+        alt_cat_type = CategoricalDtype(categories=alt_categories)
+        df['alt'] = df['alt'].astype(alt_cat_type)
 
-        df['ref'] = df['ref'].astype('category', categories=ref_categories)
+        ref_cat_type = CategoricalDtype(categories=ref_categories)
+        df['ref'] = df['ref'].astype(ref_cat_type)
 
         df = df[['chrom', 'coord', 'ref', 'alt', 'score']]
 
