@@ -20,11 +20,14 @@ class SnpEffParser(object):
 
     def __iter__(self):
         while True:
-            yield self.next()
+            try:
+                yield self.next()
+            except StopIteration:
+                break
 
     def next(self):
         while len(self._buffer) == 0:
-            record = self._reader.next()
+            record = next(self._reader)
 
             if 'ANN' not in record.INFO:
                 continue
@@ -76,11 +79,14 @@ class ClassicSnpEffParser(object):
 
     def __iter__(self):
         while True:
-            yield self.next()
+            try:
+                yield self.next()
+            except StopIteration:
+                break
 
     def next(self):
         while len(self._buffer) == 0:
-            record = self._reader.next()
+            record = next(self._reader)
 
             if 'EFF' not in record.INFO:
                 continue

@@ -19,7 +19,7 @@ def get_mappability(
         region=None,
         append_chr=True):
 
-    map_reader = BigWigFile(open(mappability_file))
+    map_reader = BigWigFile(open(mappability_file, 'rb'))
 
     vcf_reader = vcf.Reader(filename=vcf_file)
 

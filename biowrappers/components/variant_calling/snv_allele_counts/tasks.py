@@ -102,7 +102,7 @@ def get_snv_allele_counts_for_vcf_targets(
 
     data = pd.DataFrame(data, columns=['chrom', 'coord', 'ref', 'alt', 'ref_counts', 'alt_counts'])
 
-    for col, value in extra_columns.iteritems():
+    for col, value in extra_columns.items():
         data[col] = value
 
     hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')

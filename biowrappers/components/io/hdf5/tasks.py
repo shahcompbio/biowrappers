@@ -249,7 +249,7 @@ def merge_hdf5(in_files, out_file, table_names='{}'):
 
     out_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
 
-    for file_key, file_name in in_files.iteritems():
+    for file_key, file_name in in_files.items():
         in_store = pd.HDFStore(file_name, 'r')
 
         # Compatability with dictionary keyed by single or multiple values

@@ -45,7 +45,7 @@ def call_somatic_variants(
         snv_file,
         stats_file,
         chrom,
-        (beg, end),
+        coord,
         known_chrom_size,
         max_input_depth=10000,
         min_tier_one_mapq=20,
@@ -56,6 +56,7 @@ def call_somatic_variants(
         ssnv_noise_strand_bias_frac=0.5,
         ssnv_prior=0.000001):
 
+    (beg, end) = coord
     cmd = [
         'strelka2',
         '-bam-file', normal_bam_file,
@@ -380,8 +381,6 @@ def filter_indel_file_list(
                 normal.data = _convert_dict_to_call(normal_data)
 
                 tumour.data = _convert_dict_to_call(tumour_data)
-
-                print normal.data
 
                 # Add filters
 

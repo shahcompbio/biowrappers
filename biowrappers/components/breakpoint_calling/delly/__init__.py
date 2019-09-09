@@ -16,7 +16,7 @@ def delly_pipeline(
     raw_data_dir,
 ):
     bams = list()
-    for lib_id, bam_filename in tumour_bam_files.iteritems():
+    for lib_id, bam_filename in tumour_bam_files.items():
         bams += [utils.symlink(bam_filename, link_name='{0}.bam'.format(lib_id), link_directory=raw_data_dir)]
         utils.symlink(bam_filename + '.bai', link_name='{0}.bam.bai'.format(lib_id), link_directory=raw_data_dir)
 
@@ -24,7 +24,7 @@ def delly_pipeline(
     utils.symlink(normal_bam_file + '.bai', link_name='Normal.bam.bai', link_directory=raw_data_dir)
 
     sample_type = {'Normal': 'control'}
-    for lib_id in tumour_bam_files.iterkeys():
+    for lib_id in tumour_bam_files.keys():
         sample_type[lib_id] = 'tumor'
 
     workflow = Workflow()

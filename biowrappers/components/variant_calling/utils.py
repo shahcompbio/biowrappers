@@ -20,7 +20,7 @@ def get_regions(chromosome_lengths, split_size):
     regions = {}
     region_index = 0
 
-    for chrom, length in chromosome_lengths.iteritems():
+    for chrom, length in chromosome_lengths.items():
         lside_interval = range(1, length + 1, split_size)
         rside_interval = range(split_size, length + split_size, split_size)
 
@@ -80,7 +80,7 @@ def load_vcf_chromosome_lengths(file_name, chromosomes=None):
 
     calc_lens = calculate_vcf_chromosome_lengths(file_name, chromosomes=chromosomes)
 
-    for chrom, contig in vcf_reader.contigs.iteritems():
+    for chrom, contig in vcf_reader.contigs.items():
         assert chrom == contig.id
 
         if chrom not in chromosomes:

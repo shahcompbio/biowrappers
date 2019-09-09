@@ -7,7 +7,7 @@ import pypeliner.commandline
 
 def write_samples_table(sample_types, sample_table_filename):
     with open(sample_table_filename, 'w') as f:
-        for sample_id, sample_type in sample_types.iteritems():
+        for sample_id, sample_type in sample_types.items():
             f.write('{}\t{}\n'.format(sample_id, sample_type))
 
 
@@ -76,7 +76,7 @@ def convert_vcf(bcf_filename, store_filename):
 
         breakpoint_table.append((prediction_id, chrom_1, chrom_2, strand_1, strand_2, coord_1, coord_2, qual))
 
-        for sample, call in row.samples.iteritems():
+        for sample, call in row.samples.items():
             num_spanning = call['DV']
             num_split = call['RV']
 
