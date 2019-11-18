@@ -14,7 +14,7 @@ def create_vcf_mappability_annotation_workflow(
         hdf5_output=True,
         split_size=int(1e7),
         table_name='mappability',
-        base_docker={}):
+):
 
     ctx = {'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2}
     if docker_config:

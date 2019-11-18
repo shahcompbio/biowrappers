@@ -25,7 +25,11 @@ def get_mappability(
 
     if region is not None:
         chrom, beg, end = utils.parse_region_for_vcf(region)
-        vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
+        try:
+            vcf_reader = vcf_reader.fetch(chrom, start=beg, end=end)
+        except ValueError:
+            print("no data for region {} in vcf".format(region))
+            vcf_reader = []
 
     data = []
 

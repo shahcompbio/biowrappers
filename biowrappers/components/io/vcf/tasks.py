@@ -3,20 +3,17 @@ Created on Oct 31, 2015
 
 @author: Andrew Roth
 '''
-from pypeliner.workflow import Workflow
 
-import os
 import itertools
+import os
+
 import pandas as pd
 import pypeliner
-import shutil
-import time
 import vcf
-
 from biowrappers.components.utils import flatten_input
+from pandas.api.types import CategoricalDtype
 
 from ._merge import merge_vcfs
-from pandas.api.types import CategoricalDtype
 
 
 def compress_vcf(in_file, out_file):
@@ -186,16 +183,15 @@ def split_vcf(in_file, out_files, lines_per_file):
             writer.close()
 
 
-def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
-
+def _convert_vcf_to_df(in_file, score_callback=None):
     def line_group(line, line_idx=itertools.count()):
         return int(next(line_idx) / chunk_size)
 
     chunk_size = 1000
 
-    #===================================================================================================================
+    # ===================================================================================================================
     # find all entries in categories
-    #===================================================================================================================
+    # ===================================================================================================================
     reader = vcf.Reader(filename=in_file)
 
     chrom_categories = set()
@@ -211,12 +207,7 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
         ref_categories.add(str(record.REF))
 
         for alt in record.ALT:
-
             alt_categories.add(str(alt))
-
-    if not chrom_categories:
-        open(out_file, 'w').close()
-        return
 
     chrom_categories = sorted(chrom_categories)
 
@@ -232,16 +223,14 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
         }
 
     else:
-        min_itesize = {}
+        min_itemsize = {}
 
-    #===================================================================================================================
+    # ===================================================================================================================
     # convert
-    #===================================================================================================================
+    # ===================================================================================================================
 
     # reopen reader to restart iter
     reader = vcf.Reader(filename=in_file)
-
-    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
 
     for file_idx, records in itertools.groupby(reader, key=line_group):
 
@@ -282,13 +271,28 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
         df = df[['chrom', 'coord', 'ref', 'alt', 'score']]
 
+        yield df, min_itemsize
+
+
+def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
+    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+
+    for (df, min_itemsize) in _convert_vcf_to_df(in_file, score_callback=score_callback):
         hdf_store.append(table_name, df, min_itemsize=min_itemsize)
 
     hdf_store.close()
 
 
-def sort_vcf(in_file, out_file):
+def convert_vcf_to_csv(in_file, out_file, score_callback=None):
+    header = False
+    for (df, _) in _convert_vcf_to_df(in_file, score_callback=score_callback):
+        if not header:
+            df.to_csv(out_file, mode='w', header=True, index=False)
+        else:
+            df.to_csv(out_file, mode='a', header=False, index=False)
 
+
+def sort_vcf(in_file, out_file):
     pypeliner.commandline.execute(
         'vcf-sort',
         in_file,
