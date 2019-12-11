@@ -52,16 +52,20 @@ def _concatenate_tables_in_memory(
 
         for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
-
-            if df.empty:
-                continue
-
             tables[table_name].append(df)
 
         in_store.close()
 
     for table_name in tables:
-        tables[table_name] = pd.concat(tables[table_name])
+        # TODO: check columns / types are equivalent
+        non_empty_tables = list(filter(lambda a: not a.empty, tables[table_name]))
+
+        if len(non_empty_tables) == 0:
+            tables[table_name] = tables[table_name][0]
+            continue
+
+        else:
+            tables[table_name] = pd.concat(non_empty_tables)
 
         if drop_duplicates:
             tables[table_name] = tables[table_name].drop_duplicates()
@@ -77,8 +81,10 @@ def _concatenate_tables_in_memory(
     out_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
 
     for table_name in tables:
-
-        out_store.put(table_name, tables[table_name], format='table')
+        if tables[table_name].empty:
+            out_store.put(table_name, tables[table_name])
+        else:
+            out_store.put(table_name, tables[table_name], format='table')
 
     out_store.close()
 
@@ -92,11 +98,15 @@ def _concatenate_tables_on_disk(in_files, out_file, non_numeric_as_category=True
 
     out_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
 
+    table_columns = defaultdict(set)
+
     for file_name in in_files:
         in_store = pd.HDFStore(file_name, 'r')
 
         for table_name in _iter_table_names(in_store):
             df = in_store[table_name]
+
+            table_columns[table_name].update(df.columns)
 
             if df.empty:
                 continue
@@ -118,6 +128,9 @@ def _concatenate_tables_on_disk(in_files, out_file, non_numeric_as_category=True
                     df[col] = df[col].astype(str)
 
                 out_store.append(table_name, df, min_itemsize=min_itemsize[table_name])
+
+        for table_name, columns in table_columns.items():
+            out_store.put(table_name, pd.DataFrame(columns=columns))
 
         in_store.close()
 
