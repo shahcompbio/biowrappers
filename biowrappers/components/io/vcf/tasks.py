@@ -288,6 +288,7 @@ def convert_vcf_to_csv(in_file, out_file, score_callback=None):
     for (df, _) in _convert_vcf_to_df(in_file, score_callback=score_callback):
         if not header:
             df.to_csv(out_file, mode='w', header=True, index=False)
+            header = True
         else:
             df.to_csv(out_file, mode='a', header=False, index=False)
 
