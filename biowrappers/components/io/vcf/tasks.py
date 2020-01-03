@@ -232,6 +232,8 @@ def _convert_vcf_to_df(in_file, score_callback=None):
     # reopen reader to restart iter
     reader = vcf.Reader(filename=in_file)
 
+    no_data = True
+
     for file_idx, records in itertools.groupby(reader, key=line_group):
 
         df = []
@@ -272,6 +274,11 @@ def _convert_vcf_to_df(in_file, score_callback=None):
         df = df[['chrom', 'coord', 'ref', 'alt', 'score']]
 
         yield df, min_itemsize
+
+        no_data = False
+
+    if no_data:
+        yield pd.DataFrame(columns=['chrom', 'coord', 'ref', 'alt', 'score']), None
 
 
 def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
