@@ -341,6 +341,7 @@ def create_annotation_workflow(
         ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
         args=(
             config['databases']['snpeff']['db'],
+            config['databases']['snpeff']['data_dir'],
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['snpeff'].as_output(),
         ),

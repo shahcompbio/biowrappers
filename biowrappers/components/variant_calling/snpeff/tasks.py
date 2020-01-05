@@ -12,7 +12,7 @@ import vcf
 import biowrappers.components.variant_calling.snpeff.parser
 
 
-def run_snpeff(db, in_vcf_file, out_file, classic_mode=True, docker_config={}):
+def run_snpeff(db, data_dir, in_vcf_file, out_file, classic_mode=True, docker_config={}):
 
     os.environ['MALLOC_ARENA_MAX'] = '2'
 
@@ -23,6 +23,8 @@ def run_snpeff(db, in_vcf_file, out_file, classic_mode=True, docker_config={}):
         '-Xms2g',
         '-Xmx5g',
         '-hgvs1LetterAa',
+        '-dataDir',
+        data_dir,
     ]
 
     if classic_mode:

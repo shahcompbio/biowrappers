@@ -6,6 +6,7 @@ import pypeliner.managed as mgd
 
 def create_snpeff_annotation_workflow(
         db,
+        data_dir,
         target_vcf_file,
         out_file,
         base_docker={},
@@ -41,6 +42,7 @@ def create_snpeff_annotation_workflow(
         func='biowrappers.components.variant_calling.snpeff.tasks.run_snpeff',
         args=(
             db,
+            data_dir,
             mgd.TempInputFile('split.vcf', 'split'),
             mgd.TempOutputFile('snpeff.vcf', 'split')
         ),
