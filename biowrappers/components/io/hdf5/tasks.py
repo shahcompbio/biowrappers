@@ -121,16 +121,16 @@ def _concatenate_tables_on_disk(in_files, out_file, non_numeric_as_category=True
                     else:
                         df[col] = df[col].astype(CategoricalDtype(categories=col_categories[table_name][col]))
 
-                out_store.append(table_name, df)
+                out_store.append(table_name, df, format='table')
 
             else:
                 for col in non_numeric_cols:
                     df[col] = df[col].astype(str)
 
-                out_store.append(table_name, df, min_itemsize=min_itemsize[table_name])
+                out_store.append(table_name, df, min_itemsize=min_itemsize[table_name], format='table')
 
         for table_name, columns in table_columns.items():
-            out_store.put(table_name, pd.DataFrame(columns=columns))
+            out_store.append(table_name, pd.DataFrame(columns=columns), format='table')
 
         in_store.close()
 
