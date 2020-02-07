@@ -10,6 +10,8 @@ import vcf
 
 import biowrappers.components.variant_calling.utils as utils
 
+from single_cell.utils import csvutils
+
 nucleotides = ('A', 'C', 'G', 'T')
 
 #=======================================================================================================================
@@ -21,13 +23,13 @@ def get_snv_allele_counts_for_vcf_targets(
         bam_file,
         vcf_file,
         out_file,
-        table_name,
         count_duplicates=False,
         min_bqual=0,
         min_mqual=0,
         region=None,
         vcf_to_bam_chrom_map=None,
         report_zero_count_positions=False,
+        dtypes=None,
         **extra_columns):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
@@ -105,11 +107,9 @@ def get_snv_allele_counts_for_vcf_targets(
     for col, value in extra_columns.items():
         data[col] = value
 
-    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
-
-    hdf_store[table_name] = data
-
-    hdf_store.close()
+    csvutils.write_dataframe_to_csv_and_yaml(
+        data, out_file, dtypes
+    )
 
 
 def get_snv_allele_counts_for_region(
