@@ -1,6 +1,5 @@
 from pypeliner.workflow import Workflow
 
-import pypeliner
 import pypeliner.managed as mgd
 
 
@@ -11,9 +10,7 @@ def create_snpeff_annotation_workflow(
         out_file,
         base_docker={},
         snpeff_docker={},
-        vcftools_docker={},
         classic_mode=True,
-        hdf5_output=True,
         split_size=int(1e3),
         table_name='snpeff'):
 
@@ -52,54 +49,26 @@ def create_snpeff_annotation_workflow(
         }
     )
 
-    if hdf5_output:
-        workflow.transform(
-            name='convert_vcf_to_table',
-            axes=('split',),
-            ctx=dict(mem=4, **ctx),
-            func='biowrappers.components.variant_calling.snpeff.tasks.convert_vcf_to_table',
-            args=(
-                mgd.TempInputFile('snpeff.vcf', 'split'),
-                mgd.TempOutputFile('snpeff.h5', 'split'),
-                table_name
-            )
+    workflow.transform(
+        name='convert_vcf_to_csv',
+        axes=('split',),
+        ctx=dict(mem=4, **ctx),
+        func='biowrappers.components.variant_calling.snpeff.tasks.convert_vcf_to_table',
+        args=(
+            mgd.TempInputFile('snpeff.vcf', 'split'),
+            mgd.TempOutputFile('snpeff.csv.gz', 'split', extensions=['.yaml']),
+            table_name
         )
+    )
 
-        workflow.transform(
-            name='concatenate_tables',
-            ctx=dict(mem=4, **ctx),
-            func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
-            args=(
-                mgd.TempInputFile('snpeff.h5', 'split'),
-                mgd.OutputFile(out_file)
-            )
+    workflow.transform(
+        name='concatenate_tables',
+        ctx=dict(mem=4, **ctx),
+        func='single_cell.utils.csvutils.concatenate_csv',
+        args=(
+            mgd.TempInputFile('snpeff.csv.gz', 'split'),
+            mgd.OutputFile(out_file, extensions=['.yaml'])
         )
-
-    else:
-        workflow.transform(
-            name='compress_split_vcf',
-            axes=('split',),
-            ctx=dict(mem=2, **ctx),
-            func='biowrappers.components.io.vcf.tasks.finalise_vcf',
-            args=(
-                mgd.TempInputFile('snpeff.vcf', 'split'),
-                mgd.TempOutputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
-            ),
-            kwargs={'docker_config':vcftools_docker,
-                    }
-        )
-
-        workflow.transform(
-            name='merge_vcf',
-            axes=(),
-            ctx=dict(mem=4, **ctx),
-            func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
-            args=(
-                mgd.TempInputFile('snpeff.vcf.gz', 'split', extensions=['.tbi', '.csi']),
-                mgd.OutputFile(out_file),
-            ),
-            kwargs={'docker_config': vcftools_docker,
-                    'allow_overlap': True}
-        )
+    )
 
     return workflow

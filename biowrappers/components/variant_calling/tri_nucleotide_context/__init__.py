@@ -7,7 +7,6 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         vcf_file,
         out_file,
         docker_config=None,
-        hdf5_output=True,
         split_size=int(1e4),
         table_name='tri_nucleotide_context'):
 
@@ -15,10 +14,8 @@ def create_vcf_tric_nucleotide_annotation_workflow(
     if docker_config:
         ctx.update(docker_config)
 
-    if hdf5_output:
-        merged_file = mgd.File(out_file)
-    else:
-        merged_file = mgd.TempFile('merged.h5')
+
+    merged_file = mgd.TempFile('merged.csv.gz')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -41,7 +38,8 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         args=(
             ref_genome_fasta_file,
             mgd.TempInputFile('split.vcf', 'split'),
-            mgd.TempOutputFile('tri_nucleotide_context.h5', 'split'),
+            mgd.TempOutputFile('tri_nucleotide_context.csv.gz', 'split',
+                               extensions=['.yaml']),
             table_name
         )
     )
@@ -49,26 +47,11 @@ def create_vcf_tric_nucleotide_annotation_workflow(
     workflow.transform(
         name='merge_tables',
         ctx=dict(mem=2, **ctx),
-        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
+        func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('tri_nucleotide_context.h5', 'split'),
-            merged_file.as_output()
-        )
+            mgd.TempInputFile('tri_nucleotide_context.csv.gz', 'split'),
+            mgd.OutputFile(out_file, extensions=['.yaml']))
     )
 
-    if not hdf5_output:
-        workflow.transform(
-            name='convert_to_tsv',
-            ctx=dict(mem=2, **ctx),
-            func='biowrappers.components.io.hdf5.tasks.convert_hdf5_to_tsv',
-            args=(
-                merged_file.as_input(),
-                table_name,
-                mgd.OutputFile(out_file),
-            ),
-            kwargs={
-                'compress': True,
-            }
-        )
 
     return workflow

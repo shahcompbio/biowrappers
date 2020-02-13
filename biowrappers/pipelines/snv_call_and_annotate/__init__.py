@@ -295,7 +295,12 @@ def create_annotation_workflow(
     for a in annotators:
         kwargs[a] = get_kwargs(config[a]['kwargs'], '/{0}/{1}'.format(variant_type, a))
 
-        result_files[a] = pypeliner.managed.File(os.path.join(raw_data_dir, '{0}.h5'.format(a)))
+        result_files[a] = pypeliner.managed.File(os.path.join(raw_data_dir, '{0}.csv.gz'.format(a)))
+
+    if not os.path.isdir(raw_data_dir):
+        os.mkdir(raw_data_dir)
+
+    assert os.path.isdir(raw_data_dir)
 
     workflow = Workflow()
 
@@ -308,7 +313,7 @@ def create_annotation_workflow(
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['cosmic_status'].as_output(),
         ),
-        kwargs=kwargs['cosmic_status']
+        kwargs=config["cosmic_status"]['kwargs']
     )
 
     workflow.subworkflow(
@@ -320,7 +325,7 @@ def create_annotation_workflow(
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['dbsnp_status'].as_output(),
         ),
-        kwargs=kwargs['dbsnp_status']
+        kwargs=config["dbsnp_status"]['kwargs']
     )
 
     workflow.subworkflow(
@@ -332,7 +337,7 @@ def create_annotation_workflow(
             pypeliner.managed.InputFile(in_vcf_file, extensions=['.tbi']),
             result_files['mappability'].as_output(),
         ),
-        kwargs=kwargs['mappability']
+        kwargs=config["mappability"]['kwargs']
     )
 
     workflow.subworkflow(
@@ -345,7 +350,8 @@ def create_annotation_workflow(
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['snpeff'].as_output(),
         ),
-        kwargs=dict(snpeff_docker=snpeff_docker, vcftools_docker=vcftools_docker, **kwargs['snpeff'])
+
+        kwargs=dict(snpeff_docker=snpeff_docker,  **kwargs['snpeff'])
     )
 
     workflow.subworkflow(
@@ -357,17 +363,17 @@ def create_annotation_workflow(
             pypeliner.managed.InputFile(in_vcf_file),
             result_files['tri_nucleotide_context'].as_output(),
         ),
-        kwargs=kwargs['tri_nucleotide_context']
+        kwargs=config["tri_nucleotide_context"]['kwargs']
     )
 
     workflow.transform(
         name='build_results_file',
         ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
-        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
+        func='single_cell.utils.csvutils.concatenate_csv',
         args=(
             [x.as_input() for x in result_files.values()],
-            pypeliner.managed.OutputFile(out_file)
-        ),
+            pypeliner.managed.OutputFile(out_file, extensions=[".yaml"]),
+        )
     )
 
     return workflow
