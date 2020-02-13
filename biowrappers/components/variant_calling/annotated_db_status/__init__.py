@@ -46,7 +46,6 @@ def create_vcf_db_annotation_workflow(
         )
     )
 
-<<<<<<< HEAD
     if not hdf5_output:
         workflow.transform(
             name='convert_to_tsv',
@@ -61,6 +60,4 @@ def create_vcf_db_annotation_workflow(
             }
         )
 
-=======
->>>>>>> 3345feb... stripped out hd5 and adde csv for vcf annotation
     return workflow
