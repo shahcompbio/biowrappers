@@ -11,19 +11,12 @@ def create_vcf_mappability_annotation_workflow(
         out_file,
         docker_config={},
         chromosomes=default_chromosomes,
-        hdf5_output=True,
         split_size=int(1e7),
-        table_name='mappability',
 ):
 
     ctx = {'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2}
     if docker_config:
         ctx.update(docker_config)
-
-    if hdf5_output:
-        merged_file = mgd.File(out_file)
-    else:
-        merged_file = mgd.TempFile('merged.h5')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -49,8 +42,8 @@ def create_vcf_mappability_annotation_workflow(
         args=(
             mappability_file,
             mgd.InputFile(vcf_file, extensions=['.tbi']),
-            mgd.TempOutputFile('mappability.h5', 'regions'),
-            table_name
+            mgd.TempOutputFile('mappability.csv.gz', 'regions',
+                               extensions=['.yaml'])
         ),
         kwargs={
             'region': mgd.TempInputObj('regions_obj', 'regions'),
@@ -60,26 +53,11 @@ def create_vcf_mappability_annotation_workflow(
     workflow.transform(
         name='merge_tables',
         ctx=ctx,
-        func='biowrappers.components.io.hdf5.tasks.concatenate_tables',
+        func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('mappability.h5', 'regions'),
-            merged_file.as_output()
+            mgd.TempInputFile('mappability.csv.gz', 'regions'),
+            mgd.OutputFile(out_file, extensions=['.yaml'])
         )
     )
-
-    if not hdf5_output:
-        workflow.transform(
-            name='convert_to_tsv',
-            ctx=ctx,
-            func='biowrappers.components.io.hdf5.tasks.convert_hdf5_to_tsv',
-            args=(
-                merged_file.as_input(),
-                table_name,
-                mgd.OutputFile(out_file),
-            ),
-            kwargs={
-                'compress': True,
-            }
-        )
 
     return workflow
