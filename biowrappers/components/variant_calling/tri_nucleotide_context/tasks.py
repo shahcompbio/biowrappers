@@ -6,7 +6,7 @@ Created on Nov 2, 2015
 import pandas as pd
 import pysam
 import vcf
-
+from single_cell.utils import csvutils
 
 def get_tri_nucelotide_context(ref_genome_fasta_file, vcf_file, out_file, table_name):
     vcf_reader = vcf.Reader(filename=vcf_file)
@@ -24,8 +24,7 @@ def get_tri_nucelotide_context(ref_genome_fasta_file, vcf_file, out_file, table_
 
         data.append({'chrom': record.CHROM, 'coord': record.POS, 'tri_nucleotide_context': tri_nucleotide_context})
 
-    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+    data = pd.DataFrame(data)
 
-    hdf_store[table_name] = pd.DataFrame(data, columns=['chrom', 'coord', 'tri_nucleotide_context'])
-
-    hdf_store.close()
+    csvutils.write_dataframe_to_csv_and_yaml(data,  out_file, data.dtypes.to_dict(),
+                                             write_header=True)
