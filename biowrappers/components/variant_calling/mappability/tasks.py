@@ -10,12 +10,12 @@ import vcf
 
 import biowrappers.components.variant_calling.utils as utils
 
+from single_cell.utils import csvutils
 
 def get_mappability(
         mappability_file,
         vcf_file,
         out_file,
-        table_name,
         region=None,
         append_chr=True):
 
@@ -57,9 +57,8 @@ def get_mappability(
             mappability = result[0]['mean']
 
         data.append({'chrom': record.CHROM, 'coord': record.POS, 'mappability': mappability})
+    data = pd.DataFrame(data)
 
-    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+    csvutils.write_dataframe_to_csv_and_yaml(data, out_file, data.dtypes.to_dict()
+                                             ,write_header=True)
 
-    hdf_store[table_name] = pd.DataFrame(data, columns=['chrom', 'coord', 'mappability'])
-
-    hdf_store.close()

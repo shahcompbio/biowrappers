@@ -11,6 +11,7 @@ import vcf
 
 import biowrappers.components.variant_calling.snpeff.parser
 
+from single_cell.utils import csvutils
 
 def run_snpeff(db, data_dir, in_vcf_file, out_file, classic_mode=True, docker_config={}):
 
@@ -52,8 +53,7 @@ def convert_vcf_to_table(in_file, out_file, table_name, classic_mode=True):
     for row in parser:
         data.append(row)
 
-    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
+    data = pd.DataFrame(data)
 
-    hdf_store[table_name] = pd.DataFrame(data)
-
-    hdf_store.close()
+    csvutils.write_dataframe_to_csv_and_yaml(data, out_file, data.dtypes.to_dict(),
+                                             write_header=True)

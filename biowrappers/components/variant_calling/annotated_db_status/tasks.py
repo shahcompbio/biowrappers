@@ -5,9 +5,9 @@ Created on Nov 2, 2015
 '''
 import pandas as pd
 import vcf
+from single_cell.utils import csvutils
 
-
-def annotate_db_status(db_vcf_file, target_vcf_file, out_file, table_name):
+def annotate_db_status(db_vcf_file, target_vcf_file, out_file):
     db_reader = vcf.Reader(filename=db_vcf_file)
 
     reader = vcf.Reader(filename=target_vcf_file)
@@ -56,14 +56,7 @@ def annotate_db_status(db_vcf_file, target_vcf_file, out_file, table_name):
 
                 data.append(out_row)
 
-    cols = ['chrom', 'coord', 'ref', 'alt', 'db_id', 'exact_match', 'indel']
+    data = pd.DataFrame(data)
 
-    hdf_store = pd.HDFStore(out_file, 'w', complevel=9, complib='blosc')
-
-    if len(data) == 0:
-        hdf_store[table_name] = pd.DataFrame(columns=cols)
-
-    else:
-        hdf_store[table_name] = pd.DataFrame(data, columns=cols)
-
-    hdf_store.close()
+    csvutils.write_dataframe_to_csv_and_yaml(data, out_file, data.dtypes.to_dict(),
+                                             write_header=True)
