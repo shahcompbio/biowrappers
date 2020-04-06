@@ -59,7 +59,7 @@ def split_fastq(in_filename, out_filenames, num_reads_per_file):
         out_file = None
         out_file_read_count = None
         try:
-            for name, seq, comment, qual in itertools.izip_longest(*[in_file] * 4):
+            for name, seq, comment, qual in itertools.zip_longest(*[in_file] * 4):
                 if out_file is None or out_file_read_count == num_reads_per_file:
                     if out_file is not None:
                         out_file.close()
