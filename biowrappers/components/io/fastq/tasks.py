@@ -54,7 +54,7 @@ def split_fastq(in_filename, out_filenames, num_reads_per_file):
         opener = gzip.open
     else:
         opener = open
-    with opener(in_filename, 'r') as in_file:
+    with opener(in_filename, 'rt') as in_file:
         file_number = 0
         out_file = None
         out_file_read_count = None
@@ -63,7 +63,7 @@ def split_fastq(in_filename, out_filenames, num_reads_per_file):
                 if out_file is None or out_file_read_count == num_reads_per_file:
                     if out_file is not None:
                         out_file.close()
-                    out_file = open(out_filenames[file_number], 'w')
+                    out_file = open(out_filenames[file_number], 'wt')
                     out_file_read_count = 0
                     file_number += 1
                 out_file.write(name)
