@@ -66,7 +66,7 @@ def create_snpeff_annotation_workflow(
         ctx=dict(mem=4, **ctx),
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('snpeff.csv.gz', 'split'),
+            mgd.TempInputFile('snpeff.csv.gz', 'split', extensions=['.yaml']),
             mgd.OutputFile(out_file, extensions=['.yaml'])
         )
     )

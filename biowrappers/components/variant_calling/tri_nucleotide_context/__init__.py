@@ -49,7 +49,7 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         ctx=dict(mem=2, **ctx),
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('tri_nucleotide_context.csv.gz', 'split'),
+            mgd.TempInputFile('tri_nucleotide_context.csv.gz', 'split', extensions=['.yaml']),
             mgd.OutputFile(out_file, extensions=['.yaml']))
     )
 

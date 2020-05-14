@@ -41,7 +41,7 @@ def create_vcf_db_annotation_workflow(
         ctx=ctx,
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('annotated.csv.gz', 'split'),
+            mgd.TempInputFile('annotated.csv.gz', 'split', extensions=['.yaml']),
             mgd.OutputFile(out_file, extensions=['.yaml'])
         )
     )

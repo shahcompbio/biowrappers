@@ -55,7 +55,7 @@ def create_vcf_mappability_annotation_workflow(
         ctx=ctx,
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('mappability.csv.gz', 'regions'),
+            mgd.TempInputFile('mappability.csv.gz', 'regions', extensions=['.yaml']),
             mgd.OutputFile(out_file, extensions=['.yaml'])
         )
     )
