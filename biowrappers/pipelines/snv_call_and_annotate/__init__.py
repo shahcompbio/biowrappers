@@ -295,7 +295,7 @@ def create_annotation_workflow(
     for a in annotators:
         kwargs[a] = get_kwargs(config[a]['kwargs'], '/{0}/{1}'.format(variant_type, a))
 
-        result_files[a] = pypeliner.managed.File(os.path.join(raw_data_dir, '{0}.csv.gz'.format(a)))
+        result_files[a] = pypeliner.managed.File(os.path.join(raw_data_dir, '{0}.csv.gz'.format(a)), extensions=['.yaml'])
 
     if not os.path.isdir(raw_data_dir):
         os.mkdir(raw_data_dir)
