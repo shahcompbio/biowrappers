@@ -31,18 +31,17 @@ def create_vcf_db_annotation_workflow(
         args=(
             db_vcf_file,
             mgd.TempInputFile('split.vcf', 'split'),
-            mgd.TempOutputFile('annotated.csv.gz', 'split',
-                               extensions=['.yaml'])
+            mgd.TempOutputFile('annotated.csv.gz', 'split')
         )
     )
 
     workflow.transform(
         name='merge_tables',
         ctx=ctx,
-        func='single_cell.utils.csvutils.concatenate_csv',
+        func='biowrappers.components.io.csv.tasks.concatenate_csv',
         args=(
-            mgd.TempInputFile('annotated.csv.gz', 'split', extensions=['.yaml']),
-            mgd.OutputFile(out_file, extensions=['.yaml'])
+            mgd.TempInputFile('annotated.csv.gz', 'split'),
+            mgd.OutputFile(out_file)
         )
     )
 

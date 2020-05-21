@@ -5,7 +5,7 @@ Created on Nov 2, 2015
 '''
 import pandas as pd
 import vcf
-from single_cell.utils import csvutils
+
 
 def annotate_db_status(db_vcf_file, target_vcf_file, out_file):
     db_reader = vcf.Reader(filename=db_vcf_file)
@@ -58,5 +58,7 @@ def annotate_db_status(db_vcf_file, target_vcf_file, out_file):
 
     data = pd.DataFrame(data)
 
-    csvutils.write_dataframe_to_csv_and_yaml(data, out_file, data.dtypes.to_dict(),
-                                             write_header=True)
+    if out_file.endswith('.gz.tmp'):
+        data.to_csv(out_file, index=False, compression='gzip')
+    else:
+        data.to_csv(out_file, index=False)

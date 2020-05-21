@@ -38,8 +38,7 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         args=(
             ref_genome_fasta_file,
             mgd.TempInputFile('split.vcf', 'split'),
-            mgd.TempOutputFile('tri_nucleotide_context.csv.gz', 'split',
-                               extensions=['.yaml']),
+            mgd.TempOutputFile('tri_nucleotide_context.csv.gz', 'split'),
             table_name
         )
     )
@@ -47,10 +46,10 @@ def create_vcf_tric_nucleotide_annotation_workflow(
     workflow.transform(
         name='merge_tables',
         ctx=dict(mem=2, **ctx),
-        func='single_cell.utils.csvutils.concatenate_csv',
+        func='biowrappers.components.io.csv.tasks.concatenate_csv',
         args=(
-            mgd.TempInputFile('tri_nucleotide_context.csv.gz', 'split', extensions=['.yaml']),
-            mgd.OutputFile(out_file, extensions=['.yaml']))
+            mgd.TempInputFile('tri_nucleotide_context.csv.gz', 'split'),
+            mgd.OutputFile(out_file))
     )
 
 

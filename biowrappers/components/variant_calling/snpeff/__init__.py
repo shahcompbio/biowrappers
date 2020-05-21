@@ -1,6 +1,5 @@
-from pypeliner.workflow import Workflow
-
 import pypeliner.managed as mgd
+from pypeliner.workflow import Workflow
 
 
 def create_snpeff_annotation_workflow(
@@ -13,7 +12,6 @@ def create_snpeff_annotation_workflow(
         classic_mode=True,
         split_size=int(1e3),
         table_name='snpeff'):
-
     ctx = {'num_retry': 3, 'mem_retry_increment': 2}
 
     if base_docker:
@@ -56,7 +54,7 @@ def create_snpeff_annotation_workflow(
         func='biowrappers.components.variant_calling.snpeff.tasks.convert_vcf_to_table',
         args=(
             mgd.TempInputFile('snpeff.vcf', 'split'),
-            mgd.TempOutputFile('snpeff.csv.gz', 'split', extensions=['.yaml']),
+            mgd.TempOutputFile('snpeff.csv.gz', 'split'),
             table_name
         )
     )
@@ -64,10 +62,10 @@ def create_snpeff_annotation_workflow(
     workflow.transform(
         name='concatenate_tables',
         ctx=dict(mem=4, **ctx),
-        func='single_cell.utils.csvutils.concatenate_csv',
+        func='biowrappers.components.io.csv.tasks.concatenate_csv',
         args=(
-            mgd.TempInputFile('snpeff.csv.gz', 'split', extensions=['.yaml']),
-            mgd.OutputFile(out_file, extensions=['.yaml'])
+            mgd.TempInputFile('snpeff.csv.gz', 'split'),
+            mgd.OutputFile(out_file)
         )
     )
 

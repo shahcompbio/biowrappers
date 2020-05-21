@@ -272,8 +272,11 @@ def call_and_annotate_pipeline(
 def create_annotation_workflow(
         config,
         in_vcf_file,
-        out_file,
-        raw_data_dir,
+        cosmic_status_file,
+        dbsnp_status_file,
+        mappability_file,
+        snpeff_file,
+        trinuc_file,
         variant_type='snv',
         docker_config={},
         snpeff_docker={},
@@ -288,19 +291,10 @@ def create_annotation_workflow(
         'tri_nucleotide_context'
     )
 
-    result_files = {}
-
     kwargs = {}
 
     for a in annotators:
         kwargs[a] = get_kwargs(config[a]['kwargs'], '/{0}/{1}'.format(variant_type, a))
-
-        result_files[a] = pypeliner.managed.File(os.path.join(raw_data_dir, '{0}.csv.gz'.format(a)), extensions=['.yaml'])
-
-    if not os.path.isdir(raw_data_dir):
-        os.mkdir(raw_data_dir)
-
-    assert os.path.isdir(raw_data_dir)
 
     workflow = Workflow()
 
@@ -311,7 +305,7 @@ def create_annotation_workflow(
         args=(
             config['databases']['cosmic']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
-            result_files['cosmic_status'].as_output(),
+            pypeliner.managed.OutputFile(cosmic_status_file)
         ),
         kwargs=config["cosmic_status"]['kwargs']
     )
@@ -323,7 +317,7 @@ def create_annotation_workflow(
         args=(
             config['databases']['dbsnp']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
-            result_files['dbsnp_status'].as_output(),
+            pypeliner.managed.OutputFile(dbsnp_status_file)
         ),
         kwargs=config["dbsnp_status"]['kwargs']
     )
@@ -335,7 +329,7 @@ def create_annotation_workflow(
         args=(
             config['databases']['mappability']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file, extensions=['.tbi']),
-            result_files['mappability'].as_output(),
+            pypeliner.managed.OutputFile(mappability_file),
         ),
         kwargs=config["mappability"]['kwargs']
     )
@@ -348,7 +342,7 @@ def create_annotation_workflow(
             config['databases']['snpeff']['db'],
             config['databases']['snpeff']['data_dir'],
             pypeliner.managed.InputFile(in_vcf_file),
-            result_files['snpeff'].as_output(),
+            pypeliner.managed.OutputFile(snpeff_file)
         ),
 
         kwargs=dict(snpeff_docker=snpeff_docker,  **kwargs['snpeff'])
@@ -361,19 +355,9 @@ def create_annotation_workflow(
         args=(
             config['databases']['ref_genome']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
-            result_files['tri_nucleotide_context'].as_output(),
+            pypeliner.managed.OutputFile(trinuc_file),
         ),
         kwargs=config["tri_nucleotide_context"]['kwargs']
-    )
-
-    workflow.transform(
-        name='build_results_file',
-        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
-        func='single_cell.utils.csvutils.concatenate_csv',
-        args=(
-            [x.as_input() for x in result_files.values()],
-            pypeliner.managed.OutputFile(out_file, extensions=[".yaml"]),
-        )
     )
 
     return workflow

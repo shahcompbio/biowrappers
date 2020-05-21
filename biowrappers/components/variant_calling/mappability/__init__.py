@@ -42,8 +42,7 @@ def create_vcf_mappability_annotation_workflow(
         args=(
             mappability_file,
             mgd.InputFile(vcf_file, extensions=['.tbi']),
-            mgd.TempOutputFile('mappability.csv.gz', 'regions',
-                               extensions=['.yaml'])
+            mgd.TempOutputFile('mappability.csv.gz', 'regions')
         ),
         kwargs={
             'region': mgd.TempInputObj('regions_obj', 'regions'),
@@ -53,10 +52,10 @@ def create_vcf_mappability_annotation_workflow(
     workflow.transform(
         name='merge_tables',
         ctx=ctx,
-        func='single_cell.utils.csvutils.concatenate_csv',
+        func='biowrappers.components.io.csv.tasks.concatenate_csv',
         args=(
-            mgd.TempInputFile('mappability.csv.gz', 'regions', extensions=['.yaml']),
-            mgd.OutputFile(out_file, extensions=['.yaml'])
+            mgd.TempInputFile('mappability.csv.gz', 'regions'),
+            mgd.OutputFile(out_file)
         )
     )
 
