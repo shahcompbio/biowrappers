@@ -278,9 +278,6 @@ def create_annotation_workflow(
         snpeff_file,
         trinuc_file,
         variant_type='snv',
-        docker_config={},
-        snpeff_docker={},
-        vcftools_docker={},
 ):
 
     annotators = (
@@ -301,7 +298,7 @@ def create_annotation_workflow(
     workflow.subworkflow(
         name='cosmic_status',
         func='biowrappers.components.variant_calling.annotated_db_status.create_vcf_db_annotation_workflow',
-        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
+        ctx=dict(mem=4, mem_retry_increment=2),
         args=(
             config['databases']['cosmic']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
@@ -313,7 +310,7 @@ def create_annotation_workflow(
     workflow.subworkflow(
         name='dbsnp_status',
         func='biowrappers.components.variant_calling.annotated_db_status.create_vcf_db_annotation_workflow',
-        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
+        ctx=dict(mem=4, mem_retry_increment=2),
         args=(
             config['databases']['dbsnp']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),
@@ -325,7 +322,7 @@ def create_annotation_workflow(
     workflow.subworkflow(
         name='mappability',
         func='biowrappers.components.variant_calling.mappability.create_vcf_mappability_annotation_workflow',
-        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
+        ctx=dict(mem=4, mem_retry_increment=2),
         args=(
             config['databases']['mappability']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file, extensions=['.tbi']),
@@ -337,21 +334,20 @@ def create_annotation_workflow(
     workflow.subworkflow(
         name='snpeff',
         func='biowrappers.components.variant_calling.snpeff.create_snpeff_annotation_workflow',
-        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
+        ctx=dict(mem=4, mem_retry_increment=2),
         args=(
             config['databases']['snpeff']['db'],
             config['databases']['snpeff']['data_dir'],
             pypeliner.managed.InputFile(in_vcf_file),
             pypeliner.managed.OutputFile(snpeff_file)
         ),
-
-        kwargs=dict(snpeff_docker=snpeff_docker,  **kwargs['snpeff'])
+        kwargs=kwargs['snpeff']
     )
 
     workflow.subworkflow(
         name='tri_nucleotide_context',
         func='biowrappers.components.variant_calling.tri_nucleotide_context.create_vcf_tric_nucleotide_annotation_workflow',
-        ctx=dict(mem=4, mem_retry_increment=2, **docker_config),
+        ctx=dict(mem=4, mem_retry_increment=2),
         args=(
             config['databases']['ref_genome']['local_path'],
             pypeliner.managed.InputFile(in_vcf_file),

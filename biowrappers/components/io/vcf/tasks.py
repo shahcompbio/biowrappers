@@ -61,17 +61,17 @@ def _rename_index(in_file, index_suffix):
         os.rename(in_file + index_suffix, index_file)
 
 
-def index_bcf(in_file, docker_config={}):
+def index_bcf(in_file):
     """ Index a VCF or BCF file with bcftools.
 
     :param in_file: Path of file to index.
     :param index_file: Path of index file.
 
     """
-    pypeliner.commandline.execute('bcftools', 'index', in_file, **docker_config)
+    pypeliner.commandline.execute('bcftools', 'index', in_file)
 
 
-def finalise_vcf(in_file, compressed_file, docker_config={}):
+def finalise_vcf(in_file, compressed_file):
     """ Compress a VCF using bgzip and create index.
 
     :param in_file: Path of file to compressed and index.
@@ -80,15 +80,15 @@ def finalise_vcf(in_file, compressed_file, docker_config={}):
     """
 
     uncompressed_file = compressed_file + '.uncompressed'
-    pypeliner.commandline.execute('vcf-sort', in_file, '>', uncompressed_file, **docker_config)
-    pypeliner.commandline.execute('bgzip', uncompressed_file, '-c', '>', compressed_file, **docker_config)
+    pypeliner.commandline.execute('vcf-sort', in_file, '>', uncompressed_file)
+    pypeliner.commandline.execute('bgzip', uncompressed_file, '-c', '>', compressed_file)
     os.remove(uncompressed_file)
 
-    index_bcf(compressed_file, docker_config=docker_config)
-    index_vcf(compressed_file, docker_config=docker_config)
+    index_bcf(compressed_file)
+    index_vcf(compressed_file)
 
 
-def index_vcf(vcf_file, docker_config={}):
+def index_vcf(vcf_file):
     """ Create a tabix index for a VCF file
 
     :param vcf_file: Path of VCF to create index for. Should compressed by bgzip.
@@ -98,10 +98,10 @@ def index_vcf(vcf_file, docker_config={}):
 
     """
 
-    pypeliner.commandline.execute('tabix', '-f', '-p', 'vcf', vcf_file, **docker_config)
+    pypeliner.commandline.execute('tabix', '-f', '-p', 'vcf', vcf_file)
 
 
-def concatenate_vcf(in_files, out_file, allow_overlap=False, docker_config={}):
+def concatenate_vcf(in_files, out_file, allow_overlap=False):
     """ Fast concatenation of VCF file using `bcftools`.
 
     :param in_files: dict with values being files to be concatenated. Files will be concatenated based on sorted order of keys.
@@ -116,10 +116,10 @@ def concatenate_vcf(in_files, out_file, allow_overlap=False, docker_config={}):
 
     cmd += flatten_input(in_files)
 
-    pypeliner.commandline.execute(*cmd, **docker_config)
+    pypeliner.commandline.execute(*cmd)
 
-    index_vcf(out_file, docker_config=docker_config)
-    index_bcf(out_file, docker_config=docker_config)
+    index_vcf(out_file)
+    index_bcf(out_file)
 
 
 def concatenate_bcf(in_files, out_file):

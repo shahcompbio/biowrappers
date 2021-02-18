@@ -166,12 +166,10 @@ def create_intialization_parameters(config):
 
 
 def run_titan(init_params, normal_wig_filename, tumour_wig_filename,
-              tumour_allele_filename, cn_filename, params_filename, config,
-              docker_config={}):
+              tumour_allele_filename, cn_filename, params_filename, config,):
     """ Run the analysis with specific initialization parameters
 
     """
-
 
     titan_cmd = [
         'run_titan.R',
@@ -192,7 +190,7 @@ def run_titan(init_params, normal_wig_filename, tumour_wig_filename,
         '--map_wig_file', config['mappability_wig'],
     ]
 
-    pypeliner.commandline.execute(*titan_cmd, **docker_config)
+    pypeliner.commandline.execute(*titan_cmd)
 
 
 def select_solution(
@@ -206,7 +204,6 @@ def select_solution(
     output_params_filename,
     config,
     sample_id,
-    docker_config={},
     breakpoints_filename=None,
 ):
     """ Select optimal copy number and mixture
@@ -261,7 +258,7 @@ def select_solution(
            '-o', output_segments_filename,
            '-igv', output_igv_filename,]
 
-    pypeliner.commandline.execute(*cmd, **docker_config)
+    pypeliner.commandline.execute(*cmd)
 
     cn_data = pd.read_csv(
         output_segments_filename,

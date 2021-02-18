@@ -7,15 +7,10 @@ def create_snpeff_annotation_workflow(
         data_dir,
         target_vcf_file,
         out_file,
-        base_docker={},
-        snpeff_docker={},
         classic_mode=True,
         split_size=int(1e3),
         table_name='snpeff'):
     ctx = {'num_retry': 3, 'mem_retry_increment': 2}
-
-    if base_docker:
-        ctx.update(base_docker)
 
     workflow = Workflow()
 
@@ -43,7 +38,6 @@ def create_snpeff_annotation_workflow(
         ),
         kwargs={
             'classic_mode': classic_mode,
-            'docker_config': snpeff_docker
         }
     )
 

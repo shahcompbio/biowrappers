@@ -6,14 +6,10 @@ def create_vcf_tric_nucleotide_annotation_workflow(
         ref_genome_fasta_file,
         vcf_file,
         out_file,
-        docker_config=None,
         split_size=int(1e4),
         table_name='tri_nucleotide_context'):
 
     ctx = {'num_retry': 3, 'mem_retry_increment': 2}
-    if docker_config:
-        ctx.update(docker_config)
-
 
     merged_file = mgd.TempFile('merged.csv.gz')
 

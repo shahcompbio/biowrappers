@@ -5,10 +5,9 @@ def create_vcf_db_annotation_workflow(
         db_vcf_file,
         target_vcf_file,
         out_file,
-        docker_config={},
         split_size=int(1e4)):
 
-    ctx = dict(mem=2, num_retry=3, mem_retry_increment=2, **docker_config)
+    ctx = dict(mem=2, num_retry=3, mem_retry_increment=2)
 
     workflow = pypeliner.workflow.Workflow()
 

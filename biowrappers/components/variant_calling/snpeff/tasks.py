@@ -11,7 +11,7 @@ import os
 import biowrappers.components.variant_calling.snpeff.parser
 
 
-def run_snpeff(db, data_dir, in_vcf_file, out_file, classic_mode=True, docker_config={}):
+def run_snpeff(db, data_dir, in_vcf_file, out_file, classic_mode=True):
 
     os.environ['MALLOC_ARENA_MAX'] = '2'
 
@@ -36,7 +36,7 @@ def run_snpeff(db, data_dir, in_vcf_file, out_file, classic_mode=True, docker_co
         out_file
     ])
 
-    pypeliner.commandline.execute(*cmd, **docker_config)
+    pypeliner.commandline.execute(*cmd)
 
 
 def convert_vcf_to_table(in_file, out_file, table_name, classic_mode=True):
