@@ -14,6 +14,7 @@ import biowrappers.components.variant_calling.snpeff.parser
 def run_snpeff(db, data_dir, in_vcf_file, out_file, classic_mode=True):
 
     os.environ['MALLOC_ARENA_MAX'] = '2'
+    data_dir = os.path.abspath(data_dir)
 
     cmd = [
         'snpEff',
