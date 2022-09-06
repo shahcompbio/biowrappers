@@ -75,7 +75,11 @@ class MultiVcfReader(object):
         self._readers = []
 
         for file_name in vcf_files:
-            self._readers.append(pysam.Tabixfile(file_name, parser=pysam.asVCF()))
+            try:
+                self._readers.append(pysam.Tabixfile(file_name, parser=pysam.asVCF()))
+            except:
+                pysam.tabix_index(file_name, preset="vcf", force=True)
+                self._readers.append(pysam.Tabixfile(file_name, parser=pysam.asVCF()))
 
     def __iter__(self):
         for chrom in self.chroms:
