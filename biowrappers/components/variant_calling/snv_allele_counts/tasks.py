@@ -30,6 +30,7 @@ def get_snv_allele_counts_for_vcf_targets(
         vcf_to_bam_chrom_map=None,
         report_zero_count_positions=False,
         dtypes=None,
+        write_header=True,
         **extra_columns):
 
     bam = pysam.AlignmentFile(bam_file, 'rb')
@@ -108,7 +109,7 @@ def get_snv_allele_counts_for_vcf_targets(
         data[col] = value
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, out_file, dtypes
+        data, out_file, dtypes, write_header=write_header
     )
 
 
